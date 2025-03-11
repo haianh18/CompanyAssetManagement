@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-CompanyAssetManagement-7ae3ace8-a5b3-4b01-8998-cdca7c82b8dd</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Repositories\IRepositories\" />
+    <Folder Include="Data\Repositories\Implementation\" />
+    <Folder Include="Infrastructure\Enums\" />
+    <Folder Include="Infrastructure\Interfaces\" />
+    <Folder Include="Infrastructure\Utilities\Constrants\" />
+    <Folder Include="Infrastructure\Utilities\DTOs\" />
+    <Folder Include="Infrastructure\Utilities\Helpers\" />
+    <Folder Include="Services\IServices\" />
+    <Folder Include="Services\Implementations\" />
+  </ItemGroup>
+
+</Project>
