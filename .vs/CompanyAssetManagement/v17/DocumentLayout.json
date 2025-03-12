@@ -3,76 +3,56 @@
   "WorkspaceRootPath": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\controllers\\assetscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\controllers\\assetscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\assetcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\assetcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\migrations\\20250312192226_updateapproleandasset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\migrations\\20250312192226_updateapproleandasset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\interfaces\\iswitchable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\interfaces\\iswitchable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\models\\companyassetmanagementcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\models\\companyassetmanagementcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\interfaces\\ihasowner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\interfaces\\ihasowner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\models\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\models\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\interfaces\\ihassoftdelete.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\interfaces\\ihassoftdelete.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\enums\\assetstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\enums\\assetstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\enums\\activestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\enums\\activestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\models\\approle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\models\\approle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\enums\\assetstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\enums\\assetstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\migrations\\20250312190052_initial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\migrations\\20250312190052_initial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\interfaces\\isortable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\interfaces\\isortable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\migrations\\companyassetmanagementcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\migrations\\companyassetmanagementcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\interfaces\\idatetracking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\interfaces\\idatetracking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\infrastructure\\sharedkernel\\domainentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\infrastructure\\sharedkernel\\domainentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\enums\\activestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\enums\\activestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\handoverticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\handoverticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\department.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\department.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\models\\warehouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\models\\warehouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\companyassetmanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{AC1A4658-A2FC-43EA-8C4A-8901A0D3E115}|CompanyAssetManagement\\CompanyAssetManagement.csproj|solutionrelative:companyassetmanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|d:\\fpt\\prn222\\final project\\companyassetmanagement\\finalproject\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0DC61C1F-3844-4F83-850B-2D0A2D6AB75E}|FinalProject\\FinalProject.csproj|solutionrelative:finalproject\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -82,138 +62,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 11,
+          "SelectedChildIndex": 1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "ActiveStatus.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Enums\\ActiveStatus.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Enums\\ActiveStatus.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Enums\\ActiveStatus.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Enums\\ActiveStatus.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:22:34.542Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AssetStatus.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Enums\\AssetStatus.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Enums\\AssetStatus.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Enums\\AssetStatus.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Enums\\AssetStatus.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:09:53.05Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ISortable.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\ISortable.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Interfaces\\ISortable.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\ISortable.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Interfaces\\ISortable.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:08:48.333Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "IHasSoftDelete.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IHasSoftDelete.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Interfaces\\IHasSoftDelete.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IHasSoftDelete.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Interfaces\\IHasSoftDelete.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:07:32.99Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ISwitchable.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\ISwitchable.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Interfaces\\ISwitchable.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\ISwitchable.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Interfaces\\ISwitchable.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:03:38.343Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IHasOwner.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IHasOwner.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Interfaces\\IHasOwner.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IHasOwner.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Interfaces\\IHasOwner.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:02:39.642Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "IDateTracking.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IDateTracking.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Interfaces\\IDateTracking.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Interfaces\\IDateTracking.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Interfaces\\IDateTracking.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T11:02:10.147Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "DomainEntity.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Infrastructure\\SharedKernel\\DomainEntity.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Infrastructure\\SharedKernel\\DomainEntity.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Infrastructure\\SharedKernel\\DomainEntity.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Infrastructure\\SharedKernel\\DomainEntity.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T10:58:44.391Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "ApplicationDbContextModelSnapshot.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T10:51:01.335Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Data\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Data\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:33:13.225Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
@@ -221,105 +71,170 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AppUser.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\AppUser.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\AppUser.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\AppUser.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\AppUser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Title": "AssetsController.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Controllers\\AssetsController.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Controllers\\AssetsController.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Controllers\\AssetsController.cs",
+              "RelativeToolTip": "FinalProject\\Controllers\\AssetsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:48:39.827Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "HandoverTicket.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\HandoverTicket.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\HandoverTicket.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\HandoverTicket.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\HandoverTicket.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:43:39.604Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "Department.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Department.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\Department.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Department.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\Department.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:38:49.483Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "Warehouse.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Warehouse.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\Warehouse.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Warehouse.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\Warehouse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:37:50.274Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AssetCategory.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\AssetCategory.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\AssetCategory.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\AssetCategory.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\AssetCategory.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAoAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:35:45.807Z",
+              "WhenOpened": "2025-03-12T19:45:49.673Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Asset.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Asset.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Models\\Asset.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Models\\Asset.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Models\\Asset.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAWAAAAAAAAAA==",
+              "Title": "20250312192226_UpdateAppRoleAndAsset.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\20250312192226_UpdateAppRoleAndAsset.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Migrations\\20250312192226_UpdateAppRoleAndAsset.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\20250312192226_UpdateAppRoleAndAsset.cs",
+              "RelativeToolTip": "FinalProject\\Migrations\\20250312192226_UpdateAppRoleAndAsset.cs",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAowJYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:34:42.559Z",
+              "WhenOpened": "2025-03-12T19:22:26.755Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 5,
+              "Title": "AssetStatus.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Enums\\AssetStatus.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Enums\\AssetStatus.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Enums\\AssetStatus.cs",
+              "RelativeToolTip": "FinalProject\\Enums\\AssetStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T19:17:15.845Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CompanyAssetManagementContextModelSnapshot.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\CompanyAssetManagementContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Migrations\\CompanyAssetManagementContextModelSnapshot.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\CompanyAssetManagementContextModelSnapshot.cs",
+              "RelativeToolTip": "FinalProject\\Migrations\\CompanyAssetManagementContextModelSnapshot.cs",
+              "ViewState": "AgIAAGYDAAAAAAAAAAAswAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T19:01:39.775Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "20250312190052_Initial.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\20250312190052_Initial.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Migrations\\20250312190052_Initial.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Migrations\\20250312190052_Initial.cs",
+              "RelativeToolTip": "FinalProject\\Migrations\\20250312190052_Initial.cs",
+              "ViewState": "AgIAAHMAAAAAAAAAAAAswAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T19:00:52.482Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\appsettings.json",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\appsettings.json",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\appsettings.json",
-              "RelativeToolTip": "CompanyAssetManagement\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\appsettings.json",
+              "RelativeDocumentMoniker": "FinalProject\\appsettings.json",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\appsettings.json",
+              "RelativeToolTip": "FinalProject\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-03-11T09:31:19.059Z",
+              "WhenOpened": "2025-03-12T18:58:42.549Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Program.cs",
-              "RelativeDocumentMoniker": "CompanyAssetManagement\\Program.cs",
-              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\CompanyAssetManagement\\Program.cs",
-              "RelativeToolTip": "CompanyAssetManagement\\Program.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "AppRole.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\AppRole.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Models\\AppRole.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\AppRole.cs",
+              "RelativeToolTip": "FinalProject\\Models\\AppRole.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-11T09:27:52.784Z",
+              "WhenOpened": "2025-03-12T18:22:36.254Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "ActiveStatus.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Enums\\ActiveStatus.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Enums\\ActiveStatus.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Enums\\ActiveStatus.cs",
+              "RelativeToolTip": "FinalProject\\Enums\\ActiveStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T18:25:10.515Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AppUser.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\AppUser.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Models\\AppUser.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\AppUser.cs",
+              "RelativeToolTip": "FinalProject\\Models\\AppUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAQAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T18:24:06.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Asset.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\Asset.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Models\\Asset.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\Asset.cs",
+              "RelativeToolTip": "FinalProject\\Models\\Asset.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAAwBQAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T18:23:35.32Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CompanyAssetManagementContext.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\CompanyAssetManagementContext.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Models\\CompanyAssetManagementContext.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Models\\CompanyAssetManagementContext.cs",
+              "RelativeToolTip": "FinalProject\\Models\\CompanyAssetManagementContext.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAAAmwIkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T17:29:35.317Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Controllers\\HomeController.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "FinalProject\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T14:36:03.178Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Program.cs",
+              "RelativeDocumentMoniker": "FinalProject\\Program.cs",
+              "ToolTip": "D:\\FPT\\PRN222\\Final Project\\CompanyAssetManagement\\FinalProject\\Program.cs",
+              "RelativeToolTip": "FinalProject\\Program.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAmwBEAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T14:32:23.262Z",
               "EditorCaption": ""
             }
           ]
