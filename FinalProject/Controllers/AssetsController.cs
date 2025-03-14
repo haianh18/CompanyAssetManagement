@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FinalProject.Models;
+using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using FinalProject.Models;
+using System.Threading.Tasks;
 
 namespace FinalProject.Controllers
 {
     public class AssetsController : Controller
     {
-        private readonly CompanyAssetManagementContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AssetsController(CompanyAssetManagementContext context)
+        public AssetsController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: Assets
         public async Task<IActionResult> Index()
         {
-            var companyAssetManagementContext = _context.Assets.Include(a => a.AssetCategory);
-            return View(await companyAssetManagementContext.ToListAsync());
+            var assets = await _unitOfWork.Assets.GetAllIncludingDeletedAsync();
+            return View(assets);
         }
 
         // GET: Assets/Details/5
@@ -33,9 +31,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _context.Assets
-                .Include(a => a.AssetCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var asset = await _unitOfWork.Assets.GetByIdIncludingDeletedAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
@@ -47,24 +43,22 @@ namespace FinalProject.Controllers
         // GET: Assets/Create
         public IActionResult Create()
         {
-            ViewData["AssetCategoryId"] = new SelectList(_context.AssetCategories, "Id", "Id");
+            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name");
             return View();
         }
 
         // POST: Assets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Price,Unit,ActiveStatus,AssetCategoryId,AssetStatus,DateCreated,DateModified,Description,Note")] Asset asset)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(asset);
-                await _context.SaveChangesAsync();
+                await _unitOfWork.Assets.AddAsync(asset);
+                await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AssetCategoryId"] = new SelectList(_context.AssetCategories, "Id", "Id", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
@@ -76,18 +70,16 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _context.Assets.FindAsync(id);
+            var asset = await _unitOfWork.Assets.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
             }
-            ViewData["AssetCategoryId"] = new SelectList(_context.AssetCategories, "Id", "Id", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
         // POST: Assets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Unit,ActiveStatus,AssetCategoryId,AssetStatus,DateCreated,DateModified,Description,Note")] Asset asset)
@@ -101,12 +93,12 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    _context.Update(asset);
-                    await _context.SaveChangesAsync();
+                    _unitOfWork.Assets.Update(asset);
+                    await _unitOfWork.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AssetExists(asset.Id))
+                    if (!await AssetExists(asset.Id))
                     {
                         return NotFound();
                     }
@@ -117,7 +109,7 @@ namespace FinalProject.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AssetCategoryId"] = new SelectList(_context.AssetCategories, "Id", "Id", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
@@ -129,9 +121,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _context.Assets
-                .Include(a => a.AssetCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var asset = await _unitOfWork.Assets.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
@@ -145,19 +135,43 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var asset = await _context.Assets.FindAsync(id);
-            if (asset != null)
-            {
-                _context.Assets.Remove(asset);
-            }
-
-            await _context.SaveChangesAsync();
+            await _unitOfWork.Assets.SoftDeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AssetExists(int id)
+        // GET: Assets/Restore/5
+        public async Task<IActionResult> Restore(int? id)
         {
-            return _context.Assets.Any(e => e.Id == id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var asset = await _unitOfWork.Assets.GetByIdIncludingDeletedAsync(id.Value);
+            if (asset == null)
+            {
+                return NotFound();
+            }
+
+            return View(asset);
+        }
+
+        // POST: Assets/Restore/5
+        [HttpPost, ActionName("Restore")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestoreConfirmed(int id)
+        {
+            await _unitOfWork.Assets.RestoreDeletedAsync(id);
+            await _unitOfWork.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> AssetExists(int id)
+        {
+            return await _unitOfWork.Assets.ExistsAsync(a => a.Id == id);
         }
     }
 }
+
+

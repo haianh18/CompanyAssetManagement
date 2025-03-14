@@ -19,8 +19,7 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<Department>> GetActiveDepartments()
         {
-            return await _dbSet.Where(d => d.ActiveStatus == (int)ActiveStatus.ACTIVE)
-                .ToListAsync();
+            return await GetAllAsync();
         }
 
         public async Task<Department> GetDepartmentWithUsers(int departmentId)
@@ -47,6 +46,44 @@ namespace FinalProject.Repositories
                 d => d.Name,
                 d => d.AppUsers.Count
             );
+        }
+
+        public async Task SoftDeleteDepartmentAsync(int departmentId)
+        {
+            // Tìm hoặc tạo department mặc định
+            var defaultDepartment = await _dbSet
+                .FirstOrDefaultAsync(d => d.Name == "Unassigned");
+
+            if (defaultDepartment == null)
+            {
+                defaultDepartment = new Department
+                {
+                    Name = "Unassigned",
+                    DateCreated = DateTime.Now
+                };
+                _context.Departments.Add(defaultDepartment);
+            }
+
+            // Soft delete department gốc
+            var originalDepartment = await _dbSet.FindAsync(departmentId);
+            if (originalDepartment == null)
+                throw new Exception("Department not found");
+
+            originalDepartment.IsDeleted = true;
+            originalDepartment.DeletedDate = DateTime.Now;
+
+            // Chuyển users sang department mặc định
+            var usersInDepartment = await _context.Users
+                .Where(u => u.DepartmentId == departmentId)
+                .ToListAsync();
+
+            foreach (var user in usersInDepartment)
+            {
+                user.DepartmentId = defaultDepartment.Id;
+                user.DateModified = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

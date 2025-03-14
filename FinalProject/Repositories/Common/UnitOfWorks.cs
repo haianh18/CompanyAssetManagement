@@ -1,6 +1,9 @@
 ﻿using FinalProject.Models;
+using FinalProject.Models.Base;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinalProject.Repositories.Common
@@ -25,6 +28,9 @@ namespace FinalProject.Repositories.Common
         private IUserRepository _userRepository;
         private IRoleRepository _roleRepository;
 
+        // Dictionary để map Type với Repository
+        private readonly Dictionary<Type, object> _repositories;
+
         public UnitOfWork(
             CompanyAssetManagementContext context,
             UserManager<AppUser> userManager,
@@ -33,6 +39,7 @@ namespace FinalProject.Repositories.Common
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _repositories = new Dictionary<Type, object>();
         }
 
         public IAssetRepository Assets => _assetRepository ??= new AssetRepository(_context);

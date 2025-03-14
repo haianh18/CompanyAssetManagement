@@ -26,7 +26,7 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<Asset>> GetActiveAssets()
         {
-            return await _dbSet.Where(a => a.ActiveStatus == (int)ActiveStatus.ACTIVE)
+            return await _dbSet.Where(a => a.IsDeleted == false)
                 .Include(a => a.AssetCategory)
                 .ToListAsync();
         }

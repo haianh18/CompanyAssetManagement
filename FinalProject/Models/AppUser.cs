@@ -13,8 +13,7 @@ public partial class AppUser : IdentityUser<int>
     public string? Specification { get; set; }
     public DateTime? DateCreated { get; set; }
     public DateTime? DateModified { get; set; }
-    public ActiveStatus ActiveStatus { get; set; }
-
+    public bool IsDeleted { get; set; } = false;
     public virtual ICollection<BorrowTicket> BorrowTicketBorrowBies { get; set; } = new List<BorrowTicket>();
     public virtual ICollection<BorrowTicket> BorrowTicketOwners { get; set; } = new List<BorrowTicket>();
     public virtual Department? Department { get; set; }

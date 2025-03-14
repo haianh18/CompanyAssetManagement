@@ -19,8 +19,7 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<Warehouse>> GetActiveWarehouses()
         {
-            return await _dbSet.Where(w => w.ActiveStatus == (int)ActiveStatus.ACTIVE)
-                .ToListAsync();
+            return await GetAllAsync();
         }
 
         public async Task<Warehouse> GetWarehouseWithAssets(int warehouseId)
@@ -51,6 +50,44 @@ namespace FinalProject.Repositories
                 w => w.Name,
                 w => w.WarehouseAssets.Sum(wa => wa.Quantity ?? 0)
             );
+        }
+
+        public async Task SoftDeleteWarehouseAsync(int warehouseId)
+        {
+            // Tìm hoặc tạo warehouse mặc định
+            var defaultWarehouse = await _dbSet
+                .FirstOrDefaultAsync(w => w.Name == "Unassigned Storage");
+
+            if (defaultWarehouse == null)
+            {
+                defaultWarehouse = new Warehouse
+                {
+                    Name = "Unassigned Storage",
+                    DateCreated = DateTime.Now
+                };
+                _context.Warehouses.Add(defaultWarehouse);
+            }
+
+            // Soft delete warehouse gốc
+            var originalWarehouse = await _dbSet.FindAsync(warehouseId);
+            if (originalWarehouse == null)
+                throw new Exception("Warehouse not found");
+
+            originalWarehouse.IsDeleted = true;
+            originalWarehouse.DeletedDate = DateTime.Now;
+
+            // Chuyển warehouse assets sang warehouse mặc định
+            var warehouseAssetsInWarehouse = await _context.WarehouseAssets
+                .Where(wa => wa.WarehouseId == warehouseId)
+                .ToListAsync();
+
+            foreach (var warehouseAsset in warehouseAssetsInWarehouse)
+            {
+                warehouseAsset.WarehouseId = defaultWarehouse.Id;
+                warehouseAsset.DateModified = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -150,5 +150,55 @@ namespace FinalProject.Repositories.Common
 
             return await query.AnyAsync();
         }
+
+        public async Task SoftDeleteAsync(int id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity != null && entity is FinalProject.Models.Base.EntityBase entityBase)
+            {
+                entityBase.IsDeleted = true;
+                entityBase.DeletedDate = DateTime.Now;
+                _context.Entry(entity).State = EntityState.Modified;
+            }
+        }
+
+        public async Task SoftDeleteAsync(T entity)
+        {
+            if (entity is FinalProject.Models.Base.EntityBase entityBase)
+            {
+                entityBase.IsDeleted = true;
+                entityBase.DeletedDate = DateTime.Now;
+                _context.Entry(entity).State = EntityState.Modified;
+                await Task.CompletedTask;
+            }
+        }
+
+        public async Task<IEnumerable<T>> GetAllIncludingDeletedAsync()
+        {
+            // Use NoTracking to bypass the global query filter
+            return await _dbSet.IgnoreQueryFilters().ToListAsync();
+        }
+
+        public async Task<T> GetByIdIncludingDeletedAsync(int id)
+        {
+            // Use NoTracking to bypass the global query filter
+            return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        }
+
+        public async Task<IEnumerable<T>> GetAllDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters().Where(e => (e as FinalProject.Models.Base.EntityBase).IsDeleted).ToListAsync();
+        }
+
+        public async Task RestoreDeletedAsync(int id)
+        {
+            var entity = await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+            if (entity != null && entity is FinalProject.Models.Base.EntityBase entityBase)
+            {
+                entityBase.IsDeleted = false;
+                entityBase.DeletedDate = null;
+                _context.Entry(entity).State = EntityState.Modified;
+            }
+        }
     }
 }

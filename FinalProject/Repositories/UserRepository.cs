@@ -66,7 +66,7 @@ namespace FinalProject.Repositories
         public async Task<IEnumerable<AppUser>> GetActiveUsersAsync()
         {
             return await _userManager.Users
-                .Where(u => u.ActiveStatus == ActiveStatus.ACTIVE)
+                .Where(u => !u.IsDeleted)
                 .Include(u => u.Department)
                 .Include(u => u.Role)
                 .ToListAsync();
@@ -75,7 +75,7 @@ namespace FinalProject.Repositories
         public async Task<IEnumerable<AppUser>> GetInactiveUsersAsync()
         {
             return await _userManager.Users
-                .Where(u => u.ActiveStatus == ActiveStatus.INACTIVE)
+                .Where(u => u.IsDeleted)
                 .Include(u => u.Department)
                 .Include(u => u.Role)
                 .ToListAsync();
@@ -146,6 +146,77 @@ namespace FinalProject.Repositories
         public async Task<int> CountUsersByDepartmentAsync(int departmentId)
         {
             return await _userManager.Users.CountAsync(u => u.DepartmentId == departmentId);
+        }
+
+        // Ví dụ với BorrowTicket
+        public async Task HandleDeletedUserInTicketsAsync(int userId)
+        {
+            // Tìm hoặc tạo user mặc định
+            var defaultUser = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.UserName == "system");
+
+            if (defaultUser == null)
+            {
+                throw new Exception("No system user found");
+            }
+
+
+
+            // Cập nhật các tickets liên quan
+            var borrowTickets = await _context.BorrowTickets
+                .Where(bt => bt.BorrowById == userId || bt.OwnerId == userId)
+                .ToListAsync();
+
+            var handoverTickets = await _context.HandoverTickets
+                .Where(ht => ht.HandoverById == userId || ht.OwnerId == userId)
+                .ToListAsync();
+
+            var disposalTickets = await _context.DisposalTickets
+                .Where(dt => dt.DisposalById == userId || dt.OwnerId == userId)
+                .ToListAsync();
+
+            var returnTickets = await _context.ReturnTickets
+                .Where(rt => rt.ReturnById == userId || rt.OwnerId == userId)
+                .ToListAsync();
+
+            foreach (var ticket in borrowTickets)
+            {
+                if (ticket.BorrowById == userId)
+                    ticket.BorrowById = defaultUser.Id;
+
+                if (ticket.OwnerId == userId)
+                    ticket.OwnerId = defaultUser.Id;
+
+                ticket.DateModified = DateTime.Now;
+            }
+
+            foreach (var ticket in handoverTickets)
+            {
+                if (ticket.HandoverById == userId)
+                    ticket.HandoverById = defaultUser.Id;
+                if (ticket.OwnerId == userId)
+                    ticket.OwnerId = defaultUser.Id;
+                ticket.DateModified = DateTime.Now;
+            }
+
+            foreach (var ticket in disposalTickets)
+            {
+                if (ticket.DisposalById == userId)
+                    ticket.DisposalById = defaultUser.Id;
+                if (ticket.OwnerId == userId)
+                    ticket.OwnerId = defaultUser.Id;
+                ticket.DateModified = DateTime.Now;
+            }
+
+            foreach (var ticket in returnTickets)
+            {
+                if (ticket.ReturnById == userId)
+                    ticket.ReturnById = defaultUser.Id;
+                if (ticket.OwnerId == userId)
+                    ticket.OwnerId = defaultUser.Id;
+                ticket.DateModified = DateTime.Now;
+            }
+            await _context.SaveChangesAsync();
         }
     }
 }

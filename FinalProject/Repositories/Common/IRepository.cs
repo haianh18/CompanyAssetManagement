@@ -46,5 +46,13 @@ namespace FinalProject.Repositories.Common
 
         // Kiểm tra có tồn tại đối tượng theo điều kiện
         Task<bool> ExistsAsync(Expression<Func<T, bool>> filter = null);
+
+        Task SoftDeleteAsync(int id);
+        Task SoftDeleteAsync(T entity);
+        Task<IEnumerable<T>> GetAllIncludingDeletedAsync();
+        Task<T> GetByIdIncludingDeletedAsync(int id);
+
+        Task<IEnumerable<T>> GetAllDeletedAsync();
+        Task RestoreDeletedAsync(int id);
     }
 }

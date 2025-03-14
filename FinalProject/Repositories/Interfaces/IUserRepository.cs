@@ -19,4 +19,6 @@
     Task<int> CountUsersAsync();
     Task<int> CountUsersByRoleAsync(string roleName);
     Task<int> CountUsersByDepartmentAsync(int departmentId);
+
+    Task HandleDeletedUserInTicketsAsync(int userId);
 }

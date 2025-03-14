@@ -7,4 +7,6 @@ public interface IWarehouseRepository : IRepository<Warehouse>
     Task<Warehouse> GetWarehouseWithAssets(int warehouseId);
     Task<IEnumerable<Warehouse>> GetWarehousesWithAssets();
     Task<Dictionary<string, int>> GetWarehouseStatistics();
+
+    Task SoftDeleteWarehouseAsync(int id);
 }

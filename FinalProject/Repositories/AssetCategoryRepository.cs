@@ -18,7 +18,7 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<AssetCategory>> GetActiveCategories()
         {
-            return await _dbSet.Where(c => c.ActiveStatus == (int)ActiveStatus.ACTIVE)
+            return await _dbSet.Where(c => c.IsDeleted == false)
                 .ToListAsync();
         }
 
@@ -56,6 +56,45 @@ namespace FinalProject.Repositories
                 c => c.Name,
                 c => c.Assets.Count
             );
+        }
+
+        public async Task SoftDeleteCategoryAsync(int categoryId)
+        {
+            // Tìm hoặc tạo category mặc định
+            var defaultCategory = await _dbSet.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(c => c.Name == "Uncategorized");
+
+            if (defaultCategory == null)
+            {
+                defaultCategory = new AssetCategory
+                {
+                    Name = "Uncategorized",
+                    DateCreated = DateTime.Now
+                };
+                _dbSet.Add(defaultCategory);
+                await _context.SaveChangesAsync();
+            }
+
+            // Soft delete category gốc
+            var originalCategory = await _dbSet.FindAsync(categoryId);
+            if (originalCategory == null)
+                throw new Exception("Category not found");
+
+            originalCategory.IsDeleted = true;
+            originalCategory.DeletedDate = DateTime.Now;
+
+            // Chuyển assets sang category mặc định
+            var assetsInCategory = await _context.Assets.IgnoreQueryFilters()
+                .Where(a => a.AssetCategoryId == categoryId)
+                .ToListAsync();
+
+            foreach (var asset in assetsInCategory)
+            {
+                asset.AssetCategoryId = defaultCategory.Id;
+                asset.DateModified = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }
