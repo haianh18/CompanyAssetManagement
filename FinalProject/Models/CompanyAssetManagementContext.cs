@@ -1,6 +1,7 @@
 ﻿using FinalProject.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, AppRole, int>
 {
@@ -25,10 +26,22 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
     {
         base.OnModelCreating(modelBuilder);
 
+        // Áp dụng global query filter cho soft delete
+        modelBuilder.Entity<Asset>().HasQueryFilter(a => !a.IsDeleted);
+        modelBuilder.Entity<AssetCategory>().HasQueryFilter(ac => !ac.IsDeleted);
+        modelBuilder.Entity<Department>().HasQueryFilter(d => !d.IsDeleted);
+        modelBuilder.Entity<Warehouse>().HasQueryFilter(w => !w.IsDeleted);
+        modelBuilder.Entity<BorrowTicket>().HasQueryFilter(bt => !bt.IsDeleted);
+        modelBuilder.Entity<ReturnTicket>().HasQueryFilter(rt => !rt.IsDeleted);
+        modelBuilder.Entity<HandoverTicket>().HasQueryFilter(ht => !ht.IsDeleted);
+        modelBuilder.Entity<DisposalTicket>().HasQueryFilter(dt => !dt.IsDeleted);
+        modelBuilder.Entity<DisposalTicketAsset>().HasQueryFilter(dta => !dta.IsDeleted);
+        modelBuilder.Entity<WarehouseAsset>().HasQueryFilter(wa => !wa.IsDeleted);
+
         modelBuilder.Entity<AppRole>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__AppRoles__3214EC07D250C7FA");
-            entity.Property(e => e.RoleType).HasConversion<string>(); // Add this line to handle enum conversion
+            entity.Property(e => e.RoleType).HasConversion<string>();
         });
 
         modelBuilder.Entity<AppUser>(entity =>
@@ -47,11 +60,17 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasKey(e => e.Id).HasName("PK__Assets__3214EC07670D2D82");
 
             entity.HasOne(d => d.AssetCategory).WithMany(p => p.Assets).HasForeignKey(d => d.AssetCategoryId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<AssetCategory>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__AssetCat__3214EC07D7F87C44");
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<BorrowTicket>(entity =>
@@ -63,11 +82,17 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.Owner).WithMany(p => p.BorrowTicketOwners).HasForeignKey(d => d.OwnerId);
 
             entity.HasOne(d => d.WarehouseAsset).WithMany(p => p.BorrowTickets).HasForeignKey(d => d.WarehouseAssetId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Department>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Departme__3214EC07F78AE89E");
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<DisposalTicket>(entity =>
@@ -77,6 +102,9 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.DisposalBy).WithMany(p => p.DisposalTicketDisposalBies).HasForeignKey(d => d.DisposalById);
 
             entity.HasOne(d => d.Owner).WithMany(p => p.DisposalTicketOwners).HasForeignKey(d => d.OwnerId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<DisposalTicketAsset>(entity =>
@@ -86,6 +114,9 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.DisposalTicket).WithMany(p => p.DisposalTicketAssets).HasForeignKey(d => d.DisposalTicketId);
 
             entity.HasOne(d => d.WarehouseAsset).WithMany(p => p.DisposalTicketAssets).HasForeignKey(d => d.WarehouseAssetId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<HandoverTicket>(entity =>
@@ -101,6 +132,9 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.Owner).WithMany(p => p.HandoverTicketOwners).HasForeignKey(d => d.OwnerId);
 
             entity.HasOne(d => d.WarehouseAsset).WithMany(p => p.HandoverTickets).HasForeignKey(d => d.WarehouseAssetId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<ReturnTicket>(entity =>
@@ -112,11 +146,17 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.Owner).WithMany(p => p.ReturnTicketOwners).HasForeignKey(d => d.OwnerId);
 
             entity.HasOne(d => d.ReturnBy).WithMany(p => p.ReturnTicketReturnBies).HasForeignKey(d => d.ReturnById);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Warehouse>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Warehous__3214EC073C957F29");
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<WarehouseAsset>(entity =>
@@ -128,6 +168,9 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
             entity.HasOne(d => d.Asset).WithMany(p => p.WarehouseAssets).HasForeignKey(d => d.AssetId);
 
             entity.HasOne(d => d.Warehouse).WithMany(p => p.WarehouseAssets).HasForeignKey(d => d.WarehouseId);
+
+            // Thêm cấu hình cho các trường từ EntityBase
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         OnModelCreatingPartial(modelBuilder);
