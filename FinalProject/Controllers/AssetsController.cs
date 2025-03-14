@@ -1,5 +1,6 @@
 ﻿using FinalProject.Models;
-using FinalProject.Repositories.Common;
+using FinalProject.Services;
+using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,17 +10,17 @@ namespace FinalProject.Controllers
 {
     public class AssetsController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IAssetService _assetService;
 
-        public AssetsController(IUnitOfWork unitOfWork)
+        public AssetsController(IAssetService assetService)
         {
-            _unitOfWork = unitOfWork;
+            _assetService = assetService;
         }
 
         // GET: Assets
         public async Task<IActionResult> Index()
         {
-            var assets = await _unitOfWork.Assets.GetAllIncludingDeletedAsync();
+            var assets = await _assetService.GetAllAsync();
             return View(assets);
         }
 
@@ -31,7 +32,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _unitOfWork.Assets.GetByIdIncludingDeletedAsync(id.Value);
+            var asset = await _assetService.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
@@ -41,9 +42,9 @@ namespace FinalProject.Controllers
         }
 
         // GET: Assets/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name");
+            ViewData["AssetCategoryId"] = new SelectList(await _assetService.GetAllAsync(), "Id", "Name");
             return View();
         }
 
@@ -54,11 +55,10 @@ namespace FinalProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _unitOfWork.Assets.AddAsync(asset);
-                await _unitOfWork.SaveChangesAsync();
+                await _assetService.AddAsync(asset);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(await _assetService.GetAllAsync(), "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
@@ -70,12 +70,12 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _unitOfWork.Assets.GetByIdAsync(id.Value);
+            var asset = await _assetService.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
             }
-            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(await _assetService.GetAllAsync(), "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
@@ -93,8 +93,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    _unitOfWork.Assets.Update(asset);
-                    await _unitOfWork.SaveChangesAsync();
+                    await _assetService.UpdateAsync(asset);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -109,7 +108,7 @@ namespace FinalProject.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AssetCategoryId"] = new SelectList(_unitOfWork.AssetCategories.GetAllAsync().Result, "Id", "Name", asset.AssetCategoryId);
+            ViewData["AssetCategoryId"] = new SelectList(await _assetService.GetAllAsync(), "Id", "Name", asset.AssetCategoryId);
             return View(asset);
         }
 
@@ -121,7 +120,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _unitOfWork.Assets.GetByIdAsync(id.Value);
+            var asset = await _assetService.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
@@ -135,8 +134,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _unitOfWork.Assets.SoftDeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            await _assetService.SoftDeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -148,7 +146,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var asset = await _unitOfWork.Assets.GetByIdIncludingDeletedAsync(id.Value);
+            var asset = await _assetService.GetByIdAsync(id.Value);
             if (asset == null)
             {
                 return NotFound();
@@ -162,16 +160,14 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
-            await _unitOfWork.Assets.RestoreDeletedAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            await _assetService.RestoreAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private async Task<bool> AssetExists(int id)
         {
-            return await _unitOfWork.Assets.ExistsAsync(a => a.Id == id);
+            return await _assetService.GetByIdAsync(id) != null;
         }
     }
 }
-
 

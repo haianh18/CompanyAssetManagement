@@ -28,7 +28,7 @@ namespace FinalProject.Repositories.Common
         private IUserRepository _userRepository;
         private IRoleRepository _roleRepository;
 
-        // Dictionary để map Type với Repository
+        // Dictionary to map Type to Repository
         private readonly Dictionary<Type, object> _repositories;
 
         public UnitOfWork(
@@ -55,6 +55,40 @@ namespace FinalProject.Repositories.Common
         public IUserRepository Users => _userRepository ??= new UserRepository(_context, _userManager);
         public IRoleRepository Roles => _roleRepository ??= new RoleRepository(_context, _roleManager);
 
+        // Method to get repository by type
+        public IRepository<T> GetRepositoryForType<T>() where T : class
+        {
+            var type = typeof(T);
+
+            if (!_repositories.ContainsKey(type))
+            {
+                if (type == typeof(Asset))
+                    _repositories[type] = Assets;
+                else if (type == typeof(AssetCategory))
+                    _repositories[type] = AssetCategories;
+                else if (type == typeof(Warehouse))
+                    _repositories[type] = Warehouses;
+                else if (type == typeof(WarehouseAsset))
+                    _repositories[type] = WarehouseAssets;
+                else if (type == typeof(Department))
+                    _repositories[type] = Departments;
+                else if (type == typeof(BorrowTicket))
+                    _repositories[type] = BorrowTickets;
+                else if (type == typeof(ReturnTicket))
+                    _repositories[type] = ReturnTickets;
+                else if (type == typeof(HandoverTicket))
+                    _repositories[type] = HandoverTickets;
+                else if (type == typeof(DisposalTicket))
+                    _repositories[type] = DisposalTickets;
+                else if (type == typeof(DisposalTicketAsset))
+                    _repositories[type] = DisposalTicketAssets;
+                else
+                    _repositories[type] = new Repository<T>(_context);
+            }
+
+            return (IRepository<T>)_repositories[type];
+        }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -67,3 +101,5 @@ namespace FinalProject.Repositories.Common
         }
     }
 }
+
+

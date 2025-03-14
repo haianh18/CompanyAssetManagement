@@ -19,6 +19,8 @@ namespace FinalProject.Repositories.Common
         IUserRepository Users { get; }
         IRoleRepository Roles { get; }
 
+        // Method to get repository by type
+        IRepository<T> GetRepositoryForType<T>() where T : class;
         // Lưu thay đổi
         Task<int> SaveChangesAsync();
     }

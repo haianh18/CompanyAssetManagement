@@ -1,4 +1,7 @@
 using FinalProject.Models;
+using FinalProject.Repositories.Common;
+using FinalProject.Services;
+using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,8 +23,10 @@ public class Program
             .AddRoles<AppRole>()
             .AddEntityFrameworkStores<CompanyAssetManagementContext>();
 
-        // Add Razor Pages services
-        builder.Services.AddRazorPages();
+        // Add MVC services
+        builder.Services.AddControllersWithViews();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IAssetService, AssetService>();
 
         // Register the DataSeeder service
         builder.Services.AddHostedService<DataSeeder>();
@@ -56,4 +61,3 @@ public class Program
         app.Run();
     }
 }
-
