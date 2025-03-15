@@ -47,13 +47,15 @@ namespace FinalProject.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Asset>> SearchAssets(string keyword)
+        public async Task<IEnumerable<Asset>> SearchAssets(string keyword, bool includeDeleted = false)
         {
             if (string.IsNullOrEmpty(keyword))
-                return await GetAllIncludingDeletedAsync();
+                return includeDeleted ? await GetAllIncludingDeletedAsync() : await GetAllAsync();
 
             keyword = keyword.ToLower();
-            return await _dbSet.Where(a =>
+            var query = includeDeleted ? _dbSet.IgnoreQueryFilters() : _dbSet;
+
+            return await query.Where(a =>
                     a.Name.ToLower().Contains(keyword) ||
                     (a.Description != null && a.Description.ToLower().Contains(keyword)) ||
                     (a.Note != null && a.Note.ToLower().Contains(keyword)) ||

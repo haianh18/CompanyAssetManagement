@@ -4,6 +4,7 @@ using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,118 +18,123 @@ namespace FinalProject.Controllers
         private readonly IAssetCategoryService _assetCategoryService;
         private readonly IWarehouseAssetService _warehouseAssetService;
 
+        private readonly CompanyAssetManagementContext _context;
+
         public AssetsController(
             IAssetService assetService,
             IAssetCategoryService assetCategoryService,
-            IWarehouseAssetService warehouseAssetService)
+            IWarehouseAssetService warehouseAssetService,
+            CompanyAssetManagementContext context)
         {
             _assetService = assetService;
             _assetCategoryService = assetCategoryService;
             _warehouseAssetService = warehouseAssetService;
+            _context = context;
         }
 
         // GET: Assets/Index
         public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, string status, int? page, bool includeDeleted = false)
-
         {
-            // Lưu trạng thái sắp xếp hiện tại để sử dụng trong view
-            ViewBag.CurrentSort = sortOrder;
-
-            // Định nghĩa các tham số sắp xếp
-            ViewBag.IdSortParam = string.IsNullOrEmpty(sortOrder) ? "id_desc" : "";
-            ViewBag.NameSortParam = sortOrder == "name_asc" ? "name_desc" : "name_asc";
-            ViewBag.PriceSortParam = sortOrder == "price_asc" ? "price_desc" : "price_asc";
-            ViewBag.DateSortParam = sortOrder == "date_asc" ? "date_desc" : "date_asc";
-
-            // Xử lý reset pagination khi có tìm kiếm mới
-            if (searchString != null)
+            try
             {
-                page = 1;
+                // Lưu trạng thái sắp xếp hiện tại
+                ViewBag.CurrentSort = sortOrder;
+                ViewBag.IdSortParam = string.IsNullOrEmpty(sortOrder) ? "id_desc" : "";
+                ViewBag.NameSortParam = sortOrder == "name_asc" ? "name_desc" : "name_asc";
+                ViewBag.PriceSortParam = sortOrder == "price_asc" ? "price_desc" : "price_asc";
+                ViewBag.DateSortParam = sortOrder == "date_asc" ? "date_desc" : "date_asc";
+
+                // Xử lý reset pagination
+                if (searchString != null)
+                {
+                    page = 1;
+                }
+                else
+                {
+                    searchString = currentFilter;
+                }
+
+                // Lưu các giá trị filter vào ViewBag
+                ViewBag.CurrentFilter = searchString;
+                ViewBag.StatusFilter = status;
+                ViewBag.IncludeDeleted = includeDeleted;
+
+                // Chuẩn bị query
+                IEnumerable<Asset> assets;
+                IQueryable<Asset> query;
+
+                // Xử lý tìm kiếm
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    // Tìm kiếm với tham số includeDeleted
+                    assets = await _assetService.SearchAssetAsync(searchString, includeDeleted);
+                    query = assets.AsQueryable();
+                }
+                else
+                {
+                    // Không tìm kiếm, lấy tất cả
+                    if (includeDeleted)
+                    {
+                        assets = await _assetService.GetAllInCludeDeletedAsync();
+                    }
+                    else
+                    {
+                        assets = await _assetService.GetAllAsync();
+                    }
+                    query = assets.AsQueryable();
+                }
+
+                // Áp dụng bộ lọc trạng thái
+                if (!string.IsNullOrEmpty(status) && Enum.TryParse<AssetStatus>(status, out var assetStatus))
+                {
+                    query = query.Where(a => a.AssetStatus == assetStatus);
+                }
+
+                // Áp dụng sắp xếp
+                query = ApplySorting(query, sortOrder);
+
+                // Phân trang
+                int pageSize = 10;
+                int pageNumber = (page ?? 1);
+                int totalItems = query.Count();
+                int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+                ViewBag.CurrentPage = pageNumber;
+                ViewBag.TotalPages = totalPages;
+
+                var paginatedAssets = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+                return View(paginatedAssets.ToList());
             }
-            else
+            catch (Exception ex)
             {
-                searchString = currentFilter;
+                TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi tải dữ liệu: {ex.Message}";
+                return View(new List<Asset>());
             }
+        }
 
-            // Lưu giá trị filter cho view
-            ViewBag.CurrentFilter = searchString;
-            ViewBag.StatusFilter = status;
-            ViewBag.IncludeDeleted = includeDeleted;
-
-            // Chuẩn bị query từ repository
-            IEnumerable<Asset> assets;
-
-            // Sử dụng phương thức khác nhau tùy vào việc có hiển thị các mục đã xóa hay không
-            if (includeDeleted)
-            {
-                assets = await _assetService.GetAllInCludeDeletedAsync();
-            }
-            else
-            {
-                assets = await _assetService.GetAllAsync();
-            }
-
-            var query = assets.AsQueryable();
-
-            // Áp dụng bộ lọc tìm kiếm nếu có
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                query = query.Where(a =>
-                    a.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
-                    (a.Description != null && a.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-                    (a.AssetCategory != null && a.AssetCategory.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                );
-            }
-
-            // Áp dụng bộ lọc trạng thái nếu có
-            if (!String.IsNullOrEmpty(status) && Enum.TryParse<AssetStatus>(status, out var assetStatus))
-            {
-                query = query.Where(a => a.AssetStatus == assetStatus);
-            }
-
-            // Áp dụng sắp xếp
+        // Phương thức phụ để áp dụng sắp xếp
+        private IQueryable<Asset> ApplySorting(IQueryable<Asset> query, string sortOrder)
+        {
             switch (sortOrder)
             {
                 case "id_desc":
-                    query = query.OrderByDescending(a => a.Id);
-                    break;
+                    return query.OrderByDescending(a => a.Id);
                 case "name_asc":
-                    query = query.OrderBy(a => a.Name);
-                    break;
+                    return query.OrderBy(a => a.Name);
                 case "name_desc":
-                    query = query.OrderByDescending(a => a.Name);
-                    break;
+                    return query.OrderByDescending(a => a.Name);
                 case "price_asc":
-                    query = query.OrderBy(a => a.Price);
-                    break;
+                    return query.OrderBy(a => a.Price);
                 case "price_desc":
-                    query = query.OrderByDescending(a => a.Price);
-                    break;
+                    return query.OrderByDescending(a => a.Price);
                 case "date_asc":
-                    query = query.OrderBy(a => a.DateCreated);
-                    break;
+                    return query.OrderBy(a => a.DateCreated);
                 case "date_desc":
-                    query = query.OrderByDescending(a => a.DateCreated);
-                    break;
+                    return query.OrderByDescending(a => a.DateCreated);
                 default:
-                    query = query.OrderBy(a => a.Id);
-                    break;
+                    return query.OrderBy(a => a.Id);
             }
-
-            // Thiết lập phân trang
-            int pageSize = 10;
-            int pageNumber = (page ?? 1);
-            int totalItems = query.Count();
-            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-            // Lưu thông tin phân trang cho view
-            ViewBag.CurrentPage = pageNumber;
-            ViewBag.TotalPages = totalPages;
-
-            // Thực hiện phân trang
-            var paginatedAssets = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-
-            return View(paginatedAssets.ToList());
         }
 
         // GET: Assets/Details/5
@@ -217,7 +223,7 @@ namespace FinalProject.Controllers
                 try
                 {
                     // Check if asset exists and is not deleted
-                    var existingAsset = await _assetService.GetByIdAsync(id);
+                    var existingAsset = await _assetService.GetByIdIncludeDeletedAsync(id);
                     if (existingAsset == null)
                     {
                         TempData["ErrorMessage"] = "Không tìm thấy tài sản cần cập nhật.";
@@ -227,7 +233,11 @@ namespace FinalProject.Controllers
                     // Preserve original creation date
                     asset.DateCreated = existingAsset.DateCreated;
                     asset.DateModified = DateTime.Now;
+                    asset.IsDeleted = existingAsset.IsDeleted;
+                    asset.DeletedDate = existingAsset.DeletedDate;
 
+                    // Detach the existing entity to avoid tracking conflicts
+                    _context.Entry(existingAsset).State = EntityState.Detached;
                     await _assetService.UpdateAsync(asset);
                     TempData["SuccessMessage"] = $"Tài sản '{asset.Name}' đã được cập nhật thành công.";
                     return RedirectToAction(nameof(Index));
@@ -294,7 +304,7 @@ namespace FinalProject.Controllers
             // Check if asset is already deleted
             if (asset.IsDeleted)
             {
-                // Set warning message and redirect to details page
+                // Set warning message and stay on the delete view
                 TempData["WarningMessage"] = "Tài sản này đã bị xóa trước đó.";
                 return View(asset); // Stay on the delete view
             }

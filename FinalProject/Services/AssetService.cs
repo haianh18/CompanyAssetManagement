@@ -33,9 +33,9 @@ namespace FinalProject.Services
             return await _unitOfWork.Assets.GetAssetsByWarehouse(warehouseId);
         }
 
-        public async Task<IEnumerable<Asset>> SearchAssetsAsync(string keyword)
+        public async Task<IEnumerable<Asset>> SearchAssetAsync(string keyword, bool includeDeleted = false)
         {
-            return await _unitOfWork.Assets.SearchAssets(keyword);
+            return await _unitOfWork.Assets.SearchAssets(keyword, includeDeleted);
         }
 
         public async Task<int> CountAssetsByStatusAsync(AssetStatus status)
@@ -53,10 +53,6 @@ namespace FinalProject.Services
             return await _unitOfWork.Assets.GetAssetsPaginated(pageIndex, pageSize);
         }
 
-        public async Task<IEnumerable<Asset>> SearchAssetAsync(string keyword)
-        {
-            return await _unitOfWork.Assets.SearchAssets(keyword);
-        }
     }
 }
 
