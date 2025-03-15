@@ -1,0 +1,592 @@
+﻿@{
+    ViewData["Title"] = "Báo cáo - Thống kê";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-bar"></i> Báo cáo và thống kê</h2>
+        </div>
+    </div>
+
+    <!-- Report Navigation Tabs -->
+    <ul class="nav nav-tabs" id="reportTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">
+                <i class="fas fa-chart-line"></i> Tổng quan
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="borrow-tab" data-bs-toggle="tab" data-bs-target="#borrow" type="button" role="tab" aria-controls="borrow" aria-selected="false">
+                <i class="fas fa-hand-holding"></i> Mượn tài sản
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return" type="button" role="tab" aria-controls="return" aria-selected="false">
+                <i class="fas fa-undo"></i> Trả tài sản
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="handover-tab" data-bs-toggle="tab" data-bs-target="#handover" type="button" role="tab" aria-controls="handover" aria-selected="false">
+                <i class="fas fa-exchange-alt"></i> Bàn giao
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="disposal-tab" data-bs-toggle="tab" data-bs-target="#disposal" type="button" role="tab" aria-controls="disposal" aria-selected="false">
+                <i class="fas fa-trash"></i> Thanh lý
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab" aria-controls="inventory" aria-selected="false">
+                <i class="fas fa-warehouse"></i> Kho
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="reportTabsContent">
+        <!-- Summary Tab -->
+        <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+            <div class="row mt-4">
+                <!-- Asset Status Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Trạng thái tài sản</h4>
+                        <canvas id="assetStatusChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Asset Categories Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Danh mục tài sản</h4>
+                        <canvas id="assetCategoriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Activity Chart -->
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Hoạt động hàng tháng</h4>
+                        <canvas id="monthlyActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h4 class="report-title">Tổng quan tài sản</h4>
+                        <div class="summary-item">
+                            <span class="summary-label">Tổng số tài sản:</span>
+                            <span class="summary-value">94</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tổng giá trị:</span>
+                            <span class="summary-value">2,450,000,000 VNĐ</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tài sản mới trong tháng:</span>
+                            <span class="summary-value">5</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tài sản bị thanh lý:</span>
+                            <span class="summary-value">12</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tài sản cần sửa chữa:</span>
+                            <span class="summary-value">8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Summary Section -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h4 class="report-title">Hoạt động</h4>
+                        <div class="summary-item">
+                            <span class="summary-label">Yêu cầu mượn đang chờ:</span>
+                            <span class="summary-value">4</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tài sản đang được mượn:</span>
+                            <span class="summary-value">15</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tài sản quá hạn trả:</span>
+                            <span class="summary-value">2</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Bàn giao trong tháng:</span>
+                            <span class="summary-value">7</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Thanh lý trong tháng:</span>
+                            <span class="summary-value">3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Borrow Tab -->
+        <div class="tab-pane fade" id="borrow" role="tabpanel" aria-labelledby="borrow-tab">
+            <div class="row mt-4">
+                <!-- Top Borrowers Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Top người mượn</h4>
+                        <canvas id="topBorrowersChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Most Borrowed Assets Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Tài sản mượn nhiều nhất</h4>
+                        <canvas id="mostBorrowedAssetsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Borrowing Chart -->
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Thống kê mượn theo tháng</h4>
+                        <canvas id="monthlyBorrowingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Borrows -->
+                <div class="col-md-12">
+                    <div class="report-section">
+                        <h4 class="report-title">Mượn tài sản gần đây</h4>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Người mượn</th>
+                                        <th>Tài sản</th>
+                                        <th>Số lượng</th>
+                                        <th>Ngày mượn</th>
+                                        <th>Ngày trả dự kiến</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample data - would be populated from actual data in real implementation -->
+                                    <tr>
+                                        <td>1001</td>
+                                        <td>Nguyễn Văn A</td>
+                                        <td>Laptop Dell XPS</td>
+                                        <td>1</td>
+                                        <td>01/03/2025</td>
+                                        <td>15/03/2025</td>
+                                        <td><span class="badge bg-success">Đã duyệt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>1002</td>
+                                        <td>Trần Thị B</td>
+                                        <td>Máy chiếu</td>
+                                        <td>1</td>
+                                        <td>05/03/2025</td>
+                                        <td>07/03/2025</td>
+                                        <td><span class="badge bg-warning">Chờ duyệt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>1003</td>
+                                        <td>Lê Văn C</td>
+                                        <td>Bàn làm việc</td>
+                                        <td>2</td>
+                                        <td>10/03/2025</td>
+                                        <td>10/06/2025</td>
+                                        <td><span class="badge bg-success">Đã duyệt</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("BorrowReport", "WarehouseManager")" class="btn btn-primary">
+                                Xem báo cáo đầy đủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Return Tab -->
+        <div class="tab-pane fade" id="return" role="tabpanel" aria-labelledby="return-tab">
+            <!-- Content for Return tab -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Thống kê trả tài sản theo tháng</h4>
+                        <canvas id="monthlyReturnChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="report-section">
+                        <h4 class="report-title">Trả tài sản gần đây</h4>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Người trả</th>
+                                        <th>Tài sản</th>
+                                        <th>Số lượng</th>
+                                        <th>Ngày mượn</th>
+                                        <th>Ngày trả</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample data -->
+                                    <tr>
+                                        <td>2001</td>
+                                        <td>Nguyễn Văn A</td>
+                                        <td>Laptop Dell XPS</td>
+                                        <td>1</td>
+                                        <td>15/02/2025</td>
+                                        <td>28/02/2025</td>
+                                        <td><span class="badge bg-success">Đã trả</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2002</td>
+                                        <td>Phạm Thị D</td>
+                                        <td>Máy quét</td>
+                                        <td>1</td>
+                                        <td>20/02/2025</td>
+                                        <td>01/03/2025</td>
+                                        <td><span class="badge bg-success">Đã trả</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("ReturnReport", "WarehouseManager")" class="btn btn-primary">
+                                Xem báo cáo đầy đủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Handover Tab -->
+        <div class="tab-pane fade" id="handover" role="tabpanel" aria-labelledby="handover-tab">
+            <!-- Content for Handover tab -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Thống kê bàn giao theo tháng</h4>
+                        <canvas id="monthlyHandoverChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="report-section">
+                        <h4 class="report-title">Bàn giao gần đây</h4>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Người bàn giao</th>
+                                        <th>Người nhận</th>
+                                        <th>Tài sản</th>
+                                        <th>Phòng ban</th>
+                                        <th>Ngày bàn giao</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample data -->
+                                    <tr>
+                                        <td>3001</td>
+                                        <td>Nguyễn Thủ Kho</td>
+                                        <td>Trần Văn E</td>
+                                        <td>Máy tính để bàn</td>
+                                        <td>Phòng IT</td>
+                                        <td>05/03/2025</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3002</td>
+                                        <td>Nguyễn Thủ Kho</td>
+                                        <td>Lê Thị F</td>
+                                        <td>Ghế văn phòng</td>
+                                        <td>Phòng Kế toán</td>
+                                        <td>08/03/2025</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("HandoverReport", "WarehouseManager")" class="btn btn-primary">
+                                Xem báo cáo đầy đủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disposal Tab -->
+        <div class="tab-pane fade" id="disposal" role="tabpanel" aria-labelledby="disposal-tab">
+            <!-- Content for Disposal tab -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Thống kê thanh lý theo tháng</h4>
+                        <canvas id="monthlyDisposalChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="report-section">
+                        <h4 class="report-title">Thanh lý gần đây</h4>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Người thanh lý</th>
+                                        <th>Tài sản</th>
+                                        <th>Số lượng</th>
+                                        <th>Lý do</th>
+                                        <th>Ngày thanh lý</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample data -->
+                                    <tr>
+                                        <td>4001</td>
+                                        <td>Nguyễn Thủ Kho</td>
+                                        <td>Máy in cũ</td>
+                                        <td>2</td>
+                                        <td>Hết hạn sử dụng, không thể sửa chữa</td>
+                                        <td>01/03/2025</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4002</td>
+                                        <td>Nguyễn Thủ Kho</td>
+                                        <td>Bàn làm việc</td>
+                                        <td>3</td>
+                                        <td>Hư hỏng nặng</td>
+                                        <td>10/03/2025</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("DisposalReport", "WarehouseManager")" class="btn btn-primary">
+                                Xem báo cáo đầy đủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+            <!-- Content for Inventory tab -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Tài sản theo kho</h4>
+                        <canvas id="assetsByWarehouseChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Tài sản có số lượng thấp</h4>
+                        <canvas id="lowStockAssetsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="report-section">
+                        <h4 class="report-title">Tình trạng kho</h4>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kho</th>
+                                        <th>Tổng số tài sản</th>
+                                        <th>Giá trị ước tính</th>
+                                        <th>Số lượng loại tài sản</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample data -->
+                                    <tr>
+                                        <td>Kho chính</td>
+                                        <td>45</td>
+                                        <td>1,200,000,000 VNĐ</td>
+                                        <td>12</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i> Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kho phụ</td>
+                                        <td>30</td>
+                                        <td>850,000,000 VNĐ</td>
+                                        <td>8</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i> Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kho thiết bị điện tử</td>
+                                        <td>15</td>
+                                        <td>350,000,000 VNĐ</td>
+                                        <td>5</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i> Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("WarehouseInventoryReport", "WarehouseManager")" class="btn btn-primary">
+                                Xem báo cáo đầy đủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Asset Status Chart
+            var assetStatusCtx = document.getElementById('assetStatusChart').getContext('2d');
+            var assetStatusChart = new Chart(assetStatusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Tốt', 'Đang sửa', 'Hỏng', 'Đã thanh lý'],
+                    datasets: [{
+                        data: [70, 8, 4, 12],
+                        backgroundColor: [
+                            '#2ecc71',
+                            '#f1c40f',
+                            '#e74c3c',
+                            '#95a5a6'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Asset Categories Chart
+            var assetCategoriesCtx = document.getElementById('assetCategoriesChart').getContext('2d');
+            var assetCategoriesChart = new Chart(assetCategoriesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Điện tử', 'Nội thất', 'Văn phòng phẩm', 'Xe cộ', 'Công cụ'],
+                    datasets: [{
+                        label: 'Số lượng tài sản',
+                        data: [35, 25, 15, 10, 9],
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Monthly Activity Chart
+            var monthlyActivityCtx = document.getElementById('monthlyActivityChart').getContext('2d');
+            var monthlyActivityChart = new Chart(monthlyActivityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
+                    datasets: [
+                        {
+                            label: 'Mượn',
+                            data: [12, 15, 20, 18, 22, 25],
+                            borderColor: '#3498db',
+                            backgroundColor: '#3498db',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Trả',
+                            data: [10, 13, 18, 16, 20, 22],
+                            borderColor: '#2ecc71',
+                            backgroundColor: '#2ecc71',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Bàn giao',
+                            data: [5, 7, 9, 8, 10, 12],
+                            borderColor: '#f1c40f',
+                            backgroundColor: '#f1c40f',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Thanh lý',
+                            data: [2, 3, 4, 2, 5, 3],
+                            borderColor: '#e74c3c',
+                            backgroundColor: '#e74c3c',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Set up other charts similarly
+            var topBorrowersCtx = document.getElementById('topBorrowersChart').getContext('2d');
+            var mostBorrowedAssetsCtx = document.getElementById('mostBorrowedAssetsChart').getContext('2d');
+            var monthlyBorrowingCtx = document.getElementById('monthlyBorrowingChart').getContext('2d');
+            var monthlyReturnCtx = document.getElementById('monthlyReturnChart').getContext('2d');
+            var monthlyHandoverCtx = document.getElementById('monthlyHandoverChart').getContext('2d');
+            var monthlyDisposalCtx = document.getElementById('monthlyDisposalChart').getContext('2d');
+            var assetsByWarehouseCtx = document.getElementById('assetsByWarehouseChart').getContext('2d');
+            var lowStockAssetsCtx = document.getElementById('lowStockAssetsChart').getContext('2d');
+
+            // Initialize the remaining charts with sample data
+            // ... (similar to the charts above)
+        });
+    </script>
+}

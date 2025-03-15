@@ -156,11 +156,15 @@ namespace FinalProject.Repositories.Common
             var entity = await _dbSet.FindAsync(id);
             if (entity != null && entity is FinalProject.Models.Base.EntityBase entityBase)
             {
-                entityBase.IsDeleted = true;
-                entityBase.DeletedDate = DateTime.Now;
-                _context.Entry(entity).State = EntityState.Modified;
+                if (!entityBase.IsDeleted)
+                {
+                    entityBase.IsDeleted = true;
+                    entityBase.DeletedDate = DateTime.Now;
+                    _context.Entry(entity).State = EntityState.Modified;
+                }
             }
         }
+
 
         public async Task SoftDeleteAsync(T entity)
         {

@@ -50,7 +50,7 @@ namespace FinalProject.Repositories
         public async Task<IEnumerable<Asset>> SearchAssets(string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
-                return await GetAllAsync();
+                return await GetAllIncludingDeletedAsync();
 
             keyword = keyword.ToLower();
             return await _dbSet.Where(a =>

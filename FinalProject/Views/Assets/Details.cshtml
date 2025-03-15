@@ -1,84 +1,174 @@
-﻿@model FinalProject.Models.Asset
-
+﻿@using FinalProject.Enums
+@model FinalProject.Models.Asset
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết tài sản";
+    Layout = "_WarehouseManagerLayout";
 }
 
-<h1>Details</h1>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-info-circle"></i> Chi tiết tài sản</h2>
+        </div>
+    </div>
 
-<div>
-    <h4>Asset</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Unit)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Unit)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AssetStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AssetStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Note)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Note)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AssetCategory)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AssetCategory.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateCreated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateCreated)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateModified)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateModified)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeletedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeletedDate)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thông tin tài sản</h5>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm me-2">
+                        <i class="fas fa-edit"></i> Chỉnh sửa
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Xóa
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Tên tài sản</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4">Danh mục</dt>
+                        <dd class="col-sm-8">@(Model.AssetCategory?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Giá</dt>
+                        <dd class="col-sm-8">@Model.Price.ToString("N0") VNĐ</dd>
+
+                        <dt class="col-sm-4">Đơn vị</dt>
+                        <dd class="col-sm-8">@Model.Unit</dd>
+
+                        <dt class="col-sm-4">Trạng thái</dt>
+                        <dd class="col-sm-8">
+                            @switch (Model.AssetStatus)
+                            {
+                                case AssetStatus.GOOD:
+                                    <span class="badge bg-success">Tốt</span>
+                                    break;
+                                case AssetStatus.BROKEN:
+                                    <span class="badge bg-danger">Hỏng</span>
+                                    break;
+                                case AssetStatus.FIXING:
+                                    <span class="badge bg-warning">Đang sửa</span>
+                                    break;
+                                case AssetStatus.DISPOSED:
+                                    <span class="badge bg-secondary">Đã thanh lý</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Không xác định</span>
+                                    break;
+                            }
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID</dt>
+                        <dd class="col-sm-8">@Model.Id</dd>
+
+                        <dt class="col-sm-4">Ngày tạo</dt>
+                        <dd class="col-sm-8">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Cập nhật lần cuối</dt>
+                        <dd class="col-sm-8">@(Model.DateModified?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</dd>
+
+                        <dt class="col-sm-4">Đã xóa</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.IsDeleted)
+                            {
+                                <span class="badge bg-danger">Đã xóa ngày @Model.DeletedDate?.ToString("dd/MM/yyyy")</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Không</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Mô tả</label>
+                        <div class="border rounded p-3 bg-light">
+                            @(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Ghi chú</label>
+                        <div class="border rounded p-3 bg-light">
+                            @(string.IsNullOrEmpty(Model.Note) ? "Không có ghi chú" : Model.Note)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin về vị trí kho -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Vị trí kho</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.WarehouseAssets != null && Model.WarehouseAssets.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kho</th>
+                                <th>Số lượng</th>
+                                <th>Ngày nhập</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var warehouseAsset in Model.WarehouseAssets)
+                            {
+                                <tr>
+                                    <td>@(warehouseAsset.Warehouse?.Name ?? "N/A")</td>
+                                    <td>@warehouseAsset.Quantity</td>
+                                    <td>@(warehouseAsset.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Tài sản này chưa được nhập vào kho nào.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Lịch sử mượn trả -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Lịch sử mượn trả</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                Chức năng này sẽ hiển thị lịch sử mượn trả của tài sản.
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group text-end">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
 </div>

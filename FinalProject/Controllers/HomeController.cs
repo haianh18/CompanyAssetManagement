@@ -1,6 +1,7 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using FinalProject.Models;
+using FinalProject.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace FinalProject.Controllers;
 

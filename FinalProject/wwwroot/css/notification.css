@@ -1,0 +1,109 @@
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1100;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+    .toast.showing {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast.hide {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+.toast-header {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    border-bottom: none;
+    border-top-left-radius: calc(0.5rem - 1px);
+    border-top-right-radius: calc(0.5rem - 1px);
+}
+
+    .toast-header .btn-close {
+        margin-left: 0.5rem;
+        margin-right: -0.25rem;
+    }
+
+    .toast-header .btn-close-white {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+.toast-body {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    background-color: white;
+}
+
+/* Toast Progress Bar */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.toast-progress-bar {
+    height: 100%;
+    width: 0%; /* Start at 0%, will be animated to 100% */
+    transition: width 5s linear; /* 5 seconds for the progress bar */
+}
+
+/* Success Toast */
+.toast-success .toast-header {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Warning Toast */
+.toast-warning .toast-header {
+    background-color: var(--warning-color);
+    color: #212529;
+}
+
+/* Error Toast */
+.toast-error .toast-header {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Info Toast */
+.toast-info .toast-header {
+    background-color: var(--info-color);
+    color: white;
+}
+
+/* Toast Icon */
+.toast-header i {
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+}

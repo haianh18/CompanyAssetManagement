@@ -1,0 +1,123 @@
+﻿<!-- Notification container -->
+<div class="toast-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast slide-toast toast-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-check-circle"></i>
+                <strong class="me-auto">Thành công</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["SuccessMessage"]
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar bg-success"></div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast slide-toast toast-warning" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong class="me-auto">Cảnh báo</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["WarningMessage"]
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar bg-warning"></div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast slide-toast toast-error" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-times-circle"></i>
+                <strong class="me-auto">Lỗi</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["ErrorMessage"]
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar bg-danger"></div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast slide-toast toast-info" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-info-circle"></i>
+                <strong class="me-auto">Thông tin</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["InfoMessage"]
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar bg-info"></div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Wait 2 seconds before showing notifications
+        setTimeout(function() {
+            // Select all toast elements
+            var toastElements = document.querySelectorAll('.slide-toast');
+
+            // Display duration in ms (5 seconds)
+            const displayDuration = 5000;
+
+            // Initialize and show each toast with animation
+            toastElements.forEach(function(toastElement) {
+                var toast = new bootstrap.Toast(toastElement, {
+                    animation: true,
+                    autohide: true,
+                    delay: displayDuration
+                });
+
+                // Get progress bar
+                var progressBar = toastElement.querySelector('.toast-progress-bar');
+
+                // Add show class to trigger slide-in animation
+                toastElement.classList.add('showing');
+
+                // Show the toast
+                toast.show();
+
+                // After the animation completes
+                toastElement.addEventListener('shown.bs.toast', function() {
+                    toastElement.classList.remove('showing');
+                    toastElement.classList.add('show');
+
+                    // Animate progress bar
+                    progressBar.style.width = '100%';
+                    progressBar.style.transition = `width ${displayDuration}ms linear`;
+                });
+
+                // Before hiding, add the hide class for slide-out animation
+                toastElement.addEventListener('hide.bs.toast', function(e) {
+                    e.preventDefault(); // Prevent default hiding behavior
+                    toastElement.classList.remove('show');
+                    toastElement.classList.add('hide');
+
+                    // After animation completes, actually hide and dispose the toast
+                    setTimeout(function() {
+                        toast.dispose();
+                    }, 500); // Match transition duration
+                });
+            });
+        }, 2000); // 2 second delay before showing notifications
+    });
+</script>

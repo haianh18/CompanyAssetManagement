@@ -1,0 +1,79 @@
+﻿@using FinalProject.Enums
+@model FinalProject.Models.Asset
+@{
+    ViewData["Title"] = "Khôi phục tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-undo text-success"></i> Khôi phục tài sản</h2>
+        </div>
+    </div>
+
+    <div class="alert alert-success">
+        <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận khôi phục</h5>
+        <p>Bạn có chắc chắn muốn khôi phục tài sản này?</p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin tài sản</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tên tài sản</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <dt class="col-sm-3">Danh mục</dt>
+                <dd class="col-sm-9">@(Model.AssetCategory?.Name ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Giá</dt>
+                <dd class="col-sm-9">@Model.Price.ToString("N0") VNĐ</dd>
+
+                <dt class="col-sm-3">Đơn vị</dt>
+                <dd class="col-sm-9">@Model.Unit</dd>
+
+                <dt class="col-sm-3">Trạng thái</dt>
+                <dd class="col-sm-9">
+                    @switch (Model.AssetStatus)
+                    {
+                        case AssetStatus.GOOD:
+                            <span class="badge bg-success">Tốt</span>
+                            break;
+                        case AssetStatus.BROKEN:
+                            <span class="badge bg-danger">Hỏng</span>
+                            break;
+                        case AssetStatus.FIXING:
+                            <span class="badge bg-warning">Đang sửa</span>
+                            break;
+                        case AssetStatus.DISPOSED:
+                            <span class="badge bg-secondary">Đã thanh lý</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary">Không xác định</span>
+                            break;
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Ngày xóa</dt>
+                <dd class="col-sm-9">@(Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="Restore" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group text-end">
+                <a asp-action="Index" asp-route-includeDeleted="true" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-undo"></i> Xác nhận khôi phục
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

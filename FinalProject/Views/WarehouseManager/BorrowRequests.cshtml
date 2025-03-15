@@ -1,0 +1,173 @@
+﻿@model IEnumerable<FinalProject.Models.BorrowTicket>
+@{
+    ViewData["Title"] = "Quản lý yêu cầu mượn tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-clipboard-check"></i> Yêu cầu mượn tài sản</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="borrowTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                        <i class="fas fa-clock"></i> Chờ duyệt <span class="badge bg-warning">@Model.Count(b => !b.ReturnTickets.Any())</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" aria-controls="approved" aria-selected="false">
+                        <i class="fas fa-check"></i> Đã duyệt
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="false">
+                        <i class="fas fa-list"></i> Tất cả
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content" id="borrowTabsContent">
+        <!-- Pending Requests Tab -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+            <div class="table-container">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người mượn</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                            <th>Ngày hẹn trả</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Where(b => !b.ReturnTickets.Any()))
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.BorrowBy.FullName</td>
+                                <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@item.Note</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="ApproveBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i> Duyệt
+                                        </a>
+                                        <a asp-action="RejectBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-times"></i> Từ chối
+                                        </a>
+                                        <a asp-action="DetailsBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.Where(b => !b.ReturnTickets.Any()).Any())
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        Không có yêu cầu mượn nào đang chờ duyệt.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Approved Requests Tab -->
+        <div class="tab-pane fade" id="approved" role="tabpanel" aria-labelledby="approved-tab">
+            <div class="table-container">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người mượn</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                            <th>Ngày hẹn trả</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Render approved requests here -->
+                        <!-- Similar to pending requests but with different actions -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Requests Tab -->
+        <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+            <div class="table-container">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người mượn</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                            <th>Ngày hẹn trả</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.BorrowBy.FullName</td>
+                                <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>
+                                    @if (item.ReturnTickets.Any())
+                                    {
+                                        <span class="badge bg-success">Đã trả</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">Đang mượn</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="DetailsBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle tab switching if needed
+        });
+    </script>
+}

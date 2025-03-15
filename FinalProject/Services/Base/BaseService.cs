@@ -17,9 +17,19 @@ public class BaseService<T> : IBaseService<T> where T : class
         return await _unitOfWork.GetRepositoryForType<T>().GetAllAsync();
     }
 
+    public async Task<IEnumerable<T>> GetAllInCludeDeletedAsync()
+    {
+        return await _unitOfWork.GetRepositoryForType<T>().GetAllIncludingDeletedAsync();
+    }
+
     public async Task<T> GetByIdAsync(int id)
     {
         return await _unitOfWork.GetRepositoryForType<T>().GetByIdAsync(id);
+    }
+
+    public async Task<T> GetByIdIncludeDeletedAsync(int id)
+    {
+        return await _unitOfWork.GetRepositoryForType<T>().GetByIdIncludingDeletedAsync(id);
     }
 
     public async Task AddAsync(T entity)

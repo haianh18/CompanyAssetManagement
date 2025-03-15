@@ -1,0 +1,104 @@
+﻿@model FinalProject.Models.Asset
+@{
+    ViewData["Title"] = "Thêm tài sản mới";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-plus-circle"></i> Thêm tài sản mới</h2>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="form-label">Tên tài sản</label>
+                        <input asp-for="Name" class="form-control" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="AssetCategoryId" class="form-label">Danh mục</label>
+                        <select asp-for="AssetCategoryId" class="form-select"
+                                asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))" required>
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                        <span asp-validation-for="AssetCategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Price" class="form-label">Giá</label>
+                        <div class="input-group">
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" required />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Unit" class="form-label">Đơn vị</label>
+                        <input asp-for="Unit" class="form-control" required />
+                        <span asp-validation-for="Unit" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="AssetStatus" class="form-label">Trạng thái</label>
+                        <select asp-for="AssetStatus" class="form-select" asp-items="Html.GetEnumSelectList<FinalProject.Enums.AssetStatus>()" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                        </select>
+                        <span asp-validation-for="AssetStatus" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Note" class="form-label">Ghi chú</label>
+                <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Thêm các xử lý JavaScript cho form nếu cần
+        });
+    </script>
+}
