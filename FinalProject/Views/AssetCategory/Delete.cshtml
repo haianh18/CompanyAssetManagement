@@ -1,0 +1,78 @@
+﻿@model FinalProject.Models.AssetCategory
+@{
+    ViewData["Title"] = "Xóa danh mục";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-trash text-danger"></i> Xóa danh mục</h2>
+        </div>
+    </div>
+
+    @if (!Model.IsDeleted)
+    {
+        <div class="alert alert-danger">
+            <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h5>
+            <p>Bạn có chắc chắn muốn xóa danh mục này? Thao tác này sẽ đánh dấu xóa danh mục (soft delete) và có thể khôi phục lại sau.</p>
+            <p><strong>Lưu ý:</strong> Các tài sản thuộc danh mục này sẽ được chuyển sang danh mục mặc định "Chưa phân loại"".</p>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary">
+            <h5><i class="fas fa-info-circle"></i> Thông tin</h5>
+            <p>Danh mục này đã bị xóa trước đó vào ngày @Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm").</p>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin danh mục</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Tên danh mục</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <dt class="col-sm-3">Ngày tạo</dt>
+                <dd class="col-sm-9">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Số lượng tài sản</dt>
+                <dd class="col-sm-9">@(Model.Assets?.Count ?? 0)</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="form-container">
+        @if (!Model.IsDeleted)
+        {
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group text-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Xác nhận xóa
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="form-group text-end">
+                <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+                <a asp-action="Restore" asp-route-id="@Model.Id" class="btn btn-success">
+                    <i class="fas fa-undo"></i> Khôi phục
+                </a>
+            </div>
+        }
+    </div>
+</div>

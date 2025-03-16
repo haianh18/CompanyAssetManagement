@@ -62,17 +62,24 @@ namespace FinalProject.Repositories
         {
             // Tìm hoặc tạo category mặc định
             var defaultCategory = await _dbSet.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(c => c.Name == "Uncategorized");
+                .FirstOrDefaultAsync(c => c.Name == "Chưa phân loại");
 
             if (defaultCategory == null)
             {
                 defaultCategory = new AssetCategory
                 {
-                    Name = "Uncategorized",
+                    Name = "Chưa phân loại",
                     DateCreated = DateTime.Now
                 };
                 _dbSet.Add(defaultCategory);
                 await _context.SaveChangesAsync();
+            }
+
+            // Kiểm tra nếu yêu cầu xóa chính danh mục mặc định
+            var categoryToDelete = await _dbSet.FindAsync(categoryId);
+            if (categoryToDelete != null && categoryToDelete.Name == "Chưa phân loại")
+            {
+                throw new Exception("Không thể xóa danh mục 'Chưa phân loại'");
             }
 
             // Soft delete category gốc
@@ -95,6 +102,34 @@ namespace FinalProject.Repositories
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public override async Task<IEnumerable<AssetCategory>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(c => c.Assets)
+                .ToListAsync();
+        }
+
+        public override async Task<AssetCategory> GetByIdIncludingDeletedAsync(int id)
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(c => c.Assets)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public override async Task<IEnumerable<AssetCategory>> GetAllDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Where(c => c.IsDeleted)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<AssetCategory>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(c => c.Assets)
+                .ToListAsync();
         }
     }
 }

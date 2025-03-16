@@ -35,8 +35,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "AssetCategories" ? "active" : "")"
-                       asp-controller="WarehouseManager" asp-action="AssetCategories">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "AssetCategory" ? "active" : "")"
+                       asp-controller="AssetCategory" asp-action="Index">
                         <i class="fas fa-th-list"></i> Danh mục tài sản
                     </a>
                 </li>

@@ -1,0 +1,53 @@
+﻿@model FinalProject.Models.AssetCategory
+@{
+    ViewData["Title"] = "Khôi phục danh mục";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-undo text-success"></i> Khôi phục danh mục</h2>
+        </div>
+    </div>
+
+    <div class="alert alert-success">
+        <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận khôi phục</h5>
+        <p>Bạn có chắc chắn muốn khôi phục danh mục này?</p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin danh mục</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Tên danh mục</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <dt class="col-sm-3">Ngày tạo</dt>
+                <dd class="col-sm-9">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Ngày xóa</dt>
+                <dd class="col-sm-9">@(Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="Restore" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group text-end">
+                <a asp-action="Index" asp-route-includeDeleted="true" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-undo"></i> Xác nhận khôi phục
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

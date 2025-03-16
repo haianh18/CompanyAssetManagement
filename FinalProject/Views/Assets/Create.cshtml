@@ -59,8 +59,11 @@
                 <div class="col-md-4">
                     <div class="form-group mb-3">
                         <label asp-for="AssetStatus" class="form-label">Trạng thái</label>
-                        <select asp-for="AssetStatus" class="form-select" asp-items="Html.GetEnumSelectList<FinalProject.Enums.AssetStatus>()" required>
+                        <select asp-for="AssetStatus" class="form-select" required>
                             <option value="">-- Chọn trạng thái --</option>
+                            <option value="@FinalProject.Enums.AssetStatus.GOOD">Tốt</option>
+                            <option value="@FinalProject.Enums.AssetStatus.BROKEN">Hỏng</option>
+                            <option value="@FinalProject.Enums.AssetStatus.FIXING">Đang sửa</option>
                         </select>
                         <span asp-validation-for="AssetStatus" class="text-danger"></span>
                     </div>

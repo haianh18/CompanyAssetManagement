@@ -1,0 +1,242 @@
+﻿@model IEnumerable<FinalProject.Models.AssetCategory>
+@{
+    ViewData["Title"] = "Quản lý danh mục tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-list"></i> Danh mục tài sản</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm danh mục mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    <!-- Search Box -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form asp-action="Index" method="get" class="search-box">
+                <div class="input-group">
+                    <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm danh mục..."
+                           value="@ViewBag.CurrentFilter">
+                    <!-- Thêm trường ẩn để giữ giá trị includeDeleted -->
+                    <input type="hidden" name="includeDeleted" value="@ViewBag.IncludeDeleted.ToString().ToLower()">
+                    <!-- Thêm trường ẩn để giữ giá trị sortOrder -->
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentSort))
+                    {
+                        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort">
+                    }
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <!-- Tùy chọn hiển thị đã xóa -->
+                        <div class="ms-auto form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showDeleted" @(ViewBag.IncludeDeleted ? "checked" : "")
+                                   onchange="window.location.href='@Url.Action("Index", new { includeDeleted = !ViewBag.IncludeDeleted, currentFilter = ViewBag.CurrentFilter, sortOrder = ViewBag.CurrentSort })'">
+                            <label class="form-check-label" for="showDeleted">Hiển thị danh mục đã xóa</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table custom-table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        <a asp-action="Index" asp-route-sortOrder="@ViewBag.IdSortParam" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" class="text-dark">
+                            Mã
+                            @if (ViewBag.CurrentSort == "id_asc")
+                            {
+                                <i class="fas fa-sort-up"></i>
+                            }
+                            else if (ViewBag.CurrentSort == "id_desc")
+                            {
+                                <i class="fas fa-sort-down"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort"></i>
+                            }
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParam" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" class="text-dark">
+                            Tên danh mục
+                            @if (ViewBag.CurrentSort == "name_asc")
+                            {
+                                <i class="fas fa-sort-up"></i>
+                            }
+                            else if (ViewBag.CurrentSort == "name_desc")
+                            {
+                                <i class="fas fa-sort-down"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort"></i>
+                            }
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-action="Index" asp-route-sortOrder="@ViewBag.DateSortParam" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" class="text-dark">
+                            Ngày tạo
+                            @if (ViewBag.CurrentSort == "date_asc")
+                            {
+                                <i class="fas fa-sort-up"></i>
+                            }
+                            else if (ViewBag.CurrentSort == "date_desc")
+                            {
+                                <i class="fas fa-sort-down"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort"></i>
+                            }
+                        </a>
+                    </th>
+                    <th>Số lượng tài sản</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsDeleted ? "table-secondary" : "")">
+                        <td>@item.Id</td>
+                        <td>@item.Name</td>
+                        <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                        <td>@(item.Assets?.Count ?? 0)</td>
+                        <td>
+                            @if (item.IsDeleted)
+                            {
+                                <span class="badge bg-secondary">Đã xóa</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                @if (!item.IsDeleted)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    @if (item.Name != "Chưa phân loại")
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    <a asp-action="Restore" asp-route-id="@item.Id" class="btn btn-sm btn-success" title="Khôi phục">
+                                        <i class="fas fa-undo"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center" role="alert">
+                Không tìm thấy danh mục nào. <a asp-action="Create">Thêm danh mục mới</a>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="1" asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages" asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Thêm JavaScript nếu cần
+        });
+    </script>
+}

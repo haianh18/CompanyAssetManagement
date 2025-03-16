@@ -83,5 +83,25 @@ namespace FinalProject.Repositories
                 .Include(a => a.AssetCategory)
                 .ToListAsync();
         }
+
+        public override async Task<IEnumerable<Asset>> GetAllAsync()
+        {
+            return await _dbSet.Include(a => a.AssetCategory).ToListAsync();
+        }
+
+        public override async Task<IEnumerable<Asset>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters().Include(a => a.AssetCategory).ToListAsync();
+        }
+
+        public override async Task<Asset> GetByIdAsync(int id)
+        {
+            return await _dbSet.Include(a => a.AssetCategory).FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public override async Task<Asset> GetByIdIncludingDeletedAsync(int id)
+        {
+            return await _dbSet.IgnoreQueryFilters().Include(a => a.AssetCategory).FirstOrDefaultAsync(a => a.Id == id);
+        }
     }
 }

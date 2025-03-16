@@ -19,7 +19,7 @@ namespace FinalProject.Repositories.Common
             _dbSet = context.Set<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
@@ -63,7 +63,7 @@ namespace FinalProject.Repositories.Common
             return await query.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public virtual async Task<T> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }
@@ -177,19 +177,19 @@ namespace FinalProject.Repositories.Common
             }
         }
 
-        public async Task<IEnumerable<T>> GetAllIncludingDeletedAsync()
+        public virtual async Task<IEnumerable<T>> GetAllIncludingDeletedAsync()
         {
             // Use NoTracking to bypass the global query filter
             return await _dbSet.IgnoreQueryFilters().ToListAsync();
         }
 
-        public async Task<T> GetByIdIncludingDeletedAsync(int id)
+        public virtual async Task<T> GetByIdIncludingDeletedAsync(int id)
         {
             // Use NoTracking to bypass the global query filter
             return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
         }
 
-        public async Task<IEnumerable<T>> GetAllDeletedAsync()
+        public virtual async Task<IEnumerable<T>> GetAllDeletedAsync()
         {
             return await _dbSet.IgnoreQueryFilters().Where(e => (e as FinalProject.Models.Base.EntityBase).IsDeleted).ToListAsync();
         }
