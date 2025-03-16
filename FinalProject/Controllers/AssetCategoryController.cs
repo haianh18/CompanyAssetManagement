@@ -23,7 +23,7 @@ namespace FinalProject.Controllers
         }
 
         // GET: AssetCategory
-        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? page, bool includeDeleted = false)
+        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? page, bool showDeleted = false)
         {
             // Lưu trạng thái sắp xếp hiện tại để sử dụng trong view
             ViewBag.CurrentSort = sortOrder;
@@ -45,14 +45,24 @@ namespace FinalProject.Controllers
 
             // Lưu giá trị filter cho view
             ViewBag.CurrentFilter = searchString;
-            ViewBag.IncludeDeleted = includeDeleted;
+            ViewBag.ShowDeleted = showDeleted;
 
             try
             {
                 // Lấy dữ liệu danh mục
-                var categories = includeDeleted
-                    ? await _assetCategoryService.GetAllInCludeDeletedAsync()
-                    : await _assetCategoryService.GetAllAsync();
+                IEnumerable<AssetCategory> categories;
+
+                // Get categories based on filter
+                if (showDeleted)
+                {
+                    categories = await _assetCategoryService.GetAllInCludeDeletedAsync();
+                    // Filter to only show deleted categories
+                    categories = categories.Where(c => c.IsDeleted);
+                }
+                else
+                {
+                    categories = await _assetCategoryService.GetAllAsync();
+                }
 
                 var query = categories.AsQueryable();
 
@@ -140,6 +150,14 @@ namespace FinalProject.Controllers
             {
                 try
                 {
+                    // Check if a category with the same name already exists
+                    var existingCategories = await _assetCategoryService.GetAllAsync();
+                    if (existingCategories.Any(c => c.Name.Equals(category.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        ModelState.AddModelError("Name", "Đã tồn tại danh mục với tên này. Vui lòng chọn tên khác.");
+                        return View(category);
+                    }
+
                     category.DateCreated = DateTime.Now;
                     await _assetCategoryService.AddAsync(category);
                     TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được tạo thành công.";
@@ -164,6 +182,13 @@ namespace FinalProject.Controllers
             }
 
             var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id.Value);
+
+            if (category.Name == "Chưa phân loại")
+            {
+                TempData["ErrorMessage"] = "Danh mục 'Chưa phân loại' không thể bị chỉnh sửa.";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (category == null)
             {
                 return NotFound();
@@ -183,6 +208,12 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
+            if (category.Name == "Chưa phân loại")
+            {
+                TempData["ErrorMessage"] = "Danh mục 'Chưa phân loại' không thể bị chỉnh sửa.";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -193,6 +224,14 @@ namespace FinalProject.Controllers
                     {
                         TempData["ErrorMessage"] = "Không tìm thấy danh mục cần cập nhật.";
                         return NotFound();
+                    }
+
+                    // Check if another category with the same name already exists
+                    var allCategories = await _assetCategoryService.GetAllAsync();
+                    if (allCategories.Any(c => c.Id != id && c.Name.Equals(category.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        ModelState.AddModelError("Name", "Đã tồn tại danh mục khác với tên này. Vui lòng chọn tên khác.");
+                        return View(category);
                     }
 
                     // Bảo toàn các thông tin quan trọng

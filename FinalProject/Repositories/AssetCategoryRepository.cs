@@ -120,8 +120,9 @@ namespace FinalProject.Repositories
 
         public override async Task<IEnumerable<AssetCategory>> GetAllDeletedAsync()
         {
-            return await _dbSet.IgnoreQueryFilters()
-                .Where(c => c.IsDeleted)
+            return await _dbSet
+                .Include(c => c.Assets)
+                .IgnoreQueryFilters()
                 .ToListAsync();
         }
 

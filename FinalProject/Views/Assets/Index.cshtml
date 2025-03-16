@@ -28,18 +28,21 @@
                 <div class="input-group">
                     <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm tài sản..."
                            value="@ViewBag.CurrentFilter">
-                    <!-- Thêm trường ẩn để giữ giá trị includeDeleted -->
-                    <input type="hidden" name="includeDeleted" value="@ViewBag.IncludeDeleted.ToString().ToLower()">
-                    <!-- Thêm trường ẩn để giữ giá trị sortOrder -->
+                    <!-- Hidden field for showDeleted parameter -->
+                    <input type="hidden" name="showDeleted" value="@ViewBag.ShowDeleted.ToString().ToLower()">
+
+                    <!-- Hidden field for sort order -->
                     @if (!string.IsNullOrEmpty(ViewBag.CurrentSort))
                     {
                         <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort">
                     }
-                    <!-- Thêm trường ẩn để giữ giá trị status -->
-                    @if (!string.IsNullOrEmpty(ViewBag.StatusFilter))
+
+                    <!-- Hidden field for status filter (only if not in deleted mode) -->
+                    @if (!ViewBag.ShowDeleted && !string.IsNullOrEmpty(ViewBag.StatusFilter))
                     {
                         <input type="hidden" name="status" value="@ViewBag.StatusFilter">
                     }
+
                     <button type="submit" class="btn btn-outline-secondary">
                         <i class="fas fa-search"></i>
                     </button>
@@ -54,28 +57,26 @@
             <div class="card">
                 <div class="card-body py-2">
                     <div class="d-flex flex-wrap gap-2">
-                        <a asp-action="Index" asp-route-includeDeleted="@ViewBag.IncludeDeleted" class="btn @(string.IsNullOrEmpty(ViewBag.StatusFilter) ? "btn-primary" : "btn-outline-primary") btn-sm">
+                        <a asp-action="Index" asp-route-showDeleted="@ViewBag.ShowDeleted" class="btn @(string.IsNullOrEmpty(ViewBag.StatusFilter) ? "btn-primary" : "btn-outline-primary") btn-sm">
                             Tất cả
                         </a>
-                        <a asp-action="Index" asp-route-status="GOOD" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "GOOD" ? "btn-success" : "btn-outline-success") btn-sm">
+                        <a asp-action="Index" asp-route-status="GOOD" asp-route-showDeleted="@ViewBag.ShowDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "GOOD" ? "btn-success" : "btn-outline-success") btn-sm">
                             Tốt
                         </a>
-                        <a asp-action="Index" asp-route-status="BROKEN" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "BROKEN" ? "btn-danger" : "btn-outline-danger") btn-sm">
+                        <a asp-action="Index" asp-route-status="BROKEN" asp-route-showDeleted="@ViewBag.ShowDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "BROKEN" ? "btn-danger" : "btn-outline-danger") btn-sm">
                             Hỏng
                         </a>
-                        <a asp-action="Index" asp-route-status="FIXING" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "FIXING" ? "btn-warning" : "btn-outline-warning") btn-sm">
+                        <a asp-action="Index" asp-route-status="FIXING" asp-route-showDeleted="@ViewBag.ShowDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "FIXING" ? "btn-warning" : "btn-outline-warning") btn-sm">
                             Đang sửa
                         </a>
-                        <a asp-action="Index" asp-route-status="DISPOSED" asp-route-includeDeleted="@ViewBag.IncludeDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "DISPOSED" ? "btn-secondary" : "btn-outline-secondary") btn-sm">
+                        <a asp-action="Index" asp-route-status="DISPOSED" asp-route-showDeleted="@ViewBag.ShowDeleted" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.StatusFilter == "DISPOSED" ? "btn-secondary" : "btn-outline-secondary") btn-sm">
                             Đã thanh lý
                         </a>
 
-                        <!-- Tùy chọn hiển thị đã xóa -->
-                        <div class="ms-auto form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="showDeleted" @(ViewBag.IncludeDeleted ? "checked" : "")
-                                   onchange="window.location.href='@Url.Action("Index", new { includeDeleted = !ViewBag.IncludeDeleted, status = ViewBag.StatusFilter, currentFilter = ViewBag.CurrentFilter, sortOrder = ViewBag.CurrentSort })'">
-                            <label class="form-check-label" for="showDeleted">Hiển thị tài sản đã xóa</label>
-                        </div>
+                        <!-- Deleted items filter button - on the same row -->
+                        <a asp-action="Index" asp-route-showDeleted="@(!ViewBag.ShowDeleted)" asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-sortOrder="@ViewBag.CurrentSort" class="btn @(ViewBag.ShowDeleted ? "btn-dark" : "btn-outline-dark") btn-sm">
+                            <i class="fas fa-trash"></i> Đã xóa
+                        </a>
                     </div>
                 </div>
             </div>
@@ -239,13 +240,15 @@
                         {
                             <li class="page-item">
                                 <a class="page-link" asp-action="Index" asp-route-page="1" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
                             </li>
                             <li class="page-item">
                                 <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
                             </li>
@@ -255,7 +258,8 @@
                         {
                             <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
                                 <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     @i
                                 </a>
                             </li>
@@ -265,13 +269,15 @@
                         {
                             <li class="page-item">
                                 <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
                             </li>
                             <li class="page-item">
                                 <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-status="@ViewBag.StatusFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
                             </li>

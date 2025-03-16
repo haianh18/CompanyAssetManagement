@@ -33,7 +33,8 @@ namespace FinalProject.Controllers
         }
 
         // GET: Assets/Index
-        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, string status, int? page, bool includeDeleted = false)
+        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString,
+            string status, int? page, bool showDeleted = false)
         {
             try
             {
@@ -57,35 +58,37 @@ namespace FinalProject.Controllers
                 // Lưu các giá trị filter vào ViewBag
                 ViewBag.CurrentFilter = searchString;
                 ViewBag.StatusFilter = status;
-                ViewBag.IncludeDeleted = includeDeleted;
+                ViewBag.ShowDeleted = showDeleted;
 
                 // Chuẩn bị query
                 IEnumerable<Asset> assets;
                 IQueryable<Asset> query;
 
-                // Xử lý tìm kiếm
+                // Xử lý tìm kiếm với trạng thái xóa
                 if (!string.IsNullOrEmpty(searchString))
                 {
-                    // Tìm kiếm với tham số includeDeleted
-                    assets = await _assetService.SearchAssetAsync(searchString, includeDeleted);
+                    // We always include deleted items in search when showDeleted is true
+                    assets = await _assetService.SearchAssetAsync(searchString, showDeleted);
                     query = assets.AsQueryable();
                 }
                 else
                 {
-                    // Không tìm kiếm, lấy tất cả
-                    if (includeDeleted)
+                    // Get all assets including deleted ones if showDeleted is true
+                    if (showDeleted)
                     {
                         assets = await _assetService.GetAllInCludeDeletedAsync();
+                        // Filter to only show deleted assets
+                        query = assets.Where(a => a.IsDeleted).AsQueryable();
                     }
                     else
                     {
                         assets = await _assetService.GetAllAsync();
+                        query = assets.AsQueryable();
                     }
-                    query = assets.AsQueryable();
                 }
 
-                // Áp dụng bộ lọc trạng thái
-                if (!string.IsNullOrEmpty(status) && Enum.TryParse<AssetStatus>(status, out var assetStatus))
+                // Áp dụng bộ lọc trạng thái (skip if showing deleted items)
+                if (!showDeleted && !string.IsNullOrEmpty(status) && Enum.TryParse<AssetStatus>(status, out var assetStatus))
                 {
                     query = query.Where(a => a.AssetStatus == assetStatus);
                 }
@@ -171,6 +174,16 @@ namespace FinalProject.Controllers
             {
                 try
                 {
+                    // Check if an asset with the same name already exists
+                    var existingAssets = await _assetService.GetAllAsync();
+                    if (existingAssets.Any(a => a.Name.Equals(asset.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        ModelState.AddModelError("Name", "Đã tồn tại tài sản với tên này. Vui lòng chọn tên khác.");
+                        var assetCategories = await _assetCategoryService.GetAllAsync();
+                        ViewBag.Categories = assetCategories;
+                        return View(asset);
+                    }
+
                     asset.DateCreated = DateTime.Now;
                     await _assetService.AddAsync(asset);
                     TempData["SuccessMessage"] = $"Tài sản '{asset.Name}' đã được tạo thành công.";
@@ -228,6 +241,16 @@ namespace FinalProject.Controllers
                     {
                         TempData["ErrorMessage"] = "Không tìm thấy tài sản cần cập nhật.";
                         return NotFound();
+                    }
+
+                    // Check if another asset with the same name already exists
+                    var allAssets = await _assetService.GetAllAsync();
+                    if (allAssets.Any(a => a.Id != id && a.Name.Equals(asset.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        ModelState.AddModelError("Name", "Đã tồn tại tài sản khác với tên này. Vui lòng chọn tên khác.");
+                        var assetCategories = await _assetCategoryService.GetAllAsync();
+                        ViewBag.Categories = assetCategories;
+                        return View(asset);
                     }
 
                     // Preserve original creation date

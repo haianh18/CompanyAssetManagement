@@ -25,14 +25,17 @@
             <form asp-action="Index" method="get" class="search-box">
                 <div class="input-group">
                     <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm danh mục..."
-                           value="@ViewBag.CurrentFilter">
-                    <!-- Thêm trường ẩn để giữ giá trị includeDeleted -->
-                    <input type="hidden" name="includeDeleted" value="@ViewBag.IncludeDeleted.ToString().ToLower()">
-                    <!-- Thêm trường ẩn để giữ giá trị sortOrder -->
+                    value="@ViewBag.CurrentFilter">
+
+                    <!-- Hidden field for showDeleted parameter -->
+                    <input type="hidden" name="showDeleted" value="@ViewBag.ShowDeleted.ToString().ToLower()">
+
+                    <!-- Hidden field for sort order -->
                     @if (!string.IsNullOrEmpty(ViewBag.CurrentSort))
                     {
                         <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort">
                     }
+
                     <button type="submit" class="btn btn-outline-secondary">
                         <i class="fas fa-search"></i>
                     </button>
@@ -47,12 +50,14 @@
             <div class="card">
                 <div class="card-body py-2">
                     <div class="d-flex flex-wrap gap-2">
-                        <!-- Tùy chọn hiển thị đã xóa -->
-                        <div class="ms-auto form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="showDeleted" @(ViewBag.IncludeDeleted ? "checked" : "")
-                                   onchange="window.location.href='@Url.Action("Index", new { includeDeleted = !ViewBag.IncludeDeleted, currentFilter = ViewBag.CurrentFilter, sortOrder = ViewBag.CurrentSort })'">
-                            <label class="form-check-label" for="showDeleted">Hiển thị danh mục đã xóa</label>
-                        </div>
+                        <!-- Sort options can be placed here if needed -->
+                        <!-- Deleted items filter button -->
+                        <a asp-action="Index" asp-route-showDeleted="@(!ViewBag.ShowDeleted)"
+                        asp-route-currentFilter="@ViewBag.CurrentFilter"
+                        asp-route-sortOrder="@ViewBag.CurrentSort"
+                        class="btn @(ViewBag.ShowDeleted ? "btn-dark" : "btn-outline-dark") btn-sm">
+                            <i class="fas fa-trash"></i> Đã xóa
+                        </a>
                     </div>
                 </div>
             </div>
@@ -126,7 +131,7 @@
                         <td>@item.Id</td>
                         <td>@item.Name</td>
                         <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                        <td>@(item.Assets?.Count ?? 0)</td>
+                        <td> @(item.Assets?.Count(a => !a.IsDeleted) ?? 0)</td>
                         <td>
                             @if (item.IsDeleted)
                             {
@@ -141,9 +146,12 @@
                             <div class="action-buttons">
                                 @if (!item.IsDeleted)
                                 {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Chỉnh sửa">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
+                                    @if (item.Name != "Chưa phân loại")
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    }
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
                                         <i class="fas fa-info-circle"></i>
                                     </a>
@@ -188,14 +196,18 @@
                         @if (ViewBag.CurrentPage > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="1" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                <a class="page-link" asp-action="Index" asp-route-page="1"
+                                   asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                   asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
                             </li>
@@ -204,8 +216,10 @@
                         @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
                         {
                             <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                <a class="page-link" asp-action="Index" asp-route-page="@i"
+                                   asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     @i
                                 </a>
                             </li>
@@ -214,14 +228,18 @@
                         @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                   asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages" asp-route-sortOrder="@ViewBag.CurrentSort"
-                                   asp-route-currentFilter="@ViewBag.CurrentFilter" asp-route-includeDeleted="@ViewBag.IncludeDeleted">
+                                <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages"
+                                   asp-route-sortOrder="@ViewBag.CurrentSort"
+                                   asp-route-currentFilter="@ViewBag.CurrentFilter"
+                                   asp-route-showDeleted="@ViewBag.ShowDeleted">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
                             </li>
