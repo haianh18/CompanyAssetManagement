@@ -1,4 +1,5 @@
-﻿using FinalProject.Models;
+﻿using FinalProject.Enums;
+using FinalProject.Models;
 using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -78,6 +79,7 @@ namespace FinalProject.Controllers
 
                     // Setup borrowing details
                     borrowTicket.DateCreated = DateTime.Now;
+                    borrowTicket.ApproveStatus = TicketStatus.Pending; // Set initial status to Pending
 
                     // In a real app, the current user would be the borrower
                     if (borrowTicket.BorrowById == null)
@@ -176,8 +178,10 @@ namespace FinalProject.Controllers
                 // Update the warehouse asset quantity
                 await _warehouseAssetService.UpdateQuantityAsync(warehouseAsset.Id, -request.Quantity.Value);
 
-                // Mark as approved if needed (you might want to add a status field to BorrowTicket)
-                // For now, the approval is implicit - approved tickets don't have a return ticket
+                // Update status to Approved
+                request.ApproveStatus = TicketStatus.Approved;
+                request.DateModified = DateTime.Now;
+                await _borrowTicketService.UpdateAsync(request);
 
                 TempData["SuccessMessage"] = "Yêu cầu mượn tài sản đã được phê duyệt thành công.";
                 return RedirectToAction(nameof(BorrowRequests));
@@ -214,11 +218,19 @@ namespace FinalProject.Controllers
 
             try
             {
-                await _borrowTicketService.SoftDeleteAsync(id);
+                // Update status to Rejected instead of soft deleting
+                request.ApproveStatus = TicketStatus.Rejected;
+                request.DateModified = DateTime.Now;
 
-                // You could also update the note field with the rejection reason
-                // request.Note = "Rejected: " + rejectionReason;
-                // await _borrowTicketService.UpdateAsync(request);
+                // Add the rejection reason to the note
+                if (!string.IsNullOrEmpty(rejectionReason))
+                {
+                    request.Note = string.IsNullOrEmpty(request.Note)
+                        ? $"Lý do từ chối: {rejectionReason}"
+                        : $"{request.Note}\nLý do từ chối: {rejectionReason}";
+                }
+
+                await _borrowTicketService.UpdateAsync(request);
 
                 TempData["SuccessMessage"] = "Yêu cầu mượn tài sản đã bị từ chối.";
                 return RedirectToAction(nameof(BorrowRequests));
