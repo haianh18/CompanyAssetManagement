@@ -1,4 +1,5 @@
-﻿using FinalProject.Models.Base;
+﻿using FinalProject.Enums;
+using FinalProject.Models.Base;
 using System;
 using System.Collections.Generic;
 
@@ -21,6 +22,7 @@ namespace FinalProject.Models
         public int? Quantity { get; set; }
         public DateTime? ReturnDate { get; set; }
 
+        public TicketStatus ApproveStatus { get; set; } = TicketStatus.Pending;
         public virtual AppUser? BorrowBy { get; set; }
         public virtual AppUser? Owner { get; set; }
         public virtual ICollection<ReturnTicket> ReturnTickets { get; set; } = new List<ReturnTicket>();
