@@ -63,11 +63,11 @@ namespace FinalProject.Controllers
                 TotalCategories = (await _assetCategoryService.GetAllInCludeDeletedAsync()).Count(),
                 TotalDepartments = (await _departmentService.GetAllAsync()).Count(),
                 TotalWarehouses = (await _warehouseService.GetAllAsync()).Count(),
-                TotalDisposedAssets = (await _assetService.GetAssetsByStatusAsync(AssetStatus.DISPOSED)).Count(),
+                TotalDisposedAssets = (await _warehouseAssetService.GetAssetsWithDisposedQuantityAsync()).Count(),
                 TotalPendingBorrowRequests = (await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync()).Count(),
-                ActiveAssets = (await _assetService.GetAssetsByStatusAsync(AssetStatus.GOOD)).Count(),
-                BrokenAssets = (await _assetService.GetAssetsByStatusAsync(AssetStatus.BROKEN)).Count(),
-                FixingAssets = (await _assetService.GetAssetsByStatusAsync(AssetStatus.FIXING)).Count()
+                ActiveAssets = (await _warehouseAssetService.GetAssetsWithGoodQuantityAsync()).Count(),
+                BrokenAssets = (await _warehouseAssetService.GetAssetsWithBrokenQuantityAsync()).Count(),
+                FixingAssets = (await _warehouseAssetService.GetAssetsWithFixingQuantityAsync()).Count()
             };
 
             return View(viewModel);
@@ -567,7 +567,10 @@ namespace FinalProject.Controllers
             var assets = await _assetService.GetAllAsync();
             var categories = await _assetCategoryService.GetAllAsync();
             var warehouses = await _warehouseService.GetAllAsync();
-
+            var goodAssets = await _warehouseAssetService.GetAssetsWithGoodQuantityAsync();
+            var brokenAssets = await _warehouseAssetService.GetAssetsWithBrokenQuantityAsync();
+            var fixingAssets = await _warehouseAssetService.GetAssetsWithFixingQuantityAsync();
+            var disposedAssets = await _warehouseAssetService.GetAssetsWithDisposedQuantityAsync();
             var viewModel = new AssetSummaryReportViewModel
             {
                 Assets = assets.ToList(),
@@ -576,10 +579,10 @@ namespace FinalProject.Controllers
                 TotalValue = await _assetService.GetTotalAssetsValueAsync(),
                 AssetCountByStatus = new Dictionary<AssetStatus, int>
                 {
-                    { AssetStatus.GOOD, await _assetService.CountAssetsByStatusAsync(AssetStatus.GOOD) },
-                    { AssetStatus.BROKEN, await _assetService.CountAssetsByStatusAsync(AssetStatus.BROKEN) },
-                    { AssetStatus.FIXING, await _assetService.CountAssetsByStatusAsync(AssetStatus.FIXING) },
-                    { AssetStatus.DISPOSED, await _assetService.CountAssetsByStatusAsync(AssetStatus.DISPOSED) }
+                    { AssetStatus.GOOD, goodAssets.Count() },
+                    { AssetStatus.BROKEN, brokenAssets.Count() },
+                    { AssetStatus.FIXING, fixingAssets.Count() },
+                    { AssetStatus.DISPOSED, disposedAssets.Count() }
                 }
             };
 

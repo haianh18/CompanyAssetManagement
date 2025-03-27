@@ -23,10 +23,10 @@ namespace FinalProject.Services
             return await _unitOfWork.Assets.GetActiveAssets();
         }
 
-        public async Task<IEnumerable<Asset>> GetAssetsByStatusAsync(AssetStatus status)
-        {
-            return await _unitOfWork.Assets.GetAssetsByStatus(status);
-        }
+        //public async Task<IEnumerable<Asset>> GetAssetsByStatusAsync(AssetStatus status)
+        //{
+        //    return await _unitOfWork.Assets.GetAssetsByStatus(status);
+        //}
 
         public async Task<IEnumerable<Asset>> GetAssetsByWarehouseAsync(int warehouseId)
         {
@@ -38,10 +38,10 @@ namespace FinalProject.Services
             return await _unitOfWork.Assets.SearchAssets(keyword, includeDeleted);
         }
 
-        public async Task<int> CountAssetsByStatusAsync(AssetStatus status)
-        {
-            return await _unitOfWork.Assets.CountAssetsByStatus(status);
-        }
+        //public async Task<int> CountAssetsByStatusAsync(AssetStatus status)
+        //{
+        //    return await _unitOfWork.Assets.CountAssetsByStatus(status);
+        //}
 
         public async Task<double> GetTotalAssetsValueAsync()
         {

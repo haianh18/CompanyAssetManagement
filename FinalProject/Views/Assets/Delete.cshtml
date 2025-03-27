@@ -1,5 +1,4 @@
-﻿@using FinalProject.Enums
-@model FinalProject.Models.Asset
+﻿@model FinalProject.Models.Asset
 @{
     ViewData["Title"] = "Xóa tài sản";
     Layout = "_WarehouseManagerLayout";
@@ -44,28 +43,6 @@
 
                 <dt class="col-sm-3">Đơn vị</dt>
                 <dd class="col-sm-9">@Model.Unit</dd>
-
-                <dt class="col-sm-3">Trạng thái</dt>
-                <dd class="col-sm-9">
-                    @switch (Model.AssetStatus)
-                    {
-                        case AssetStatus.GOOD:
-                            <span class="badge bg-success">Tốt</span>
-                            break;
-                        case AssetStatus.BROKEN:
-                            <span class="badge bg-danger">Hỏng</span>
-                            break;
-                        case AssetStatus.FIXING:
-                            <span class="badge bg-warning">Đang sửa</span>
-                            break;
-                        case AssetStatus.DISPOSED:
-                            <span class="badge bg-secondary">Đã thanh lý</span>
-                            break;
-                        default:
-                            <span class="badge bg-secondary">Không xác định</span>
-                            break;
-                    }
-                </dd>
 
                 <dt class="col-sm-3">Mô tả</dt>
                 <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Description) ? "Không có" : Model.Description)</dd>

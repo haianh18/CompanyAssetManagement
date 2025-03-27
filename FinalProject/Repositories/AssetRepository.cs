@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace FinalProject.Repositories
 {
-
-
     public class AssetRepository : Repository<Asset>, IAssetRepository
     {
         public AssetRepository(CompanyAssetManagementContext context) : base(context)
@@ -26,16 +24,37 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<Asset>> GetActiveAssets()
         {
-            return await _dbSet.Where(a => a.IsDeleted == false)
+            return await _dbSet.Where(a => !a.IsDeleted)
                 .Include(a => a.AssetCategory)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Asset>> GetAssetsByStatus(AssetStatus status)
         {
-            return await _dbSet.Where(a => a.AssetStatus == status)
+            // Now filtering based on WarehouseAsset quantities
+            IQueryable<Asset> query = _dbSet
                 .Include(a => a.AssetCategory)
-                .ToListAsync();
+                .Include(a => a.WarehouseAssets);
+
+            switch (status)
+            {
+                case AssetStatus.GOOD:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.GoodQuantity > 0));
+                    break;
+                case AssetStatus.BROKEN:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.BrokenQuantity > 0));
+                    break;
+                case AssetStatus.FIXING:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.FixingQuantity > 0));
+                    break;
+                case AssetStatus.DISPOSED:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.DisposedQuantity > 0));
+                    break;
+                default:
+                    return Enumerable.Empty<Asset>();
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<Asset>> GetAssetsByWarehouse(int warehouseId)
@@ -66,7 +85,28 @@ namespace FinalProject.Repositories
 
         public async Task<int> CountAssetsByStatus(AssetStatus status)
         {
-            return await _dbSet.CountAsync(a => a.AssetStatus == status);
+            // Count based on WarehouseAsset quantities
+            IQueryable<Asset> query = _dbSet.Include(a => a.WarehouseAssets);
+
+            switch (status)
+            {
+                case AssetStatus.GOOD:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.GoodQuantity > 0));
+                    break;
+                case AssetStatus.BROKEN:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.BrokenQuantity > 0));
+                    break;
+                case AssetStatus.FIXING:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.FixingQuantity > 0));
+                    break;
+                case AssetStatus.DISPOSED:
+                    query = query.Where(a => a.WarehouseAssets.Any(wa => wa.DisposedQuantity > 0));
+                    break;
+                default:
+                    return 0;
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<double> GetTotalAssetsValue()
@@ -96,12 +136,18 @@ namespace FinalProject.Repositories
 
         public override async Task<Asset> GetByIdAsync(int id)
         {
-            return await _dbSet.Include(a => a.AssetCategory).FirstOrDefaultAsync(a => a.Id == id);
+            return await _dbSet
+                .Include(a => a.AssetCategory)
+                .Include(a => a.WarehouseAssets)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public override async Task<Asset> GetByIdIncludingDeletedAsync(int id)
         {
-            return await _dbSet.IgnoreQueryFilters().Include(a => a.AssetCategory).FirstOrDefaultAsync(a => a.Id == id);
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(a => a.AssetCategory)
+                .Include(a => a.WarehouseAssets)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
     }
 }

@@ -41,7 +41,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label asp-for="Price" class="form-label">Giá</label>
                         <div class="input-group">
@@ -52,25 +52,11 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label asp-for="Unit" class="form-label">Đơn vị</label>
                         <input asp-for="Unit" class="form-control" required />
                         <span asp-validation-for="Unit" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label asp-for="AssetStatus" class="form-label">Trạng thái</label>
-                        <select asp-for="AssetStatus" class="form-select" required>
-                            <option value="">-- Chọn trạng thái --</option>
-                            <option value="@FinalProject.Enums.AssetStatus.GOOD">Tốt</option>
-                            <option value="@FinalProject.Enums.AssetStatus.BROKEN">Hỏng</option>
-                            <option value="@FinalProject.Enums.AssetStatus.FIXING">Đang sửa</option>
-                           
-                        </select>
-                        <span asp-validation-for="AssetStatus" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -85,6 +71,11 @@
                 <label asp-for="Note" class="form-label">Ghi chú</label>
                 <textarea asp-for="Note" class="form-control" rows="2"></textarea>
                 <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Để quản lý số lượng và trạng thái tài sản trong các kho, vui lòng sử dụng chức năng quản lý số lượng.
             </div>
 
             <div class="form-group mt-4 text-end">
@@ -103,10 +94,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        $(document).ready(function() {
-            // Thêm các xử lý JavaScript cho form nếu cần
-        });
-    </script>
 }

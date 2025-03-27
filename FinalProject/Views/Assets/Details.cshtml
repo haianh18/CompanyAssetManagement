@@ -1,5 +1,5 @@
 ﻿@using FinalProject.Enums
-@model FinalProject.Models.Asset
+@model FinalProject.Models.ViewModels.AssetDetailViewModel
 @{
     ViewData["Title"] = "Chi tiết tài sản";
     Layout = "_WarehouseManagerLayout";
@@ -17,10 +17,10 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Thông tin tài sản</h5>
                 <div>
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm me-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Asset.Id" class="btn btn-primary btn-sm me-2">
                         <i class="fas fa-edit"></i> Chỉnh sửa
                     </a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm">
+                    <a asp-action="Delete" asp-route-id="@Model.Asset.Id" class="btn btn-danger btn-sm">
                         <i class="fas fa-trash"></i> Xóa
                     </a>
                 </div>
@@ -31,56 +31,34 @@
                 <div class="col-md-6">
                     <dl class="row">
                         <dt class="col-sm-4">Tên tài sản</dt>
-                        <dd class="col-sm-8">@Model.Name</dd>
+                        <dd class="col-sm-8">@Model.Asset.Name</dd>
 
                         <dt class="col-sm-4">Danh mục</dt>
-                        <dd class="col-sm-8">@(Model.AssetCategory?.Name ?? "N/A")</dd>
+                        <dd class="col-sm-8">@(Model.Asset.AssetCategory?.Name ?? "N/A")</dd>
 
                         <dt class="col-sm-4">Giá</dt>
-                        <dd class="col-sm-8">@Model.Price.ToString("N0") VNĐ</dd>
+                        <dd class="col-sm-8">@Model.Asset.Price.ToString("N0") VNĐ</dd>
 
                         <dt class="col-sm-4">Đơn vị</dt>
-                        <dd class="col-sm-8">@Model.Unit</dd>
-
-                        <dt class="col-sm-4">Trạng thái</dt>
-                        <dd class="col-sm-8">
-                            @switch (Model.AssetStatus)
-                            {
-                                case AssetStatus.GOOD:
-                                    <span class="badge bg-success">Tốt</span>
-                                    break;
-                                case AssetStatus.BROKEN:
-                                    <span class="badge bg-danger">Hỏng</span>
-                                    break;
-                                case AssetStatus.FIXING:
-                                    <span class="badge bg-warning">Đang sửa</span>
-                                    break;
-                                case AssetStatus.DISPOSED:
-                                    <span class="badge bg-secondary">Đã thanh lý</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-secondary">Không xác định</span>
-                                    break;
-                            }
-                        </dd>
+                        <dd class="col-sm-8">@Model.Asset.Unit</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
                     <dl class="row">
                         <dt class="col-sm-4">ID</dt>
-                        <dd class="col-sm-8">@Model.Id</dd>
+                        <dd class="col-sm-8">@Model.Asset.Id</dd>
 
                         <dt class="col-sm-4">Ngày tạo</dt>
-                        <dd class="col-sm-8">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+                        <dd class="col-sm-8">@(Model.Asset.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
 
                         <dt class="col-sm-4">Cập nhật lần cuối</dt>
-                        <dd class="col-sm-8">@(Model.DateModified?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</dd>
+                        <dd class="col-sm-8">@(Model.Asset.DateModified?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</dd>
 
                         <dt class="col-sm-4">Đã xóa</dt>
                         <dd class="col-sm-8">
-                            @if (Model.IsDeleted)
+                            @if (Model.Asset.IsDeleted)
                             {
-                                <span class="badge bg-danger">Đã xóa ngày @Model.DeletedDate?.ToString("dd/MM/yyyy")</span>
+                                <span class="badge bg-danger">Đã xóa ngày @Model.Asset.DeletedDate?.ToString("dd/MM/yyyy")</span>
                             }
                             else
                             {
@@ -96,7 +74,7 @@
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold">Mô tả</label>
                         <div class="border rounded p-3 bg-light">
-                            @(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)
+                            @(string.IsNullOrEmpty(Model.Asset.Description) ? "Không có mô tả" : Model.Asset.Description)
                         </div>
                     </div>
                 </div>
@@ -107,7 +85,7 @@
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold">Ghi chú</label>
                         <div class="border rounded p-3 bg-light">
-                            @(string.IsNullOrEmpty(Model.Note) ? "Không có ghi chú" : Model.Note)
+                            @(string.IsNullOrEmpty(Model.Asset.Note) ? "Không có ghi chú" : Model.Asset.Note)
                         </div>
                     </div>
                 </div>
@@ -115,7 +93,76 @@
         </div>
     </div>
 
-    <!-- Thông tin về vị trí kho -->
+    <!-- Tổng quan trạng thái tài sản -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Tổng quan trạng thái tài sản</h5>
+                <a asp-action="ManageQuantity" asp-route-id="@Model.Asset.Id" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit"></i> Quản lý số lượng
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="status-card good">
+                        <h4>@Model.TotalGoodQuantity</h4>
+                        <p>Tốt</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card broken">
+                        <h4>@Model.TotalBrokenQuantity</h4>
+                        <p>Hỏng</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card fixing">
+                        <h4>@Model.TotalFixingQuantity</h4>
+                        <p>Đang sửa</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card disposed">
+                        <h4>@Model.TotalDisposedQuantity</h4>
+                        <p>Đã thanh lý</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <div class="status-summary">
+                        <span class="label">Tổng số:</span>
+                        <span class="value">@Model.TotalQuantity</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="status-summary">
+                        <span class="label">Đang mượn:</span>
+                        <span class="value">@Model.TotalBorrowedQuantity</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="status-summary">
+                        <span class="label">Đã bàn giao:</span>
+                        <span class="value">@Model.TotalHandedOverQuantity</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="status-summary">
+                        <span class="label">Có thể sử dụng:</span>
+                        <span class="value">@Model.AvailableQuantity</span>
+                        <small class="text-muted ms-2">(Số lượng tốt - Đã mượn - Đã bàn giao)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vị trí kho -->
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">Vị trí kho</h5>
@@ -128,8 +175,13 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Kho</th>
-                                <th>Số lượng</th>
-                                <th>Ngày nhập</th>
+                                <th>Tốt</th>
+                                <th>Hỏng</th>
+                                <th>Đang sửa</th>
+                                <th>Đã thanh lý</th>
+                                <th>Đang mượn</th>
+                                <th>Đã bàn giao</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -137,8 +189,22 @@
                             {
                                 <tr>
                                     <td>@(warehouseAsset.Warehouse?.Name ?? "N/A")</td>
-                                    <td>@warehouseAsset.Quantity</td>
-                                    <td>@(warehouseAsset.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(warehouseAsset.GoodQuantity ?? 0)</td>
+                                    <td>@(warehouseAsset.BrokenQuantity ?? 0)</td>
+                                    <td>@(warehouseAsset.FixingQuantity ?? 0)</td>
+                                    <td>@(warehouseAsset.DisposedQuantity ?? 0)</td>
+                                    <td>@(warehouseAsset.BorrowedGoodQuantity ?? 0)</td>
+                                    <td>@(warehouseAsset.HandedOverGoodQuantity ?? 0)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-secondary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#transferModal" 
+                                                data-warehouse-asset-id="@warehouseAsset.Id"
+                                                data-asset-id="@Model.Asset.Id"
+                                                data-warehouse-name="@warehouseAsset.Warehouse?.Name">
+                                            <i class="fas fa-exchange-alt"></i> Chuyển trạng thái
+                                        </button>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -149,6 +215,7 @@
             {
                 <div class="alert alert-info">
                     Tài sản này chưa được nhập vào kho nào.
+                    <a asp-action="ManageQuantity" asp-route-id="@Model.Asset.Id" class="alert-link">Nhấn vào đây để thêm tài sản vào kho</a>.
                 </div>
             }
         </div>
@@ -160,15 +227,208 @@
             <h5 class="mb-0">Lịch sử mượn trả</h5>
         </div>
         <div class="card-body">
-            <div class="alert alert-info">
-                Chức năng này sẽ hiển thị lịch sử mượn trả của tài sản.
-            </div>
+            @if (Model.BorrowTickets != null && Model.BorrowTickets.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã phiếu</th>
+                                <th>Người mượn</th>
+                                <th>Kho</th>
+                                <th>Số lượng</th>
+                                <th>Ngày mượn</th>
+                                <th>Ngày hẹn trả</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticket in Model.BorrowTickets.OrderByDescending(b => b.DateCreated))
+                            {
+                                <tr>
+                                    <td>@ticket.Id</td>
+                                    <td>@ticket.BorrowBy?.FullName</td>
+                                    <td>@ticket.WarehouseAsset?.Warehouse?.Name</td>
+                                    <td>@ticket.Quantity</td>
+                                    <td>@ticket.DateCreated?.ToString("dd/MM/yyyy")</td>
+                                    <td>@ticket.ReturnDate?.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @if (ticket.IsReturned)
+                                        {
+                                            <span class="badge bg-success">Đã trả</span>
+                                        }
+                                        else if (ticket.ApproveStatus == TicketStatus.Approved)
+                                        {
+                                            <span class="badge bg-primary">Đã duyệt</span>
+                                        }
+                                        else if (ticket.ApproveStatus == TicketStatus.Pending)
+                                        {
+                                            <span class="badge bg-warning">Chờ duyệt</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Từ chối</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Chưa có lịch sử mượn trả cho tài sản này.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Lịch sử bàn giao -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Lịch sử bàn giao</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.HandoverTickets != null && Model.HandoverTickets.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã phiếu</th>
+                                <th>Người bàn giao</th>
+                                <th>Người nhận</th>
+                                <th>Phòng ban</th>
+                                <th>Kho</th>
+                                <th>Số lượng</th>
+                                <th>Ngày bàn giao</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticket in Model.HandoverTickets.OrderByDescending(h => h.DateCreated))
+                            {
+                                <tr>
+                                    <td>@ticket.Id</td>
+                                    <td>@ticket.HandoverBy?.FullName</td>
+                                    <td>@ticket.HandoverTo?.FullName</td>
+                                    <td>@ticket.Department?.Name</td>
+                                    <td>@ticket.WarehouseAsset?.Warehouse?.Name</td>
+                                    <td>@ticket.Quantity</td>
+                                    <td>@ticket.DateCreated?.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @if (ticket.IsActive)
+                                        {
+                                            <span class="badge bg-success">Đang sử dụng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Đã trả</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Chưa có lịch sử bàn giao cho tài sản này.
+                </div>
+            }
         </div>
     </div>
 
     <div class="form-group text-end">
+        <a asp-action="ManageQuantity" asp-route-id="@Model.Asset.Id" class="btn btn-primary me-2">
+            <i class="fas fa-cubes"></i> Quản lý số lượng
+        </a>
         <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại danh sách
         </a>
     </div>
 </div>
+
+<!-- Modal chuyển trạng thái -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="TransferAssetStatus" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transferModalLabel">Chuyển trạng thái tài sản</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="warehouseAssetId" name="WarehouseAssetId" />
+                    <input type="hidden" id="assetId" name="AssetId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Kho</label>
+                        <input type="text" class="form-control" id="warehouseName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fromStatus" class="form-label">Từ trạng thái</label>
+                        <select class="form-select" id="fromStatus" name="FromStatus" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="GOOD">Tốt</option>
+                            <option value="BROKEN">Hỏng</option>
+                            <option value="FIXING">Đang sửa</option>
+                            <option value="DISPOSED">Đã thanh lý</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="toStatus" class="form-label">Đến trạng thái</label>
+                        <select class="form-select" id="toStatus" name="ToStatus" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="GOOD">Tốt</option>
+                            <option value="BROKEN">Hỏng</option>
+                            <option value="FIXING">Đang sửa</option>
+                            <option value="DISPOSED">Đã thanh lý</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý khi modal mở
+            $('#transferModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var warehouseAssetId = button.data('warehouse-asset-id');
+                var assetId = button.data('asset-id');
+                var warehouseName = button.data('warehouse-name');
+
+                $('#warehouseAssetId').val(warehouseAssetId);
+                $('#assetId').val(assetId);
+                $('#warehouseName').val(warehouseName);
+            });
+
+            // Validate không chọn cùng trạng thái
+            $('#toStatus').on('change', function() {
+                if ($(this).val() === $('#fromStatus').val()) {
+                    alert('Trạng thái đích không thể giống trạng thái nguồn.');
+                    $(this).val('');
+                }
+            });
+        });
+    </script>
+}

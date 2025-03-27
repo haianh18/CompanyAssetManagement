@@ -1,5 +1,4 @@
-﻿using FinalProject.Enums;
-using FinalProject.Models;
+﻿using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,8 +8,6 @@ using System.Threading.Tasks;
 
 namespace FinalProject.Repositories
 {
-
-
     public class WarehouseRepository : Repository<Warehouse>, IWarehouseRepository
     {
         public WarehouseRepository(CompanyAssetManagementContext context) : base(context)
@@ -48,13 +45,17 @@ namespace FinalProject.Repositories
 
             return warehouses.ToDictionary(
                 w => w.Name,
-                w => w.WarehouseAssets.Sum(wa => wa.Quantity ?? 0)
+                w => w.WarehouseAssets.Sum(wa =>
+                    (wa.GoodQuantity ?? 0) +
+                    (wa.BrokenQuantity ?? 0) +
+                    (wa.FixingQuantity ?? 0) +
+                    (wa.DisposedQuantity ?? 0))
             );
         }
 
         public async Task SoftDeleteWarehouseAsync(int warehouseId)
         {
-            // Tìm hoặc tạo warehouse mặc định
+            // Find or create default warehouse
             var defaultWarehouse = await _dbSet
                 .FirstOrDefaultAsync(w => w.Name == "Unassigned Storage");
 
@@ -68,7 +69,7 @@ namespace FinalProject.Repositories
                 _context.Warehouses.Add(defaultWarehouse);
             }
 
-            // Soft delete warehouse gốc
+            // Soft delete original warehouse
             var originalWarehouse = await _dbSet.FindAsync(warehouseId);
             if (originalWarehouse == null)
                 throw new Exception("Warehouse not found");
@@ -76,7 +77,7 @@ namespace FinalProject.Repositories
             originalWarehouse.IsDeleted = true;
             originalWarehouse.DeletedDate = DateTime.Now;
 
-            // Chuyển warehouse assets sang warehouse mặc định
+            // Move warehouse assets to default warehouse
             var warehouseAssetsInWarehouse = await _context.WarehouseAssets
                 .Where(wa => wa.WarehouseId == warehouseId)
                 .ToListAsync();

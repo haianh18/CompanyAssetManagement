@@ -39,6 +39,7 @@ public class Program
         builder.Services.AddScoped<IDisposalTicketService, DisposalTicketService>();
         builder.Services.AddScoped<IDisposalTicketAssetService, DisposalTicketAssetService>();
         builder.Services.AddScoped<IHandoverTicketService, HandoverTicketService>();
+        builder.Services.AddScoped<IHandoverReturnService, HandoverReturnService>();
         builder.Services.AddScoped<IReturnTicketService, ReturnTicketService>();
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IUserService, UserService>();

@@ -1,5 +1,4 @@
-﻿@using FinalProject.Enums
-@model FinalProject.Models.Asset
+﻿@model FinalProject.Models.Asset
 @{
     ViewData["Title"] = "Khôi phục tài sản";
     Layout = "_WarehouseManagerLayout";
@@ -35,28 +34,6 @@
                 <dt class="col-sm-3">Đơn vị</dt>
                 <dd class="col-sm-9">@Model.Unit</dd>
 
-                <dt class="col-sm-3">Trạng thái</dt>
-                <dd class="col-sm-9">
-                    @switch (Model.AssetStatus)
-                    {
-                        case AssetStatus.GOOD:
-                            <span class="badge bg-success">Tốt</span>
-                            break;
-                        case AssetStatus.BROKEN:
-                            <span class="badge bg-danger">Hỏng</span>
-                            break;
-                        case AssetStatus.FIXING:
-                            <span class="badge bg-warning">Đang sửa</span>
-                            break;
-                        case AssetStatus.DISPOSED:
-                            <span class="badge bg-secondary">Đã thanh lý</span>
-                            break;
-                        default:
-                            <span class="badge bg-secondary">Không xác định</span>
-                            break;
-                    }
-                </dd>
-
                 <dt class="col-sm-3">Ngày xóa</dt>
                 <dd class="col-sm-9">@(Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
             </dl>
@@ -67,7 +44,7 @@
         <form asp-action="Restore" method="post">
             <input type="hidden" asp-for="Id" />
             <div class="form-group text-end">
-                <a asp-action="Index" asp-route-includeDeleted="true" class="btn btn-outline-secondary me-2">
+                <a asp-action="Index" asp-route-showDeleted="true" class="btn btn-outline-secondary me-2">
                     <i class="fas fa-times"></i> Hủy
                 </a>
                 <button type="submit" class="btn btn-success">

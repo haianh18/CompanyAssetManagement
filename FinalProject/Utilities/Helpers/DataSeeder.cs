@@ -98,11 +98,11 @@ public class DataSeeder : IHostedService
             if (!await context.Assets.AnyAsync(cancellationToken))
             {
                 context.Assets.AddRange(
-                    new Asset { Name = "Laptop", Price = 1000, Unit = "Piece", AssetCategoryId = 1, AssetStatus = AssetStatus.GOOD },
-                    new Asset { Name = "Chair", Price = 50, Unit = "Piece", AssetCategoryId = 2, AssetStatus = AssetStatus.GOOD },
-                    new Asset { Name = "Pen", Price = 1, Unit = "Piece", AssetCategoryId = 3, AssetStatus = AssetStatus.GOOD },
-                    new Asset { Name = "Car", Price = 20000, Unit = "Piece", AssetCategoryId = 4, AssetStatus = AssetStatus.GOOD },
-                    new Asset { Name = "Hammer", Price = 10, Unit = "Piece", AssetCategoryId = 5, AssetStatus = AssetStatus.GOOD }
+                    new Asset { Name = "Laptop", Price = 1000, Unit = "Piece", AssetCategoryId = 1 },
+                    new Asset { Name = "Chair", Price = 50, Unit = "Piece", AssetCategoryId = 2 },
+                    new Asset { Name = "Pen", Price = 1, Unit = "Piece", AssetCategoryId = 3 },
+                    new Asset { Name = "Car", Price = 20000, Unit = "Piece", AssetCategoryId = 4 },
+                    new Asset { Name = "Hammer", Price = 10, Unit = "Piece", AssetCategoryId = 5 }
                 );
                 await context.SaveChangesAsync(cancellationToken);
             }
@@ -137,12 +137,13 @@ public class DataSeeder : IHostedService
             if (!await context.WarehouseAssets.AnyAsync(cancellationToken))
             {
                 context.WarehouseAssets.AddRange(
-                    new WarehouseAsset { WarehouseId = 1, AssetId = 1, Quantity = 10 },
-                    new WarehouseAsset { WarehouseId = 2, AssetId = 2, Quantity = 20 },
-                    new WarehouseAsset { WarehouseId = 3, AssetId = 3, Quantity = 100 },
-                    new WarehouseAsset { WarehouseId = 4, AssetId = 4, Quantity = 5 },
-                    new WarehouseAsset { WarehouseId = 5, AssetId = 5, Quantity = 50 }
-                );
+                    new WarehouseAsset { WarehouseId = 1, AssetId = 1, GoodQuantity = 10 },
+                    new WarehouseAsset { WarehouseId = 2, AssetId = 2, GoodQuantity = 20 },
+                    new WarehouseAsset { WarehouseId = 3, AssetId = 3, GoodQuantity = 100 },
+                    new WarehouseAsset { WarehouseId = 4, AssetId = 4, GoodQuantity = 5 },
+                    new WarehouseAsset { WarehouseId = 5, AssetId = 5, GoodQuantity = 50 }
+ );
+
                 await context.SaveChangesAsync(cancellationToken);
             }
 

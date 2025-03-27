@@ -71,6 +71,26 @@ namespace FinalProject.Services
             var assets = await _unitOfWork.WarehouseAssets.GetAssetsWithAvailableQuantity();
             return assets.Where(a => (a.GoodQuantity ?? 0) > (a.BorrowedGoodQuantity ?? 0) + (a.HandedOverGoodQuantity ?? 0));
         }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithGoodQuantityAsync()
+        {
+            return await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithBrokenQuantityAsync()
+        {
+            return await _unitOfWork.WarehouseAssets.GetAssetsWithBrokenQuantity();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithFixingQuantityAsync()
+        {
+            return await _unitOfWork.WarehouseAssets.GetAssetsWithFixingQuantity();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithDisposedQuantityAsync()
+        {
+            return await _unitOfWork.WarehouseAssets.GetAssetsWithDisposedQuantity();
+        }
     }
 }
 

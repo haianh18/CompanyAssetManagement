@@ -11,4 +11,9 @@ public interface IWarehouseAssetRepository : IRepository<WarehouseAsset>
     Task<bool> UpdateBorrowedQuantity(int warehouseAssetId, int quantityChange);
     Task<bool> UpdateHandedOverQuantity(int warehouseAssetId, int quantityChange);
     Task<IEnumerable<WarehouseAsset>> GetAssetsWithAvailableQuantity();
+
+    Task<IEnumerable<WarehouseAsset>> GetAssetsWithGoodQuantity();
+    Task<IEnumerable<WarehouseAsset>> GetAssetsWithBrokenQuantity();
+    Task<IEnumerable<WarehouseAsset>> GetAssetsWithFixingQuantity();
+    Task<IEnumerable<WarehouseAsset>> GetAssetsWithDisposedQuantity();
 }

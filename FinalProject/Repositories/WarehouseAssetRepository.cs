@@ -130,5 +130,45 @@ namespace FinalProject.Repositories
                 .Include(wa => wa.Warehouse)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithGoodQuantity()
+        {
+            return await _dbSet
+                .Where(wa => wa.GoodQuantity > 0)
+                .Include(wa => wa.Asset)
+                    .ThenInclude(a => a.AssetCategory)
+                .Include(wa => wa.Warehouse)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithBrokenQuantity()
+        {
+            return await _dbSet
+                .Where(wa => wa.BrokenQuantity > 0)
+                .Include(wa => wa.Asset)
+                    .ThenInclude(a => a.AssetCategory)
+                .Include(wa => wa.Warehouse)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithFixingQuantity()
+        {
+            return await _dbSet
+                .Where(wa => wa.FixingQuantity > 0)
+                .Include(wa => wa.Asset)
+                    .ThenInclude(a => a.AssetCategory)
+                .Include(wa => wa.Warehouse)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithDisposedQuantity()
+        {
+            return await _dbSet
+                .Where(wa => wa.DisposedQuantity > 0)
+                .Include(wa => wa.Asset)
+                    .ThenInclude(a => a.AssetCategory)
+                .Include(wa => wa.Warehouse)
+                .ToListAsync();
+        }
     }
 }
