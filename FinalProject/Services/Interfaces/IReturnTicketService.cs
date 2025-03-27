@@ -1,3 +1,4 @@
+using FinalProject.Enums;
 using FinalProject.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +13,12 @@ namespace FinalProject.Services.Interfaces
         Task<IEnumerable<ReturnTicket>> GetRecentReturnTicketsAsync(int count);
         Task<Dictionary<string, int>> GetReturnTicketStatisticsByMonthAsync(int year);
         Task<ReturnTicket> GetReturnTicketWithDetailsAsync(int returnTicketId);
+        Task<ReturnTicket> CreateReturnRequestAsync(int borrowTicketId, int ownerId, string note);
+        Task<ReturnTicket> ProcessEarlyReturnAsync(int borrowTicketId, int returnById, string notes);
+        Task<ReturnTicket> ApproveReturnAsync(int returnTicketId, AssetStatus assetCondition, string notes);
+        Task<ReturnTicket> RejectReturnAsync(int returnTicketId, string rejectionReason);
+        Task<IEnumerable<ReturnTicket>> GetPendingReturnRequestsAsync();
+        Task<IEnumerable<ReturnTicket>> GetReturnTicketsWithConditionAsync(AssetStatus condition);
     }
 }
 

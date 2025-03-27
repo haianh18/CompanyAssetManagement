@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FinalProject.Repositories.Interfaces;
+using System;
 using System.Threading.Tasks;
 
 namespace FinalProject.Repositories.Common
@@ -14,6 +15,8 @@ namespace FinalProject.Repositories.Common
         IBorrowTicketRepository BorrowTickets { get; }
         IReturnTicketRepository ReturnTickets { get; }
         IHandoverTicketRepository HandoverTickets { get; }
+        IHandoverReturnRepository HandoverReturns { get; }
+
         IDisposalTicketRepository DisposalTickets { get; }
         IDisposalTicketAssetRepository DisposalTicketAssets { get; }
         IUserRepository Users { get; }

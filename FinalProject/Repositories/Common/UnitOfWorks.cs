@@ -1,5 +1,6 @@
 ﻿using FinalProject.Models;
 using FinalProject.Models.Base;
+using FinalProject.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -23,6 +24,7 @@ namespace FinalProject.Repositories.Common
         private IBorrowTicketRepository _borrowTicketRepository;
         private IReturnTicketRepository _returnTicketRepository;
         private IHandoverTicketRepository _handoverTicketRepository;
+        private IHandoverReturnRepository _handoverReturnRepository;
         private IDisposalTicketRepository _disposalTicketRepository;
         private IDisposalTicketAssetRepository _disposalTicketAssetRepository;
         private IUserRepository _userRepository;
@@ -50,6 +52,7 @@ namespace FinalProject.Repositories.Common
         public IBorrowTicketRepository BorrowTickets => _borrowTicketRepository ??= new BorrowTicketRepository(_context);
         public IReturnTicketRepository ReturnTickets => _returnTicketRepository ??= new ReturnTicketRepository(_context);
         public IHandoverTicketRepository HandoverTickets => _handoverTicketRepository ??= new HandoverTicketRepository(_context);
+        public IHandoverReturnRepository HandoverReturns => _handoverReturnRepository ??= new HandoverReturnRepository(_context);
         public IDisposalTicketRepository DisposalTickets => _disposalTicketRepository ??= new DisposalTicketRepository(_context);
         public IDisposalTicketAssetRepository DisposalTicketAssets => _disposalTicketAssetRepository ??= new DisposalTicketAssetRepository(_context);
         public IUserRepository Users => _userRepository ??= new UserRepository(_context, _userManager);

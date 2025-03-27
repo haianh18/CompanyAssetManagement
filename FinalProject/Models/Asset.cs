@@ -18,11 +18,11 @@ namespace FinalProject.Models
         public string Name { get; set; } = null!;
         public double Price { get; set; }
         public string Unit { get; set; } = null!;
-        public AssetStatus AssetStatus { get; set; }
         public int? AssetCategoryId { get; set; }
         public string? Description { get; set; }
         public string? Note { get; set; }
 
+        // public AssetStatus AssetStatus { get; set; }
         public virtual AssetCategory? AssetCategory { get; set; }
         public virtual ICollection<WarehouseAsset> WarehouseAssets { get; set; } = new List<WarehouseAsset>();
     }

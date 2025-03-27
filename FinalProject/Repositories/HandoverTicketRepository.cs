@@ -150,5 +150,48 @@ namespace FinalProject.Repositories
                     .ThenInclude(wa => wa.Warehouse)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<HandoverTicket>> GetActiveHandoversByEmployee(int employeeId)
+        {
+            return await _dbSet
+                .Where(ht => ht.HandoverToId == employeeId && ht.IsActive)
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.Owner)
+                .Include(ht => ht.Department)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .OrderByDescending(ht => ht.DateCreated)
+                .ToListAsync();
+        }
+
+        public async Task<HandoverTicket> GetHandoverTicketWithAssetDetails(int handoverTicketId)
+        {
+            return await _dbSet
+                .Where(ht => ht.Id == handoverTicketId)
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.Owner)
+                .Include(ht => ht.Department)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<HandoverTicket>> GetHandoversByDepartmentEmployee(int departmentId, int employeeId)
+        {
+            return await _dbSet
+                .Where(ht => ht.DepartmentId == departmentId && ht.HandoverToId == employeeId && ht.IsActive)
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(ht => ht.DateCreated)
+                .ToListAsync();
+        }
     }
 }

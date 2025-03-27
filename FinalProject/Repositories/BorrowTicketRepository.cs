@@ -1,4 +1,5 @@
-﻿using FinalProject.Models;
+﻿using FinalProject.Enums;
+using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -145,6 +146,86 @@ namespace FinalProject.Repositories
             }
 
             return statistics;
+        }
+
+        public async Task<bool> IsUserEligibleForBorrowing(int userId)
+        {
+            // Check if user has any overdue tickets
+            var currentDate = DateTime.Now;
+            var overdueTickets = await _dbSet
+                .Where(bt => bt.BorrowById == userId &&
+                             bt.ReturnDate < currentDate &&
+                             !bt.IsReturned &&
+                             bt.ApproveStatus == TicketStatus.Approved)
+                .ToListAsync();
+
+            return !overdueTickets.Any();
+        }
+
+        public async Task<IEnumerable<BorrowTicket>> GetActiveBorrowTicketsByUser(int userId)
+        {
+            return await _dbSet
+                .Where(bt => bt.BorrowById == userId &&
+                             !bt.IsReturned &&
+                             bt.ApproveStatus == TicketStatus.Approved)
+                .Include(bt => bt.BorrowBy)
+                .Include(bt => bt.Owner)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .OrderByDescending(bt => bt.ReturnDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsExpiringInDays(int days)
+        {
+            var currentDate = DateTime.Now;
+            var expirationDate = currentDate.AddDays(days);
+
+            return await _dbSet
+                .Where(bt => !bt.IsReturned &&
+                             bt.ApproveStatus == TicketStatus.Approved &&
+                             bt.ReturnDate >= currentDate &&
+                             bt.ReturnDate <= expirationDate)
+                .Include(bt => bt.BorrowBy)
+                .Include(bt => bt.Owner)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                .OrderBy(bt => bt.ReturnDate)
+                .ToListAsync();
+        }
+
+        public async Task<BorrowTicket> GetBorrowTicketWithExtensions(int borrowTicketId)
+        {
+            return await _dbSet
+                .Include(bt => bt.BorrowBy)
+                .Include(bt => bt.Owner)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                .Include(bt => bt.ExtendedBorrowTickets)
+                .Include(bt => bt.OriginalBorrowTicket)
+                .FirstOrDefaultAsync(bt => bt.Id == borrowTicketId);
+        }
+
+        public async Task<bool> HasUserOverdueTickets(int userId)
+        {
+            var currentDate = DateTime.Now;
+            return await _dbSet
+                .AnyAsync(bt => bt.BorrowById == userId &&
+                              bt.ReturnDate < currentDate &&
+                              !bt.IsReturned &&
+                              bt.ApproveStatus == TicketStatus.Approved);
+        }
+
+        public async Task<bool> HasUserExtendedBorrowTicket(int borrowTicketId)
+        {
+            var borrowTicket = await _dbSet.FindAsync(borrowTicketId);
+            if (borrowTicket == null)
+                return false;
+
+            return borrowTicket.IsExtended;
         }
     }
 }

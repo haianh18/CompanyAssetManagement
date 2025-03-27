@@ -1,4 +1,5 @@
-﻿using FinalProject.Models.Base;
+﻿using FinalProject.Enums;
+using FinalProject.Models.Base;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +23,13 @@ namespace FinalProject.Models
         public int? OwnerId { get; set; }
         public int? Quantity { get; set; }
 
+        // Thuộc tính mới
+        public bool IsActive { get; set; } = true;  // Đang hoạt động hay đã kết thúc
+        public DateTime? ExpectedEndDate { get; set; } // Ngày dự kiến kết thúc (nếu có)
+        public DateTime? ActualEndDate { get; set; } // Ngày thực tế kết thúc (khi nhân viên nghỉ việc hoặc trả lại)
+        public AssetStatus CurrentCondition { get; set; } = AssetStatus.GOOD; // Tình trạng hiện tại của tài sản
+
+        // Navigation properties
         public virtual Department? Department { get; set; }
         public virtual AppUser? HandoverBy { get; set; }
         public virtual AppUser? HandoverTo { get; set; }

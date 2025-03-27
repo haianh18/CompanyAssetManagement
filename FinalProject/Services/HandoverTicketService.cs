@@ -8,8 +8,13 @@ namespace FinalProject.Services
 {
     public class HandoverTicketService : BaseService<HandoverTicket>, IHandoverTicketService
     {
-        public HandoverTicketService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        private readonly IHandoverReturnService _handoverReturnService;
+
+        public HandoverTicketService(
+            IUnitOfWork unitOfWork,
+            IHandoverReturnService handoverReturnService) : base(unitOfWork)
         {
+            _handoverReturnService = handoverReturnService;
         }
 
         public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByHandoverByAsync(int handoverById)
@@ -50,6 +55,41 @@ namespace FinalProject.Services
         public async Task<HandoverTicket> GetHandoverTicketWithDetailsAsync(int handoverTicketId)
         {
             return await _unitOfWork.HandoverTickets.GetHandoverTicketWithDetails(handoverTicketId);
+        }
+        public async Task<IEnumerable<HandoverTicket>> GetActiveHandoversByEmployeeAsync(int employeeId)
+        {
+            return await _unitOfWork.HandoverTickets.GetActiveHandoversByEmployee(employeeId);
+        }
+
+        public async Task<HandoverTicket> GetHandoverTicketWithAssetDetailsAsync(int handoverTicketId)
+        {
+            return await _unitOfWork.HandoverTickets.GetHandoverTicketWithAssetDetails(handoverTicketId);
+        }
+
+        public async Task<IEnumerable<HandoverTicket>> GetHandoversByDepartmentEmployeeAsync(int departmentId, int employeeId)
+        {
+            return await _unitOfWork.HandoverTickets.GetHandoversByDepartmentEmployee(departmentId, employeeId);
+        }
+
+        public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByAssetIdAsync(int assetId)
+        {
+            var handoverTickets = await _unitOfWork.HandoverTickets.GetAllAsync();
+            return handoverTickets.Where(ht => ht.WarehouseAsset?.AssetId == assetId);
+        }
+
+        public async Task ProcessEmployeeTerminationAsync(int employeeId)
+        {
+            // Get all active handover tickets for this employee
+            var activeHandovers = await GetActiveHandoversByEmployeeAsync(employeeId);
+
+            foreach (var handover in activeHandovers)
+            {
+                // Create handover return record for each asset
+                await _handoverReturnService.CreateHandoverReturnAsync(
+                    handover.Id,
+                    employeeId,
+                    "Employee termination - automatic return request");
+            }
         }
     }
 }

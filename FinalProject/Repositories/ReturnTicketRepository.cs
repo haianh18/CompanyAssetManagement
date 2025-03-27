@@ -1,4 +1,5 @@
-﻿using FinalProject.Models;
+﻿using FinalProject.Enums;
+using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -116,6 +117,47 @@ namespace FinalProject.Repositories
                     .ThenInclude(bt => bt.WarehouseAsset)
                         .ThenInclude(wa => wa.Warehouse)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<ReturnTicket> GetReturnTicketWithBorrowDetails(int returnTicketId)
+        {
+            return await _dbSet
+                .Where(rt => rt.Id == returnTicketId)
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                            .ThenInclude(a => a.AssetCategory)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.BorrowBy)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<ReturnTicket>> GetPendingReturnRequests()
+        {
+            return await _dbSet
+                .Where(rt => rt.ApproveStatus == TicketStatus.Pending)
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(rt => rt.DateCreated)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ReturnTicket>> GetReturnTicketsWithCondition(AssetStatus condition)
+        {
+            return await _dbSet
+                .Where(rt => rt.AssetConditionOnReturn == condition)
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(rt => rt.DateCreated)
+                .ToListAsync();
         }
     }
 }

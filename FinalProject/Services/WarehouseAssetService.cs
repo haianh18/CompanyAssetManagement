@@ -1,3 +1,4 @@
+using FinalProject.Enums;
 using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using FinalProject.Services.Interfaces;
@@ -27,24 +28,48 @@ namespace FinalProject.Services
             return await _unitOfWork.WarehouseAssets.GetWarehouseAssetByWarehouseAndAsset(warehouseId, assetId);
         }
 
-        public async Task<bool> UpdateQuantityAsync(int warehouseAssetId, int quantityChange)
+        public async Task<bool> UpdateAssetStatusQuantityAsync(int warehouseAssetId, AssetStatus fromStatus,
+            AssetStatus toStatus, int quantity)
         {
-            var result = await _unitOfWork.WarehouseAssets.UpdateQuantity(warehouseAssetId, quantityChange);
+            var result = await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
+                warehouseAssetId, fromStatus, toStatus, quantity);
+
             if (result)
-            {
                 await _unitOfWork.SaveChangesAsync();
-            }
+
             return result;
         }
 
-        public async Task<int> GetTotalAssetQuantityAsync(int assetId)
+        public async Task<bool> UpdateBorrowedQuantityAsync(int warehouseAssetId, int quantityChange)
         {
-            return await _unitOfWork.WarehouseAssets.GetTotalAssetQuantity(assetId);
+            var result = await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(warehouseAssetId, quantityChange);
+
+            if (result)
+                await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
-        public async Task<IEnumerable<WarehouseAsset>> GetLowStockWarehouseAssetsAsync(int minQuantity)
+        public async Task<bool> UpdateHandedOverQuantityAsync(int warehouseAssetId, int quantityChange)
         {
-            return await _unitOfWork.WarehouseAssets.GetLowStockWarehouseAssets(minQuantity);
+            var result = await _unitOfWork.WarehouseAssets.UpdateHandedOverQuantity(warehouseAssetId, quantityChange);
+
+            if (result)
+                await _unitOfWork.SaveChangesAsync();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithAvailableQuantityAsync()
+        {
+            return await _unitOfWork.WarehouseAssets.GetAssetsWithAvailableQuantity();
+        }
+
+        public async Task<IEnumerable<WarehouseAsset>> GetBorrowableAssetsAsync()
+        {
+            // Get assets that have available good condition items
+            var assets = await _unitOfWork.WarehouseAssets.GetAssetsWithAvailableQuantity();
+            return assets.Where(a => (a.GoodQuantity ?? 0) > (a.BorrowedGoodQuantity ?? 0) + (a.HandedOverGoodQuantity ?? 0));
         }
     }
 }

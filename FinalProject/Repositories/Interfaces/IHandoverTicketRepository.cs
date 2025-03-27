@@ -11,4 +11,7 @@ public interface IHandoverTicketRepository : IRepository<HandoverTicket>
     Task<IEnumerable<HandoverTicket>> GetRecentHandoverTickets(int count);
     Task<Dictionary<string, int>> GetHandoverTicketStatisticsByMonth(int year);
     Task<HandoverTicket> GetHandoverTicketWithDetails(int handoverTicketId);
+    Task<IEnumerable<HandoverTicket>> GetActiveHandoversByEmployee(int employeeId);
+    Task<HandoverTicket> GetHandoverTicketWithAssetDetails(int handoverTicketId);
+    Task<IEnumerable<HandoverTicket>> GetHandoversByDepartmentEmployee(int departmentId, int employeeId);
 }
