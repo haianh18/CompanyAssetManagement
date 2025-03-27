@@ -64,21 +64,30 @@
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.ReturnBy.FullName</td>
+                                <td>@(item.ReturnBy?.FullName ?? "N/A")</td>
                                 <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
                                 <td>@item.Quantity</td>
                                 <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                                <td><a href="#" class="link-info">@item.BorrowTicketId</a></td>
+                                <td>
+                                    @if (item.BorrowTicketId.HasValue)
+                                    {
+                                        <a asp-action="DetailsBorrowRequest" asp-controller="WarehouseManager" asp-route-id="@item.BorrowTicketId" class="link-info">@item.BorrowTicketId</a>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
                                 <td>@item.Note</td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="ApproveReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                                        <a asp-action="ProcessReturn" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-success">
                                             <i class="fas fa-check"></i> Duyệt
                                         </a>
-                                        <a asp-action="RejectReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                        <a asp-action="Reject" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
                                             <i class="fas fa-times"></i> Từ chối
                                         </a>
-                                        <a asp-action="DetailsReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -118,15 +127,24 @@
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.ReturnBy.FullName</td>
+                                <td>@(item.ReturnBy?.FullName ?? "N/A")</td>
                                 <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
                                 <td>@item.Quantity</td>
                                 <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 <td>@(item.DateModified?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                                <td><a href="#" class="link-info">@item.BorrowTicketId</a></td>
+                                <td>
+                                    @if (item.BorrowTicketId.HasValue)
+                                    {
+                                        <a asp-action="DetailsBorrowRequest" asp-controller="WarehouseManager" asp-route-id="@item.BorrowTicketId" class="link-info">@item.BorrowTicketId</a>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="DetailsReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -166,7 +184,7 @@
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.ReturnBy.FullName</td>
+                                <td>@(item.ReturnBy?.FullName ?? "N/A")</td>
                                 <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
                                 <td>@item.Quantity</td>
                                 <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
@@ -174,7 +192,7 @@
                                 <td>@item.Note</td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="DetailsReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -192,3 +210,96 @@
                 }
             </div>
         </div>
+        
+        <!-- All Requests Tab -->
+        <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+            <div class="table-container">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người trả</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Phiếu mượn</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@(item.ReturnBy?.FullName ?? "N/A")</td>
+                                <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>
+                                    @switch (item.ApproveStatus)
+                                    {
+                                        case TicketStatus.Approved:
+                                            <span class="badge bg-success">Đã duyệt</span>
+                                            break;
+                                        case TicketStatus.Pending:
+                                            <span class="badge bg-warning">Chờ duyệt</span>
+                                            break;
+                                        case TicketStatus.Rejected:
+                                            <span class="badge bg-danger">Từ chối</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Không xác định</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.BorrowTicketId.HasValue)
+                                    {
+                                        <a asp-action="DetailsBorrowRequest" asp-controller="WarehouseManager" asp-route-id="@item.BorrowTicketId" class="link-info">@item.BorrowTicketId</a>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        Không có yêu cầu trả nào.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý sự kiện tab khi trang được tải
+            var activeTab = localStorage.getItem('activeReturnTab');
+            if (activeTab) {
+                $('#returnTabs button[data-bs-target="' + activeTab + '"]').tab('show');
+            }
+
+            // Lưu tab đang active khi chuyển tab
+            $('#returnTabs button').on('shown.bs.tab', function (e) {
+                var targetTab = $(e.target).data('bs-target');
+                localStorage.setItem('activeReturnTab', targetTab);
+            });
+        });
+    </script>
+}

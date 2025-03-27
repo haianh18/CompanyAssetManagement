@@ -37,8 +37,42 @@ namespace FinalProject.Controllers
         // GET: BorrowRequest/BorrowRequests
         public async Task<IActionResult> BorrowRequests()
         {
-            var requests = await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync();
-            return View(requests);
+            try
+            {
+                // Lấy tất cả các yêu cầu mượn, bao gồm cả thông tin liên quan
+                var requests = await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync();
+
+                // Ghi log để debug
+                Console.WriteLine($"Found {requests.Count()} borrow requests");
+
+                // Đảm bảo tải đầy đủ các đối tượng liên quan
+                foreach (var request in requests)
+                {
+                    // Đảm bảo đối tượng liên quan được tải
+                    if (request.BorrowById.HasValue && request.BorrowBy == null)
+                    {
+                        request.BorrowBy = await _userService.GetUserByIdAsync(request.BorrowById.Value);
+                    }
+
+                    if (request.WarehouseAssetId.HasValue && request.WarehouseAsset == null)
+                    {
+                        request.WarehouseAsset = await _warehouseAssetService.GetByIdAsync(request.WarehouseAssetId.Value);
+
+                        // Đảm bảo Asset được tải
+                        if (request.WarehouseAsset != null && request.WarehouseAsset.AssetId.HasValue && request.WarehouseAsset.Asset == null)
+                        {
+                            request.WarehouseAsset.Asset = await _assetService.GetByIdAsync(request.WarehouseAsset.AssetId.Value);
+                        }
+                    }
+                }
+
+                return View(requests);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi tải danh sách yêu cầu mượn: {ex.Message}";
+                return View(new List<BorrowTicket>());
+            }
         }
 
         // GET: BorrowRequest/Create

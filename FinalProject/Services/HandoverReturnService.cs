@@ -7,16 +7,13 @@ namespace FinalProject.Services
 {
     public class HandoverReturnService : BaseService<HandoverReturn>, IHandoverReturnService
     {
-        private readonly IHandoverTicketService _handoverTicketService;
-        private readonly IWarehouseAssetService _warehouseAssetService;
+        private readonly IHandoverService _handoverService;
 
         public HandoverReturnService(
             IUnitOfWork unitOfWork,
-            IHandoverTicketService handoverTicketService,
-            IWarehouseAssetService warehouseAssetService) : base(unitOfWork)
+            IHandoverService handoverService) : base(unitOfWork)
         {
-            _handoverTicketService = handoverTicketService;
-            _warehouseAssetService = warehouseAssetService;
+            _handoverService = handoverService;
         }
 
         public async Task<IEnumerable<HandoverReturn>> GetHandoverReturnsByEmployeeAsync(int employeeId)
@@ -36,7 +33,8 @@ namespace FinalProject.Services
 
         public async Task<HandoverReturn> CreateHandoverReturnAsync(int handoverTicketId, int returnById, string notes)
         {
-            var handoverTicket = await _handoverTicketService.GetByIdAsync(handoverTicketId);
+            // Get the handover ticket
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(handoverTicketId);
             if (handoverTicket == null)
                 throw new Exception("Handover ticket not found");
 
@@ -65,7 +63,7 @@ namespace FinalProject.Services
             if (handoverReturn == null)
                 throw new Exception("Handover return record not found");
 
-            var handoverTicket = await _handoverTicketService.GetByIdAsync(handoverReturn.HandoverTicketId);
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(handoverReturn.HandoverTicketId);
             if (handoverTicket == null)
                 throw new Exception("Related handover ticket not found");
 
@@ -81,42 +79,25 @@ namespace FinalProject.Services
             handoverReturn.AssetConditionOnReturn = assetCondition;
             handoverReturn.DateModified = DateTime.Now;
 
-            // Update handover ticket to reflect return
-            handoverTicket.IsActive = false;
-            handoverTicket.ActualEndDate = DateTime.Now;
-            handoverTicket.CurrentCondition = assetCondition;
-            handoverTicket.DateModified = DateTime.Now;
+            // Update handover ticket status
+            await _handoverService.UpdateHandoverTicketStatus(
+                handoverTicket.Id,
+                false,  // isActive = false
+                DateTime.Now // actualEndDate
+            );
 
             // Update warehouse asset quantities
-            var warehouseAsset = handoverTicket.WarehouseAsset;
-            if (warehouseAsset != null)
+            if (handoverTicket.WarehouseAssetId.HasValue)
             {
-                // Reduce handed over quantity
-                await _warehouseAssetService.UpdateHandedOverQuantityAsync(
-                    warehouseAsset.Id,
-                    -(handoverTicket.Quantity ?? 0));
-
-                // Update asset quantities based on condition
-                if (assetCondition == AssetStatus.GOOD)
-                {
-                    await _warehouseAssetService.UpdateAssetStatusQuantityAsync(
-                        warehouseAsset.Id,
-                        AssetStatus.GOOD,
-                        AssetStatus.GOOD,
-                        handoverTicket.Quantity ?? 0);
-                }
-                else
-                {
-                    await _warehouseAssetService.UpdateAssetStatusQuantityAsync(
-                        warehouseAsset.Id,
-                        AssetStatus.GOOD,
-                        assetCondition,
-                        handoverTicket.Quantity ?? 0);
-                }
+                await _handoverService.UpdateWarehouseAssetQuantitiesForHandover(
+                    handoverTicket.WarehouseAssetId.Value,
+                    handoverTicket.Quantity ?? 0,
+                    true, // isReturn
+                    assetCondition
+                );
             }
 
             await UpdateAsync(handoverReturn);
-            await _handoverTicketService.UpdateAsync(handoverTicket);
 
             return handoverReturn;
         }

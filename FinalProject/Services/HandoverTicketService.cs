@@ -1,3 +1,4 @@
+using FinalProject.Enums;
 using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using FinalProject.Services.Interfaces;
@@ -8,13 +9,13 @@ namespace FinalProject.Services
 {
     public class HandoverTicketService : BaseService<HandoverTicket>, IHandoverTicketService
     {
-        private readonly IHandoverReturnService _handoverReturnService;
+        private readonly IHandoverService _handoverService;
 
         public HandoverTicketService(
             IUnitOfWork unitOfWork,
-            IHandoverReturnService handoverReturnService) : base(unitOfWork)
+            IHandoverService handoverService) : base(unitOfWork)
         {
-            _handoverReturnService = handoverReturnService;
+            _handoverService = handoverService;
         }
 
         public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByHandoverByAsync(int handoverById)
@@ -84,11 +85,23 @@ namespace FinalProject.Services
 
             foreach (var handover in activeHandovers)
             {
-                // Create handover return record for each asset
-                await _handoverReturnService.CreateHandoverReturnAsync(
+                // Mark as inactive
+                await _handoverService.UpdateHandoverTicketStatus(
                     handover.Id,
-                    employeeId,
-                    "Employee termination - automatic return request");
+                    false,
+                    DateTime.Now
+                );
+
+                // Update warehouse asset quantities
+                if (handover.WarehouseAssetId.HasValue)
+                {
+                    await _handoverService.UpdateWarehouseAssetQuantitiesForHandover(
+                        handover.WarehouseAssetId.Value,
+                        handover.Quantity ?? 0,
+                        true, // isReturn
+                        AssetStatus.GOOD // Default to good condition
+                    );
+                }
             }
         }
     }

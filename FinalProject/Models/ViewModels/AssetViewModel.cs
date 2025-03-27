@@ -13,6 +13,12 @@ namespace FinalProject.Models.ViewModels
         public int BorrowedQuantity { get; set; }
         public int HandedOverQuantity { get; set; }
 
+        // Add these new properties
+        public int TotalGoodQuantity { get; set; }
+        public int TotalBrokenQuantity { get; set; }
+        public int TotalFixingQuantity { get; set; }
+        public int TotalDisposedQuantity { get; set; }
+
         public int AvailableQuantity => TotalQuantity - BorrowedQuantity - HandedOverQuantity;
     }
 

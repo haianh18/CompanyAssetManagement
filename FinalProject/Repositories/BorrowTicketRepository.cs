@@ -100,8 +100,9 @@ namespace FinalProject.Repositories
 
         public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsWithoutReturn()
         {
+            // Lấy các yêu cầu mượn chưa trả hoặc chưa được đánh dấu là đã trả
             return await _dbSet
-                .Where(bt => bt.ReturnTickets.Count == 0)
+                .Where(bt => !bt.IsReturned)  // Tập trung vào điều kiện này
                 .Include(bt => bt.BorrowBy)
                 .Include(bt => bt.Owner)
                 .Include(bt => bt.WarehouseAsset)

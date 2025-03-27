@@ -1,10 +1,9 @@
-﻿@model IEnumerable<FinalProject.Models.Asset>
+﻿@model IEnumerable<FinalProject.Models.ViewModels.AssetViewModel>
 @using FinalProject.Enums
 @{
     ViewData["Title"] = "Quản lý tài sản";
     Layout = "_WarehouseManagerLayout";
 }
-
 
 <div class="container-fluid">
     <div class="row mb-4">
@@ -28,6 +27,7 @@
                 <div class="input-group">
                     <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm tài sản..."
                            value="@ViewBag.CurrentFilter">
+
                     <!-- Hidden field for showDeleted parameter -->
                     <input type="hidden" name="showDeleted" value="@ViewBag.ShowDeleted.ToString().ToLower()">
 
@@ -164,53 +164,55 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr class="@(item.IsDeleted ? "table-secondary" : "")">
-                        <td>@item.Id</td>
-                        <td>@item.Name</td>
-                        <td>@(item.AssetCategory?.Name ?? "N/A")</td>
-                        <td>@item.Unit</td>
-                        <td>@item.Price.ToString("N0") VNĐ</td>
+                    <tr class="@(item.Asset.IsDeleted ? "table-secondary" : "")">
+                        <td>@item.Asset.Id</td>
+                        <td>@item.Asset.Name</td>
+                        <td>@(item.Asset.AssetCategory?.Name ?? "N/A")</td>
+                        <td>@item.Asset.Unit</td>
+                        <td>@item.Asset.Price.ToString("N0") VNĐ</td>
                         <td>
-                            @switch (item.AssetStatus)
+                            @if (item.TotalGoodQuantity > 0)
                             {
-                                case AssetStatus.GOOD:
-                                    <span class="badge bg-success">Tốt</span>
-                                    break;
-                                case AssetStatus.BROKEN:
-                                    <span class="badge bg-danger">Hỏng</span>
-                                    break;
-                                case AssetStatus.FIXING:
-                                    <span class="badge bg-warning">Đang sửa</span>
-                                    break;
-                                case AssetStatus.DISPOSED:
-                                    <span class="badge bg-secondary">Đã thanh lý</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-secondary">Không xác định</span>
-                                    break;
+                                <span class="badge bg-success">Tốt</span>
+                            }
+                            else if (item.TotalBrokenQuantity > 0)
+                            {
+                                <span class="badge bg-danger">Hỏng</span>
+                            }
+                            else if (item.TotalFixingQuantity > 0)
+                            {
+                                <span class="badge bg-warning">Đang sửa</span>
+                            }
+                            else if (item.TotalDisposedQuantity > 0)
+                            {
+                                <span class="badge bg-secondary">Đã thanh lý</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Không xác định</span>
                             }
                         </td>
-                        <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                        <td>@(item.Asset.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                         <td>
                             <div class="action-buttons">
-                                @if (!item.IsDeleted)
+                                @if (!item.Asset.IsDeleted)
                                 {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Chỉnh sửa">
+                                    <a asp-action="Edit" asp-route-id="@item.Asset.Id" class="btn btn-sm btn-primary" title="Chỉnh sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+                                    <a asp-action="Details" asp-route-id="@item.Asset.Id" class="btn btn-sm btn-info" title="Chi tiết">
                                         <i class="fas fa-info-circle"></i>
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Xóa">
+                                    <a asp-action="Delete" asp-route-id="@item.Asset.Id" class="btn btn-sm btn-danger" title="Xóa">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 }
                                 else
                                 {
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+                                    <a asp-action="Details" asp-route-id="@item.Asset.Id" class="btn btn-sm btn-info" title="Chi tiết">
                                         <i class="fas fa-info-circle"></i>
                                     </a>
-                                    <a asp-action="Restore" asp-route-id="@item.Id" class="btn btn-sm btn-success" title="Khôi phục">
+                                    <a asp-action="Restore" asp-route-id="@item.Asset.Id" class="btn btn-sm btn-success" title="Khôi phục">
                                         <i class="fas fa-undo"></i>
                                     </a>
                                 }

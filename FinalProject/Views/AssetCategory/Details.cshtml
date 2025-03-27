@@ -80,23 +80,32 @@
                                     <td>@asset.Name</td>
                                     <td>@asset.Price.ToString("N0") VNĐ</td>
                                     <td>
-                                        @switch (asset.AssetStatus)
+                                        @{
+                                            bool hasGood = asset.WarehouseAssets?.Any(wa => wa.GoodQuantity > 0) ?? false;
+                                            bool hasBroken = asset.WarehouseAssets?.Any(wa => wa.BrokenQuantity > 0) ?? false;
+                                            bool hasFixing = asset.WarehouseAssets?.Any(wa => wa.FixingQuantity > 0) ?? false;
+                                            bool hasDisposed = asset.WarehouseAssets?.Any(wa => wa.DisposedQuantity > 0) ?? false;
+                                        }
+
+                                        @if (hasGood)
                                         {
-                                            case FinalProject.Enums.AssetStatus.GOOD:
-                                                <span class="badge bg-success">Tốt</span>
-                                                break;
-                                            case FinalProject.Enums.AssetStatus.BROKEN:
-                                                <span class="badge bg-danger">Hỏng</span>
-                                                break;
-                                            case FinalProject.Enums.AssetStatus.FIXING:
-                                                <span class="badge bg-warning">Đang sửa</span>
-                                                break;
-                                            case FinalProject.Enums.AssetStatus.DISPOSED:
-                                                <span class="badge bg-secondary">Đã thanh lý</span>
-                                                break;
-                                            default:
-                                                <span class="badge bg-secondary">Không xác định</span>
-                                                break;
+                                            <span class="badge bg-success">Tốt</span>
+                                        }
+                                        else if (hasBroken)
+                                        {
+                                            <span class="badge bg-danger">Hỏng</span>
+                                        }
+                                        else if (hasFixing)
+                                        {
+                                            <span class="badge bg-warning">Đang sửa</span>
+                                        }
+                                        else if (hasDisposed)
+                                        {
+                                            <span class="badge bg-secondary">Đã thanh lý</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Không xác định</span>
                                         }
                                     </td>
                                     <td>

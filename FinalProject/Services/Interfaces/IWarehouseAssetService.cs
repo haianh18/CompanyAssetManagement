@@ -15,7 +15,7 @@ namespace FinalProject.Services.Interfaces
         Task<bool> UpdateBorrowedQuantityAsync(int warehouseAssetId, int quantityChange);
         Task<bool> UpdateHandedOverQuantityAsync(int warehouseAssetId, int quantityChange);
         Task<IEnumerable<WarehouseAsset>> GetAssetsWithAvailableQuantityAsync();
-        Task<IEnumerable<WarehouseAsset>> GetBorrowableAssetsAsync();
+        Task<IEnumerable<WarehouseAsset>> GetBorrowableAssetsAsync(); // Add this method
 
         Task<IEnumerable<WarehouseAsset>> GetAssetsWithGoodQuantityAsync();
         Task<IEnumerable<WarehouseAsset>> GetAssetsWithBrokenQuantityAsync();
@@ -23,16 +23,3 @@ namespace FinalProject.Services.Interfaces
         Task<IEnumerable<WarehouseAsset>> GetAssetsWithDisposedQuantityAsync();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

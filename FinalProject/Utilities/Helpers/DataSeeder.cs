@@ -37,7 +37,6 @@ public class DataSeeder : IHostedService
             }
 
             // Seed users
-            // Seed users
             if (!await context.Users.AnyAsync(cancellationToken))
             {
                 var adminUserSeed = new AppUser { UserName = "admin", Email = "admin@example.com", FullName = "Admin User", RoleId = 1 };
@@ -134,43 +133,248 @@ public class DataSeeder : IHostedService
             }
 
             // Seed warehouse assets
+            // Xóa tất cả warehouse assets hiện có trước khi thêm mới
+            if (await context.WarehouseAssets.AnyAsync(cancellationToken))
+            {
+                // First, handle the related borrow tickets
+                // Using Any
+                //var warehouseAssets = context.WarehouseAssets.Include(b => b.BorrowTickets).Include(h => h.HandoverTickets).ToList();
+
+                //foreach (var wa in warehouseAssets)
+                //{
+                //    wa.BorrowTickets.Clear();
+                //    wa.HandoverTickets.Clear();
+                //}
+                //// Then remove warehouse assets
+                //context.WarehouseAssets.RemoveRange(context.WarehouseAssets);
+                //await context.SaveChangesAsync(cancellationToken);
+            }
+
             if (!await context.WarehouseAssets.AnyAsync(cancellationToken))
             {
+
+                // Thêm dữ liệu mới
                 context.WarehouseAssets.AddRange(
-                    new WarehouseAsset { WarehouseId = 1, AssetId = 1, GoodQuantity = 10 },
-                    new WarehouseAsset { WarehouseId = 2, AssetId = 2, GoodQuantity = 20 },
-                    new WarehouseAsset { WarehouseId = 3, AssetId = 3, GoodQuantity = 100 },
-                    new WarehouseAsset { WarehouseId = 4, AssetId = 4, GoodQuantity = 5 },
-                    new WarehouseAsset { WarehouseId = 5, AssetId = 5, GoodQuantity = 50 }
- );
+                    // Laptop ở kho chính - một số đã bàn giao, một số đang được mượn
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 1,
+                        AssetId = 1,
+                        GoodQuantity = 15,
+                        BrokenQuantity = 2,
+                        FixingQuantity = 3,
+                        DisposedQuantity = 1,
+                        BorrowedGoodQuantity = 5,
+                        HandedOverGoodQuantity = 4,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Ghế ở kho phụ - hầu hết đã bàn giao cho các phòng ban
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 2,
+                        AssetId = 2,
+                        GoodQuantity = 50,
+                        BrokenQuantity = 5,
+                        FixingQuantity = 0,
+                        DisposedQuantity = 10,
+                        BorrowedGoodQuantity = 2,
+                        HandedOverGoodQuantity = 35,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Bút ở kho điện tử - số lượng lớn, phần lớn khả dụng
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 3,
+                        AssetId = 3,
+                        GoodQuantity = 200,
+                        BrokenQuantity = 0,
+                        FixingQuantity = 0,
+                        DisposedQuantity = 15,
+                        BorrowedGoodQuantity = 25,
+                        HandedOverGoodQuantity = 0,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Xe ô tô ở kho nội thất - số lượng ít, tất cả trong tình trạng tốt
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 4,
+                        AssetId = 4,
+                        GoodQuantity = 5,
+                        BrokenQuantity = 0,
+                        FixingQuantity = 1,
+                        DisposedQuantity = 0,
+                        BorrowedGoodQuantity = 2,
+                        HandedOverGoodQuantity = 1,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Búa ở kho công cụ - một số đang được sửa
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 5,
+                        AssetId = 5,
+                        GoodQuantity = 30,
+                        BrokenQuantity = 10,
+                        FixingQuantity = 15,
+                        DisposedQuantity = 5,
+                        BorrowedGoodQuantity = 8,
+                        HandedOverGoodQuantity = 12,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Laptop ở kho phụ
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 2,
+                        AssetId = 1,
+                        GoodQuantity = 8,
+                        BrokenQuantity = 3,
+                        FixingQuantity = 2,
+                        DisposedQuantity = 0,
+                        BorrowedGoodQuantity = 3,
+                        HandedOverGoodQuantity = 2,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Ghế ở kho chính
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 1,
+                        AssetId = 2,
+                        GoodQuantity = 25,
+                        BrokenQuantity = 8,
+                        FixingQuantity = 4,
+                        DisposedQuantity = 3,
+                        BorrowedGoodQuantity = 5,
+                        HandedOverGoodQuantity = 15,
+                        DateCreated = DateTime.Now
+                    },
+
+                    // Bút ở kho công cụ
+                    new WarehouseAsset
+                    {
+                        WarehouseId = 5,
+                        AssetId = 3,
+                        GoodQuantity = 100,
+                        BrokenQuantity = 20,
+                        FixingQuantity = 0,
+                        DisposedQuantity = 30,
+                        BorrowedGoodQuantity = 15,
+                        HandedOverGoodQuantity = 5,
+                        DateCreated = DateTime.Now
+                    }
+                );
 
                 await context.SaveChangesAsync(cancellationToken);
             }
-
             // Seed borrow tickets
             if (!await context.BorrowTickets.AnyAsync(cancellationToken))
             {
+                //// Xóa tất cả phiếu mượn hiện có trước khi thêm mới
+                //var borrowTickets = context.BorrowTickets
+                //    .Include(bt => bt.WarehouseAsset)
+                //    .ToList();
+
+
+                if (adminUser == null || warehouseManagerUser == null || generalUser == null || user1 == null || user2 == null)
+                {
+                    throw new Exception("One or more users could not be found.");
+                }
+
+                // Tạo nhiều phiếu mượn với trạng thái khác nhau
                 context.BorrowTickets.AddRange(
-                    new BorrowTicket { WarehouseAssetId = 1, BorrowById = adminUserId, OwnerId = adminUserId, Quantity = 1, ReturnDate = DateTime.Now.AddDays(7) },
-                    new BorrowTicket { WarehouseAssetId = 2, BorrowById = warehouseManagerUserId, OwnerId = warehouseManagerUserId, Quantity = 2, ReturnDate = DateTime.Now.AddDays(7) },
-                    new BorrowTicket { WarehouseAssetId = 3, BorrowById = generalUserId, OwnerId = generalUserId, Quantity = 3, ReturnDate = DateTime.Now.AddDays(7) },
-                    new BorrowTicket { WarehouseAssetId = 4, BorrowById = user1Id, OwnerId = user1Id, Quantity = 4, ReturnDate = DateTime.Now.AddDays(7) },
-                    new BorrowTicket { WarehouseAssetId = 5, BorrowById = user2Id, OwnerId = user2Id, Quantity = 5, ReturnDate = DateTime.Now.AddDays(7) }
+                    // Phiếu chờ duyệt
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 1,
+                        BorrowById = generalUserId,
+                        Quantity = 2,
+                        ReturnDate = DateTime.Now.AddDays(14),
+                        DateCreated = DateTime.Now.AddDays(-2),
+                        ApproveStatus = TicketStatus.Pending,
+                        Note = "Mượn laptop để làm việc tại nhà"
+                    },
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 3,
+                        BorrowById = user1Id,
+                        Quantity = 5,
+                        ReturnDate = DateTime.Now.AddDays(7),
+                        DateCreated = DateTime.Now.AddDays(-1),
+                        ApproveStatus = TicketStatus.Pending,
+                        Note = "Mượn bút để phát cho học viên tham gia đào tạo"
+                    },
+
+                    // Phiếu đã duyệt
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 2,
+                        BorrowById = user2Id,
+                        OwnerId = warehouseManagerUserId,
+                        Quantity = 3,
+                        ReturnDate = DateTime.Now.AddDays(21),
+                        DateCreated = DateTime.Now.AddDays(-5),
+                        DateModified = DateTime.Now.AddDays(-4),
+                        ApproveStatus = TicketStatus.Approved,
+                        Note = "Mượn ghế để tổ chức sự kiện"
+                    },
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 4,
+                        BorrowById = generalUserId,
+                        OwnerId = warehouseManagerUserId,
+                        Quantity = 1,
+                        ReturnDate = DateTime.Now.AddDays(1),
+                        DateCreated = DateTime.Now.AddDays(-10),
+                        DateModified = DateTime.Now.AddDays(-9),
+                        ApproveStatus = TicketStatus.Approved,
+                        Note = "Mượn xe cho chuyến công tác"
+                    },
+
+                    // Phiếu bị từ chối
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 5,
+                        BorrowById = adminUserId,
+                        OwnerId = warehouseManagerUserId,
+                        Quantity = 10,
+                        ReturnDate = DateTime.Now.AddDays(30),
+                        DateCreated = DateTime.Now.AddDays(-8),
+                        DateModified = DateTime.Now.AddDays(-7),
+                        ApproveStatus = TicketStatus.Rejected,
+                        Note = "Từ chối: Số lượng yêu cầu quá nhiều"
+                    },
+
+                    // Phiếu đã trả
+                    new BorrowTicket
+                    {
+                        WarehouseAssetId = 1,
+                        BorrowById = user1Id,
+                        OwnerId = warehouseManagerUserId,
+                        Quantity = 1,
+                        ReturnDate = DateTime.Now.AddDays(-5),
+                        DateCreated = DateTime.Now.AddDays(-20),
+                        DateModified = DateTime.Now.AddDays(-19),
+                        ApproveStatus = TicketStatus.Approved,
+                        IsReturned = true,
+                        Note = "Đã trả đúng hạn"
+                    }
                 );
+
                 await context.SaveChangesAsync(cancellationToken);
             }
 
             // Retrieve borrow ticket IDs
-            var borrowTicket1 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 1 && bt.BorrowById == adminUserId);
-            var borrowTicket2 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 2 && bt.BorrowById == warehouseManagerUserId);
-            var borrowTicket3 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 3 && bt.BorrowById == generalUserId);
-            var borrowTicket4 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 4 && bt.BorrowById == user1Id);
-            var borrowTicket5 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 5 && bt.BorrowById == user2Id);
+            var borrowTicket1 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 1);
+            var borrowTicket2 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 2);
+            var borrowTicket3 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 3);
+            var borrowTicket4 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 4);
+            var borrowTicket5 = await context.BorrowTickets.FirstOrDefaultAsync(bt => bt.WarehouseAssetId == 5);
 
-            if (borrowTicket1 == null || borrowTicket2 == null || borrowTicket3 == null || borrowTicket4 == null || borrowTicket5 == null)
-            {
-                throw new Exception("One or more borrow tickets could not be found.");
-            }
+
 
             // Seed disposal tickets
             if (!await context.DisposalTickets.AnyAsync(cancellationToken))

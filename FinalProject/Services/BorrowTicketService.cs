@@ -42,7 +42,13 @@ namespace FinalProject.Services
 
         public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsWithoutReturnAsync()
         {
-            return await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
+            // Sửa truy vấn để đảm bảo lấy được tất cả các yêu cầu mượn chưa trả
+            var borrowTickets = await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
+
+            // Log số lượng yêu cầu mượn tìm thấy
+            Console.WriteLine($"Service found {borrowTickets.Count()} borrow tickets without return");
+
+            return borrowTickets;
         }
 
         public async Task<IEnumerable<BorrowTicket>> GetRecentBorrowTicketsAsync(int count)

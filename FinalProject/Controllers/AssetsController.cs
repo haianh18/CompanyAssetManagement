@@ -572,14 +572,19 @@ namespace FinalProject.Controllers
         // Helper method to filter assets by status
         private IQueryable<Asset> FilterAssetsByStatus(IQueryable<Asset> query, AssetStatus status)
         {
-            return status switch
+            switch (status)
             {
-                AssetStatus.GOOD => query.Where(a => a.WarehouseAssets.Any(wa => wa.GoodQuantity > 0)),
-                AssetStatus.BROKEN => query.Where(a => a.WarehouseAssets.Any(wa => wa.BrokenQuantity > 0)),
-                AssetStatus.FIXING => query.Where(a => a.WarehouseAssets.Any(wa => wa.FixingQuantity > 0)),
-                AssetStatus.DISPOSED => query.Where(a => a.WarehouseAssets.Any(wa => wa.DisposedQuantity > 0)),
-                _ => query
-            };
+                case AssetStatus.GOOD:
+                    return query.Where(a => a.WarehouseAssets.Any(wa => wa.GoodQuantity > 0));
+                case AssetStatus.BROKEN:
+                    return query.Where(a => a.WarehouseAssets.Any(wa => wa.BrokenQuantity > 0));
+                case AssetStatus.FIXING:
+                    return query.Where(a => a.WarehouseAssets.Any(wa => wa.FixingQuantity > 0));
+                case AssetStatus.DISPOSED:
+                    return query.Where(a => a.WarehouseAssets.Any(wa => wa.DisposedQuantity > 0));
+                default:
+                    return query;
+            }
         }
 
         // Helper method to apply sorting
@@ -625,12 +630,25 @@ namespace FinalProject.Controllers
 
             foreach (var asset in assets)
             {
+                var warehouseAssets = await _warehouseAssetService.GetWarehouseAssetsByAssetAsync(asset.Id);
+
+                // Tính tổng các loại số lượng
+                int totalGoodQuantity = warehouseAssets.Sum(wa => wa.GoodQuantity ?? 0);
+                int totalBrokenQuantity = warehouseAssets.Sum(wa => wa.BrokenQuantity ?? 0);
+                int totalFixingQuantity = warehouseAssets.Sum(wa => wa.FixingQuantity ?? 0);
+                int totalDisposedQuantity = warehouseAssets.Sum(wa => wa.DisposedQuantity ?? 0);
+
                 var assetViewModel = new AssetViewModel
                 {
                     Asset = asset,
-                    TotalQuantity = await GetTotalQuantityAsync(asset.Id),
+                    TotalQuantity = totalGoodQuantity + totalBrokenQuantity + totalFixingQuantity + totalDisposedQuantity,
                     BorrowedQuantity = await GetBorrowedQuantityAsync(asset.Id),
-                    HandedOverQuantity = await GetHandedOverQuantityAsync(asset.Id)
+                    HandedOverQuantity = await GetHandedOverQuantityAsync(asset.Id),
+                    // Thêm các thuộc tính mới
+                    TotalGoodQuantity = totalGoodQuantity,
+                    TotalBrokenQuantity = totalBrokenQuantity,
+                    TotalFixingQuantity = totalFixingQuantity,
+                    TotalDisposedQuantity = totalDisposedQuantity
                 };
 
                 result.Add(assetViewModel);

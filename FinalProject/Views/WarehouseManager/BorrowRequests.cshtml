@@ -8,20 +8,31 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <h2><i class="fas fa-clipboard-check"></i> Yêu cầu mượn tài sản</h2>
+            <p>Tổng số yêu cầu: @Model.Count()</p>
         </div>
     </div>
+
+    <!-- Thêm message debug -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
 
     <div class="row mb-4">
         <div class="col-md-12">
             <ul class="nav nav-tabs" id="borrowTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
-                        <i class="fas fa-clock"></i> Chờ duyệt <span class="badge bg-warning">@Model.Count(b => !b.ReturnTickets.Any())</span>
+                        <i class="fas fa-clock"></i> Chờ duyệt
+                        <span class="badge bg-warning">@Model.Count(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Pending)</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" aria-controls="approved" aria-selected="false">
                         <i class="fas fa-check"></i> Đã duyệt
+                        <span class="badge bg-success">@Model.Count(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Approved && !b.IsReturned)</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -51,11 +62,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.Where(b => !b.ReturnTickets.Any()))
+                        @foreach (var item in Model.Where(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Pending))
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.BorrowBy.FullName</td>
+                                <td>@(item.BorrowBy?.FullName ?? "N/A")</td>
                                 <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
                                 <td>@item.Quantity</td>
                                 <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
@@ -79,7 +90,7 @@
                     </tbody>
                 </table>
 
-                @if (!Model.Where(b => !b.ReturnTickets.Any()).Any())
+                @if (!Model.Where(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Pending).Any())
                 {
                     <div class="alert alert-info text-center" role="alert">
                         Không có yêu cầu mượn nào đang chờ duyệt.
@@ -105,10 +116,37 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Render approved requests here -->
-                        <!-- Similar to pending requests but with different actions -->
+                        @foreach (var item in Model.Where(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Approved && !b.IsReturned))
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@(item.BorrowBy?.FullName ?? "N/A")</td>
+                                <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@item.Note</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="DetailsBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        <a asp-controller="ReturnRequest" asp-action="Create" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-undo-alt"></i> Yêu cầu trả
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
+
+                @if (!Model.Where(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Approved && !b.IsReturned).Any())
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        Không có yêu cầu mượn nào đã được duyệt.
+                    </div>
+                }
             </div>
         </div>
 
@@ -133,19 +171,33 @@
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.BorrowBy.FullName</td>
+                                <td>@(item.BorrowBy?.FullName ?? "N/A")</td>
                                 <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
                                 <td>@item.Quantity</td>
                                 <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 <td>
-                                    @if (item.ReturnTickets.Any())
+                                    @if (item.IsReturned)
                                     {
                                         <span class="badge bg-success">Đã trả</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning">Đang mượn</span>
+                                        @switch (item.ApproveStatus)
+                                        {
+                                            case FinalProject.Enums.TicketStatus.Approved:
+                                                <span class="badge bg-primary">Đã duyệt</span>
+                                                break;
+                                            case FinalProject.Enums.TicketStatus.Pending:
+                                                <span class="badge bg-warning">Chờ duyệt</span>
+                                                break;
+                                            case FinalProject.Enums.TicketStatus.Rejected:
+                                                <span class="badge bg-danger">Từ chối</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                                break;
+                                        }
                                     }
                                 </td>
                                 <td>
@@ -167,7 +219,10 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Handle tab switching if needed
+            console.log("Loaded borrow requests view");
+            console.log("Total requests: @Model.Count()");
+            console.log("Pending requests: @Model.Count(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Pending)");
+            console.log("Approved requests: @Model.Count(b => b.ApproveStatus == FinalProject.Enums.TicketStatus.Approved && !b.IsReturned)");
         });
     </script>
 }
