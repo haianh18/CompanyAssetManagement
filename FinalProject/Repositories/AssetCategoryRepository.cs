@@ -72,7 +72,6 @@ namespace FinalProject.Repositories
                     DateCreated = DateTime.Now
                 };
                 _dbSet.Add(defaultCategory);
-                await _context.SaveChangesAsync();
             }
 
             // Kiểm tra nếu yêu cầu xóa chính danh mục mặc định
@@ -101,7 +100,6 @@ namespace FinalProject.Repositories
                 asset.DateModified = DateTime.Now;
             }
 
-            await _context.SaveChangesAsync();
         }
 
         public override async Task<IEnumerable<AssetCategory>> GetAllIncludingDeletedAsync()

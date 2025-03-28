@@ -83,7 +83,6 @@ namespace FinalProject.Repositories
                 user.DateModified = DateTime.Now;
             }
 
-            await _context.SaveChangesAsync();
         }
     }
 }

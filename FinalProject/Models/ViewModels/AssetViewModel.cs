@@ -48,6 +48,93 @@ namespace FinalProject.Models.ViewModels
         public List<WarehouseAsset> WarehouseAssets { get; set; }
     }
 
+    // ViewModel thêm tài sản
+    public class AssetCreateViewModel
+    {
+        public Asset Asset { get; set; } = new Asset();
+
+        [Required(ErrorMessage = "Vui lòng chọn kho")]
+        [Display(Name = "Kho")]
+        public int WarehouseId { get; set; }  // Không còn là nullable
+
+        [Required(ErrorMessage = "Vui lòng nhập số lượng")]
+        [Display(Name = "Số lượng")]
+        [Range(1, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn 0")]
+        public int GoodQuantity { get; set; } = 1;  // Mặc định là 1
+
+        [Display(Name = "Số lượng hỏng")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int BrokenQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đang sửa")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int FixingQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đã thanh lý")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int DisposedQuantity { get; set; } = 0;
+    }
+
+    // ViewModel để cập nhật thông tin tài sản
+    public class AssetEditViewModel
+    {
+        public Asset Asset { get; set; } = new Asset();
+
+        // Danh sách các kho hiện có của tài sản
+        public List<WarehouseAssetQuantityViewModel> WarehouseQuantities { get; set; } = new List<WarehouseAssetQuantityViewModel>();
+
+        // Thông tin kho mới (nếu muốn thêm vào kho mới)
+        [Display(Name = "Thêm vào kho mới")]
+        public int? NewWarehouseId { get; set; }
+
+        [Display(Name = "Số lượng tốt")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int NewGoodQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng hỏng")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int NewBrokenQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đang sửa")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int NewFixingQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đã thanh lý")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int NewDisposedQuantity { get; set; } = 0;
+    }
+
+    // ViewModel cho quản lý số lượng tài sản trong từng kho
+    public class WarehouseAssetQuantityViewModel
+    {
+        // ID của bản ghi WarehouseAsset
+        public int WarehouseAssetId { get; set; }
+
+        // Thông tin kho
+        public int WarehouseId { get; set; }
+        public string WarehouseName { get; set; }
+
+        // Số lượng theo trạng thái
+        [Display(Name = "Số lượng tốt")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int GoodQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng hỏng")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int BrokenQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đang sửa")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int FixingQuantity { get; set; } = 0;
+
+        [Display(Name = "Số lượng đã thanh lý")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn hoặc bằng 0")]
+        public int DisposedQuantity { get; set; } = 0;
+
+        // Các thuộc tính tính toán
+        public int TotalQuantity => GoodQuantity + BrokenQuantity + FixingQuantity + DisposedQuantity;
+    }
+
     // ViewModel để cập nhật số lượng tài sản trong kho
     public class AssetQuantityUpdateViewModel
     {

@@ -88,7 +88,6 @@ namespace FinalProject.Repositories
                 warehouseAsset.DateModified = DateTime.Now;
             }
 
-            await _context.SaveChangesAsync();
         }
     }
 }

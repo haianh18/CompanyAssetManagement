@@ -1,21 +1,20 @@
-﻿@model FinalProject.Models.Asset
+﻿@model FinalProject.Models.WarehouseAsset
 @{
-    ViewData["Title"] = "Khôi phục tài sản";
+    ViewData["Title"] = "Khôi phục tài sản trong kho";
     Layout = "_WarehouseManagerLayout";
+    var asset = ViewBag.Asset as FinalProject.Models.Asset;
+    var warehouse = ViewBag.Warehouse as FinalProject.Models.Warehouse;
 }
-
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2><i class="fas fa-undo text-success"></i> Khôi phục tài sản</h2>
+            <h2><i class="fas fa-undo text-success"></i> Khôi phục tài sản vào kho</h2>
         </div>
     </div>
-
     <div class="alert alert-success">
         <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận khôi phục</h5>
-        <p>Bạn có chắc chắn muốn khôi phục tài sản này?</p>
+        <p>Bạn có chắc chắn muốn khôi phục tài sản "<strong>@asset?.Name</strong>" vào kho "<strong>@warehouse?.Name</strong>"?</p>
     </div>
-
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">Thông tin tài sản</h5>
@@ -23,20 +22,54 @@
         <div class="card-body">
             <dl class="row">
                 <dt class="col-sm-3">Tên tài sản</dt>
-                <dd class="col-sm-9">@Model.Name</dd>
-
+                <dd class="col-sm-9">@(asset?.Name ?? "N/A")</dd>
                 <dt class="col-sm-3">Danh mục</dt>
-                <dd class="col-sm-9">@(Model.AssetCategory?.Name ?? "N/A")</dd>
-
-                <dt class="col-sm-3">Giá</dt>
-                <dd class="col-sm-9">@Model.Price.ToString("N0") VNĐ</dd>
-
+                <dd class="col-sm-9">@(asset?.AssetCategory?.Name ?? "N/A")</dd>
+                <dt class="col-sm-3">Kho</dt>
+                <dd class="col-sm-9">@(warehouse?.Name ?? "N/A")</dd>
                 <dt class="col-sm-3">Đơn vị</dt>
-                <dd class="col-sm-9">@Model.Unit</dd>
-
-                <dt class="col-sm-3">Ngày xóa</dt>
+                <dd class="col-sm-9">@(asset?.Unit ?? "N/A")</dd>
+                <dt class="col-sm-3">Ngày chuyển kho</dt>
                 <dd class="col-sm-9">@(Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
             </dl>
+        </div>
+    </div>
+
+    <!-- Thông tin số lượng trước khi bị xóa -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Số lượng sẽ được khôi phục</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Số lượng tốt</th>
+                            <th>Số lượng hỏng</th>
+                            <th>Đang sửa</th>
+                            <th>Đã thanh lý</th>
+                            <th>Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@(Model.GoodQuantity ?? 0)</td>
+                            <td>@(Model.BrokenQuantity ?? 0)</td>
+                            <td>@(Model.FixingQuantity ?? 0)</td>
+                            <td>@(Model.DisposedQuantity ?? 0)</td>
+                            <td>
+                                @(
+                                    (Model.GoodQuantity ?? 0) +
+                                    (Model.BrokenQuantity ?? 0) +
+                                    (Model.FixingQuantity ?? 0) +
+                                    (Model.DisposedQuantity ?? 0)
+                                    )
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

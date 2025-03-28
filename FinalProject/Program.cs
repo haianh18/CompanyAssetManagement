@@ -1,6 +1,7 @@
 using FinalProject.Models;
 using FinalProject.Repositories;
 using FinalProject.Repositories.Common;
+using FinalProject.Repositories.Interfaces;
 using FinalProject.Services;
 using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,18 @@ public class Program
         // Register services
         builder.Services.AddScoped<IRoleRepository, RoleRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        builder.Services.AddScoped<IWarehouseAssetRepository, WarehouseAssetRepository>();
+        builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+        builder.Services.AddScoped<IAssetCategoryRepository, AssetCategoryRepository>();
+        builder.Services.AddScoped<IBorrowTicketRepository, BorrowTicketRepository>();
+        builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        builder.Services.AddScoped<IDisposalTicketRepository, DisposalTicketRepository>();
+        builder.Services.AddScoped<IDisposalTicketAssetRepository, DisposalTicketAssetRepository>();
+        builder.Services.AddScoped<IHandoverTicketRepository, HandoverTicketRepository>();
+        builder.Services.AddScoped<IHandoverReturnRepository, HandoverReturnRepository>();
+        builder.Services.AddScoped<IReturnTicketRepository, ReturnTicketRepository>();
+
 
         builder.Services.AddScoped<IAssetService, AssetService>();
         builder.Services.AddScoped<IAssetCategoryService, AssetCategoryService>();

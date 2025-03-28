@@ -9,4 +9,5 @@ public interface IWarehouseRepository : IRepository<Warehouse>
     Task<Dictionary<string, int>> GetWarehouseStatistics();
 
     Task SoftDeleteWarehouseAsync(int id);
+
 }

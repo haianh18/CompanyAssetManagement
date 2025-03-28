@@ -1,30 +1,21 @@
 ﻿@model FinalProject.Models.Asset
 @{
-    ViewData["Title"] = "Xóa tài sản";
+    ViewData["Title"] = "Xóa tài sản khỏi kho";
     Layout = "_WarehouseManagerLayout";
+    var warehouseAsset = ViewBag.WarehouseAsset as FinalProject.Models.WarehouseAsset;
+    var warehouse = ViewBag.Warehouse as FinalProject.Models.Warehouse;
 }
-
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2><i class="fas fa-trash text-danger"></i> Xóa tài sản</h2>
+            <h2><i class="fas fa-trash text-danger"></i> Xóa tài sản khỏi kho</h2>
         </div>
     </div>
 
-    @if (!Model.IsDeleted)
-    {
-        <div class="alert alert-danger">
-            <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h5>
-            <p>Bạn có chắc chắn muốn xóa tài sản này? Thao tác này sẽ đánh dấu xóa tài sản (soft delete) và có thể khôi phục lại sau.</p>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-secondary">
-            <h5><i class="fas fa-info-circle"></i> Thông tin</h5>
-            <p>Tài sản này đã bị xóa trước đó vào ngày @Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm").</p>
-        </div>
-    }
+    <div class="alert alert-danger">
+        <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h5>
+        <p>Bạn có chắc chắn muốn xóa tài sản "<strong>@Model.Name</strong>" khỏi kho "<strong>@warehouse?.Name</strong>"? Thao tác này chỉ xóa tài sản khỏi kho hiện tại.</p>
+    </div>
 
     <div class="card mb-4">
         <div class="card-header">
@@ -34,53 +25,66 @@
             <dl class="row">
                 <dt class="col-sm-3">Tên tài sản</dt>
                 <dd class="col-sm-9">@Model.Name</dd>
-
                 <dt class="col-sm-3">Danh mục</dt>
                 <dd class="col-sm-9">@(Model.AssetCategory?.Name ?? "N/A")</dd>
-
-                <dt class="col-sm-3">Giá</dt>
-                <dd class="col-sm-9">@Model.Price.ToString("N0") VNĐ</dd>
-
+                <dt class="col-sm-3">Kho</dt>
+                <dd class="col-sm-9">@(warehouse?.Name ?? "N/A")</dd>
                 <dt class="col-sm-3">Đơn vị</dt>
                 <dd class="col-sm-9">@Model.Unit</dd>
-
-                <dt class="col-sm-3">Mô tả</dt>
-                <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Description) ? "Không có" : Model.Description)</dd>
-
-                <dt class="col-sm-3">Ghi chú</dt>
-                <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Note) ? "Không có" : Model.Note)</dd>
-
-                <dt class="col-sm-3">Ngày tạo</dt>
-                <dd class="col-sm-9">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
             </dl>
         </div>
     </div>
 
+    <!-- Thông tin số lượng trong kho -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Số lượng trong kho</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Số lượng tốt</th>
+                            <th>Số lượng hỏng</th>
+                            <th>Đang sửa</th>
+                            <th>Đã thanh lý</th>
+                            <th>Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@(warehouseAsset?.GoodQuantity ?? 0)</td>
+                            <td>@(warehouseAsset?.BrokenQuantity ?? 0)</td>
+                            <td>@(warehouseAsset?.FixingQuantity ?? 0)</td>
+                            <td>@(warehouseAsset?.DisposedQuantity ?? 0)</td>
+                            <td>
+                                @(
+                                    (warehouseAsset?.GoodQuantity ?? 0) +
+                                    (warehouseAsset?.BrokenQuantity ?? 0) +
+                                    (warehouseAsset?.FixingQuantity ?? 0) +
+                                    (warehouseAsset?.DisposedQuantity ?? 0)
+                                    )
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="form-container">
-        @if (!Model.IsDeleted)
-        {
-            <form asp-action="Delete" method="post">
-                <input type="hidden" asp-for="Id" />
-                <div class="form-group text-end">
-                    <a asp-action="Index" class="btn btn-outline-secondary me-2">
-                        <i class="fas fa-times"></i> Hủy
-                    </a>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Xác nhận xóa
-                    </button>
-                </div>
-            </form>
-        }
-        else
-        {
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" name="warehouseId" value="@warehouse?.Id" />
             <div class="form-group text-end">
                 <a asp-action="Index" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+                    <i class="fas fa-times"></i> Hủy
                 </a>
-                <a asp-action="Restore" asp-route-id="@Model.Id" class="btn btn-success">
-                    <i class="fas fa-undo"></i> Khôi phục
-                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Xác nhận xóa khỏi kho
+                </button>
             </div>
-        }
+        </form>
     </div>
 </div>

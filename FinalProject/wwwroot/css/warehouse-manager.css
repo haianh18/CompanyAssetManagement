@@ -351,6 +351,46 @@ body {
     color: white;
 }
 
+.warehouse-filter .form-select {
+    border-radius: 0.25rem;
+    border-color: #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+    .warehouse-filter .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+/* Styling for warehouse info alert */
+.alert-info {
+    border-left: 4px solid #0dcaf0;
+}
+
+/* Statistics styling */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* Table improvements */
+.custom-table td, .custom-table th {
+    vertical-align: middle;
+}
 /* Chart Containers */
 .chart-container {
     background-color: white;
@@ -444,6 +484,9 @@ body {
 
     .custom-table {
         min-width: 800px;
+    }
+    .search-box, .warehouse-filter {
+        margin-bottom: 1rem;
     }
 }
 

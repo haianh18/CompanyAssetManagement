@@ -1,4 +1,4 @@
-﻿@model FinalProject.Models.Asset
+﻿@model FinalProject.Models.ViewModels.AssetEditViewModel
 @{
     ViewData["Title"] = "Chỉnh sửa thông tin tài sản";
     Layout = "_WarehouseManagerLayout";
@@ -11,87 +11,223 @@
         </div>
     </div>
 
-    <div class="form-container">
-        <form asp-action="Edit" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="DateCreated" />
-            <input type="hidden" asp-for="IsDeleted" />
-            <input type="hidden" asp-for="DeletedDate" />
+    <form asp-action="Edit" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Asset.Id" />
+        <input type="hidden" asp-for="Asset.DateCreated" />
+        <input type="hidden" asp-for="Asset.IsDeleted" />
+        <input type="hidden" asp-for="Asset.DeletedDate" />
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="Name" class="form-label">Tên tài sản</label>
-                        <input asp-for="Name" class="form-control" required />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="AssetCategoryId" class="form-label">Danh mục</label>
-                        <select asp-for="AssetCategoryId" class="form-select"
-                                asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))" required>
-                            <option value="">-- Chọn danh mục --</option>
-                        </select>
-                        <span asp-validation-for="AssetCategoryId" class="text-danger"></span>
-                    </div>
-                </div>
+        <!-- Thông tin tài sản cơ bản -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Thông tin cơ bản</h5>
             </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="Price" class="form-label">Giá</label>
-                        <div class="input-group">
-                            <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" required />
-                            <span class="input-group-text">VNĐ</span>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Asset.Name" class="form-label">Tên tài sản</label>
+                            <input asp-for="Asset.Name" class="form-control" required />
+                            <span asp-validation-for="Asset.Name" class="text-danger"></span>
                         </div>
-                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Asset.AssetCategoryId" class="form-label">Danh mục</label>
+                            <select asp-for="Asset.AssetCategoryId" class="form-select"
+                                    asp-items="@((ViewBag.Categories as SelectList) ?? new SelectList(Enumerable.Empty<SelectListItem>()))" required>
+                                <option value="">-- Chọn danh mục --</option>
+                            </select>
+                            <span asp-validation-for="Asset.AssetCategoryId" class="text-danger"></span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="Unit" class="form-label">Đơn vị</label>
-                        <input asp-for="Unit" class="form-control" required />
-                        <span asp-validation-for="Unit" class="text-danger"></span>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Asset.Price" class="form-label">Giá</label>
+                            <div class="input-group">
+                                <input asp-for="Asset.Price" class="form-control" type="number" step="0.01" min="0" required />
+                                <span class="input-group-text">VNĐ</span>
+                            </div>
+                            <span asp-validation-for="Asset.Price" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Asset.Unit" class="form-label">Đơn vị</label>
+                            <input asp-for="Asset.Unit" class="form-control" required />
+                            <span asp-validation-for="Asset.Unit" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Asset.Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Asset.Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Asset.Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Asset.Note" class="form-label">Ghi chú</label>
+                    <textarea asp-for="Asset.Note" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Asset.Note" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phần quản lý kho hiện tại -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quản lý số lượng trong kho</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.WarehouseQuantities.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kho</th>
+                                    <th>Số lượng tốt</th>
+                                    <th>Số lượng hỏng</th>
+                                    <th>Đang sửa</th>
+                                    <th>Đã thanh lý</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.WarehouseQuantities.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Model.WarehouseQuantities[i].WarehouseName
+                                            <input type="hidden" asp-for="WarehouseQuantities[i].WarehouseAssetId" />
+                                            <input type="hidden" asp-for="WarehouseQuantities[i].WarehouseId" />
+                                            <input type="hidden" asp-for="WarehouseQuantities[i].WarehouseName" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="WarehouseQuantities[i].GoodQuantity" type="number" min="0" class="form-control" />
+                                            <span asp-validation-for="WarehouseQuantities[i].GoodQuantity" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="WarehouseQuantities[i].BrokenQuantity" type="number" min="0" class="form-control" />
+                                            <span asp-validation-for="WarehouseQuantities[i].BrokenQuantity" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="WarehouseQuantities[i].FixingQuantity" type="number" min="0" class="form-control" />
+                                            <span asp-validation-for="WarehouseQuantities[i].FixingQuantity" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="WarehouseQuantities[i].DisposedQuantity" type="number" min="0" class="form-control" />
+                                            <span asp-validation-for="WarehouseQuantities[i].DisposedQuantity" class="text-danger"></span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Tài sản này chưa được phân bổ vào kho nào.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Phần thêm vào kho mới -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thêm vào kho mới</h5>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="enableNewWarehouse">
+                    <label class="form-check-label" for="enableNewWarehouse">Thêm vào kho mới</label>
+                </div>
+            </div>
+            <div class="card-body" id="newWarehouseSection" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="NewWarehouseId" class="form-label">Chọn kho</label>
+                            <select asp-for="NewWarehouseId" class="form-select"
+                                    asp-items="@((ViewBag.AvailableWarehouses as SelectList) ?? new SelectList(Enumerable.Empty<SelectListItem>()))">
+                                <option value="">-- Chọn kho --</option>
+                            </select>
+                            <span asp-validation-for="NewWarehouseId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label asp-for="NewGoodQuantity" class="form-label">Số lượng tốt</label>
+                            <input asp-for="NewGoodQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="NewGoodQuantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label asp-for="NewBrokenQuantity" class="form-label">Số lượng hỏng</label>
+                            <input asp-for="NewBrokenQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="NewBrokenQuantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label asp-for="NewFixingQuantity" class="form-label">Đang sửa</label>
+                            <input asp-for="NewFixingQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="NewFixingQuantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label asp-for="NewDisposedQuantity" class="form-label">Đã thanh lý</label>
+                            <input asp-for="NewDisposedQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="NewDisposedQuantity" class="text-danger"></span>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="form-label">Mô tả</label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Note" class="form-label">Ghi chú</label>
-                <textarea asp-for="Note" class="form-control" rows="2"></textarea>
-                <span asp-validation-for="Note" class="text-danger"></span>
-            </div>
-
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                Để quản lý số lượng và trạng thái tài sản trong các kho, vui lòng sử dụng chức năng quản lý số lượng.
-            </div>
-
-            <div class="form-group mt-4 text-end">
-                <a asp-action="Index" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-times"></i> Hủy
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu thay đổi
-                </button>
-            </div>
-        </form>
-    </div>
+        <div class="form-group mt-4 text-end">
+            <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function() {
+            // Xử lý bật/tắt phần thêm vào kho mới
+            $('#enableNewWarehouse').change(function() {
+                if(this.checked) {
+                    $('#newWarehouseSection').slideDown();
+                } else {
+                    $('#newWarehouseSection').slideUp();
+                    // Reset các giá trị
+                    $('#NewWarehouseId').val('');
+                    $('#NewGoodQuantity').val(0);
+                    $('#NewBrokenQuantity').val(0);
+                    $('#NewFixingQuantity').val(0);
+                    $('#NewDisposedQuantity').val(0);
+                }
+            });
+        });
+    </script>
 }

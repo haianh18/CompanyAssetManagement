@@ -31,7 +31,7 @@ namespace FinalProject.Models
         // Tính toán số lượng khả dụng
         [NotMapped]
         public int TotalQuantity => (GoodQuantity ?? 0) + (BrokenQuantity ?? 0) +
-                                    (FixingQuantity ?? 0) + (DisposedQuantity ?? 0);
+                                    (FixingQuantity ?? 0);
 
         [NotMapped]
         public int AvailableQuantity => (GoodQuantity ?? 0) - (BorrowedGoodQuantity ?? 0) - (HandedOverGoodQuantity ?? 0);

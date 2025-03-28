@@ -15,6 +15,21 @@ namespace FinalProject.Repositories
         {
         }
 
+        public async Task<IEnumerable<Asset>> GetAllAsync()
+        {
+            return await _context.Assets
+                .Include(a => a.WarehouseAssets)
+                .Include(a => a.AssetCategory)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Asset>> GetAllIncludingDeletedAsync()
+        {
+            return await _context.Assets.IgnoreQueryFilters()
+                .Include(a => a.WarehouseAssets)
+                .Include(a => a.AssetCategory)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Asset>> GetAssetsByCategory(int categoryId)
         {
             return await _dbSet.Where(a => a.AssetCategoryId == categoryId)
@@ -122,16 +137,6 @@ namespace FinalProject.Repositories
                 .Take(pageSize)
                 .Include(a => a.AssetCategory)
                 .ToListAsync();
-        }
-
-        public override async Task<IEnumerable<Asset>> GetAllAsync()
-        {
-            return await _dbSet.Include(a => a.AssetCategory).ToListAsync();
-        }
-
-        public override async Task<IEnumerable<Asset>> GetAllIncludingDeletedAsync()
-        {
-            return await _dbSet.IgnoreQueryFilters().Include(a => a.AssetCategory).ToListAsync();
         }
 
         public override async Task<Asset> GetByIdAsync(int id)
