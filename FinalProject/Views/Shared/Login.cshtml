@@ -16,26 +16,26 @@
                         <form asp-action="Login" method="post">
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                            
+
                             <div class="form-floating mb-3">
                                 <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                                 <label asp-for="Email">Email</label>
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
-                            
+
                             <div class="form-floating mb-3">
                                 <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
                                 <label asp-for="Password">Mật khẩu</label>
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
-                            
+
                             <div class="form-check mb-3">
                                 <input class="form-check-input" asp-for="RememberMe" />
                                 <label class="form-check-label" asp-for="RememberMe">
                                     @Html.DisplayNameFor(m => m.RememberMe)
                                 </label>
                             </div>
-                            
+
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-sign-in-alt me-2"></i> Đăng nhập

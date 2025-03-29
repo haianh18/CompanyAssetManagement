@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -14,16 +13,13 @@ namespace FinalProject.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager,
-            ILogger<AccountController> logger)
+            SignInManager<AppUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _logger = logger;
         }
 
         [HttpGet]
@@ -48,8 +44,6 @@ namespace FinalProject.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
-
                     // Redirect to appropriate dashboard based on user role
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     if (user != null)
@@ -76,7 +70,6 @@ namespace FinalProject.Controllers
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
                     return RedirectToAction(nameof(Lockout));
                 }
                 else
@@ -134,17 +127,14 @@ namespace FinalProject.Controllers
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", user.Id);
                 return RedirectToLocal(returnUrl);
             }
             else if (result.IsLockedOut)
             {
-                _logger.LogWarning("User with ID '{UserId}' account locked out.", user.Id);
                 return RedirectToAction(nameof(Lockout));
             }
             else
             {
-                _logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", user.Id);
                 ModelState.AddModelError(string.Empty, "Mã xác thực không đúng.");
                 return View(model);
             }
@@ -155,7 +145,6 @@ namespace FinalProject.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
             return RedirectToAction(nameof(Login));
         }
 
@@ -206,7 +195,6 @@ namespace FinalProject.Controllers
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            _logger.LogInformation("User changed their password successfully.");
             TempData["StatusMessage"] = "Mật khẩu của bạn đã được thay đổi.";
 
             // Redirect based on user role
