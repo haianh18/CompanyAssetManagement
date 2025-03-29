@@ -1,0 +1,257 @@
+﻿@model FinalProject.Models.BorrowTicket
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Chi tiết phiếu mượn";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-info-circle"></i> Chi tiết phiếu mượn #@Model.Id</h2>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Borrow Ticket Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Thông tin phiếu mượn</h5>
+                    <span class="badge @GetStatusBadgeClass(Model.ApproveStatus, Model.IsReturned)">
+                        @GetStatusText(Model.ApproveStatus, Model.IsReturned)
+                    </span>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã phiếu mượn:</dt>
+                        <dd class="col-sm-8">@Model.Id</dd>
+                        
+                        <dt class="col-sm-4">Ngày tạo:</dt>
+                        <dd class="col-sm-8">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Người mượn:</dt>
+                        <dd class="col-sm-8">@(Model.BorrowBy?.FullName ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Người phê duyệt:</dt>
+                        <dd class="col-sm-8">@(Model.Owner?.FullName ?? "Chưa phê duyệt")</dd>
+                        
+                        @if (Model.DateModified.HasValue)
+                        {
+                            <dt class="col-sm-4">Ngày cập nhật:</dt>
+                            <dd class="col-sm-8">@Model.DateModified?.ToString("dd/MM/yyyy HH:mm")</dd>
+                        }
+                        
+                        <dt class="col-sm-4">Ngày trả dự kiến:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.ReturnDate < DateTime.Now && !Model.IsReturned && Model.ApproveStatus == TicketStatus.Approved)
+                            {
+                                <span class="text-danger fw-bold">
+                                    @(Model.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")
+                                    <i class="fas fa-exclamation-triangle"></i> Quá hạn
+                                </span>
+                            }
+                            else
+                            {
+                                <span>@(Model.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                            }
+                        </dd>
+                        
+                        @if (Model.IsExtended || Model.ExtensionApproveStatus == TicketStatus.Pending)
+                        {
+                            <dt class="col-sm-4">Trạng thái gia hạn:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.ExtensionApproveStatus)
+                                {
+                                    case TicketStatus.Approved:
+                                        <span class="badge bg-success">Đã duyệt gia hạn</span>
+                                        break;
+                                    case TicketStatus.Pending:
+                                        <span class="badge bg-warning">Đang chờ duyệt gia hạn</span>
+                                        break;
+                                    case TicketStatus.Rejected:
+                                        <span class="badge bg-danger">Từ chối gia hạn</span>
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                @if (Model.ExtensionRequestDate.HasValue)
+                                {
+                                    <small class="ms-2">(@Model.ExtensionRequestDate?.ToString("dd/MM/yyyy"))</small>
+                                }
+                            </dd>
+                        }
+                        
+                        <dt class="col-sm-4">Ghi chú:</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Note) ? "Không có ghi chú" : Model.Note)</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Asset Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-box"></i> Thông tin tài sản</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Tên tài sản:</dt>
+                        <dd>@(Model.WarehouseAsset?.Asset?.Name ?? "N/A")</dd>
+                        
+                        <dt>Danh mục:</dt>
+                        <dd>@(Model.WarehouseAsset?.Asset?.AssetCategory?.Name ?? "N/A")</dd>
+                        
+                        <dt>Kho xuất:</dt>
+                        <dd>@(Model.WarehouseAsset?.Warehouse?.Name ?? "N/A")</dd>
+                        
+                        <dt>Số lượng mượn:</dt>
+                        <dd>@Model.Quantity</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Thao tác</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ApproveStatus == TicketStatus.Approved && !Model.IsReturned)
+                    {
+                        <div class="d-grid gap-2">
+                            @if (Model.ReturnDate > DateTime.Now.AddDays(7) && !Model.IsExtended && Model.ExtensionApproveStatus != TicketStatus.Pending)
+                            {
+                                <a asp-controller="BorrowRequest" asp-action="RequestExtension" asp-route-id="@Model.Id" class="btn btn-warning">
+                                    <i class="fas fa-calendar-plus"></i> Yêu cầu gia hạn
+                                </a>
+                            }
+                            <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@Model.Id" class="btn btn-success">
+                                <i class="fas fa-undo-alt"></i> Trả tài sản
+                            </a>
+                        </div>
+                    }
+                    <div class="d-grid mt-2">
+                        <a asp-controller="BorrowRequest" asp-action="MyBorrowRequests" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Return History (if applicable) -->
+    @if (Model.ReturnTickets != null && Model.ReturnTickets.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử trả tài sản</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã phiếu</th>
+                                        <th>Ngày yêu cầu</th>
+                                        <th>Ngày duyệt</th>
+                                        <th>Trạng thái</th>
+                                        <th>Tình trạng tài sản</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var returnTicket in Model.ReturnTickets.OrderByDescending(r => r.DateCreated))
+                                    {
+                                        <tr>
+                                            <td>@returnTicket.Id</td>
+                                            <td>@(returnTicket.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                            <td>@(returnTicket.ActualReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                            <td>
+                                                @switch (returnTicket.ApproveStatus)
+                                                {
+                                                    case TicketStatus.Approved:
+                                                        <span class="badge bg-success">Đã duyệt</span>
+                                                        break;
+                                                    case TicketStatus.Pending:
+                                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                                        break;
+                                                    case TicketStatus.Rejected:
+                                                        <span class="badge bg-danger">Từ chối</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">Không xác định</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (returnTicket.ApproveStatus == TicketStatus.Approved)
+                                                {
+                                                    @switch (returnTicket.AssetConditionOnReturn)
+                                                    {
+                                                        case AssetStatus.GOOD:
+                                                            <span class="badge bg-success">Tốt</span>
+                                                            break;
+                                                        case AssetStatus.BROKEN:
+                                                            <span class="badge bg-danger">Hỏng</span>
+                                                            break;
+                                                        case AssetStatus.FIXING:
+                                                            <span class="badge bg-warning">Cần sửa chữa</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge bg-secondary">Không xác định</span>
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span>N/A</span>
+                                                }
+                                            </td>
+                                            <td>@(returnTicket.Note ?? "Không có ghi chú")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    public string GetStatusBadgeClass(TicketStatus status, bool isReturned)
+    {
+        if (isReturned) return "bg-success";
+        
+        return status switch
+        {
+            TicketStatus.Approved => "bg-primary",
+            TicketStatus.Pending => "bg-warning",
+            TicketStatus.Rejected => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    
+    public string GetStatusText(TicketStatus status, bool isReturned)
+    {
+        if (isReturned) return "Đã trả";
+        
+        return status switch
+        {
+            TicketStatus.Approved => "Đã duyệt",
+            TicketStatus.Pending => "Chờ duyệt",
+            TicketStatus.Rejected => "Từ chối",
+            _ => "Không xác định"
+        };
+    }
+}

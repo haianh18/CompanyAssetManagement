@@ -1,0 +1,242 @@
+﻿@model IEnumerable<FinalProject.Models.HandoverTicket>
+@{
+    ViewData["Title"] = "Tài sản được bàn giao";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-desktop"></i> Tài sản được bàn giao</h2>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="handoverTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="true">
+                        <i class="fas fa-check-circle"></i> Đang sử dụng
+                        <span class="badge bg-success">@ViewBag.ActiveHandovers.Count</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="inactive-tab" data-bs-toggle="tab" data-bs-target="#inactive" type="button" role="tab" aria-controls="inactive" aria-selected="false">
+                        <i class="fas fa-history"></i> Lịch sử bàn giao
+                        <span class="badge bg-secondary">@ViewBag.InactiveHandovers.Count</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="false">
+                        <i class="fas fa-list"></i> Tất cả
+                        <span class="badge bg-primary">@Model.Count()</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content" id="handoverTabsContent">
+        <!-- Active Handovers Tab -->
+        <div class="tab-pane fade show active" id="active" role="tabpanel" aria-labelledby="active-tab">
+            @if (ViewBag.ActiveHandovers.Count > 0)
+            {
+                <div class="row">
+                    @foreach (var item in ViewBag.ActiveHandovers)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-desktop"></i> @(item.WarehouseAsset?.Asset?.Name ?? "Không có tên")
+                                    </h5>
+                                    <span class="badge bg-success">Đang sử dụng</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Loại tài sản:</strong>
+                                        <span>@(item.WarehouseAsset?.Asset?.AssetCategory?.Name ?? "N/A")</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Số lượng:</strong>
+                                        <span>@item.Quantity</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Từ kho:</strong>
+                                        <span>@(item.WarehouseAsset?.Warehouse?.Name ?? "N/A")</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Người bàn giao:</strong>
+                                        <span>@(item.HandoverBy?.FullName ?? "N/A")</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Ngày bàn giao:</strong>
+                                        <span>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(item.Note))
+                                    {
+                                        <div class="mb-3">
+                                            <strong>Ghi chú:</strong>
+                                            <span>@item.Note</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-info-circle"></i> Chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center mt-3">
+                    <i class="fas fa-info-circle"></i> Bạn chưa được bàn giao tài sản nào.
+                </div>
+            }
+        </div>
+
+        <!-- Inactive Handovers Tab -->
+        <div class="tab-pane fade" id="inactive" role="tabpanel" aria-labelledby="inactive-tab">
+            @if (ViewBag.InactiveHandovers.Count > 0)
+            {
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tài sản</th>
+                                <th>Kho</th>
+                                <th>Số lượng</th>
+                                <th>Ngày bàn giao</th>
+                                <th>Ngày kết thúc</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.InactiveHandovers)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@(item.WarehouseAsset?.Warehouse?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center mt-3">
+                    <i class="fas fa-info-circle"></i> Không có lịch sử bàn giao.
+                </div>
+            }
+        </div>
+
+        <!-- All Handovers Tab -->
+        <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+            @if (Model.Count() > 0)
+            {
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tài sản</th>
+                                <th>Kho</th>
+                                <th>Số lượng</th>
+                                <th>Ngày bàn giao</th>
+                                <th>Ngày kết thúc</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@(item.WarehouseAsset?.Warehouse?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">Đang sử dụng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Đã kết thúc</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center mt-3">
+                    <i class="fas fa-info-circle"></i> Không có tài sản bàn giao nào.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Save active tab
+            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                localStorage.setItem('activeHandoverTab', $(e.target).attr('href'));
+            });
+
+            // Check for previously selected tab and activate it
+            var activeTab = localStorage.getItem('activeHandoverTab');
+            if (activeTab) {
+                $('#handoverTabs a[href="' + activeTab + '"]').tab('show');
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .card {
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+            }
+    </style>
+}

@@ -1,0 +1,114 @@
+﻿@model FinalProject.Models.ViewModels.BorrowRequest.BorrowRequestViewModel
+@{
+    ViewData["Title"] = "Tạo phiếu mượn mới";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-hand-holding"></i> Tạo phiếu mượn mới</h2>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-alt"></i> Thông tin phiếu mượn</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="form-group mt-4 text-center">
+                            <a asp-controller="BorrowRequest" asp-action="MyBorrowRequests" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Enable client-side validation
+        $(document).ready(function() {
+            // Show warning if min days not met
+            $('#ReturnDate').change(function() {
+                var selectedDate = new Date($(this).val());
+                var today = new Date();
+                var minDate = new Date();
+                minDate.setDate(today.getDate() + 7);
+                var maxDate = new Date();
+                maxDate.setDate(today.getDate() + 30);
+                
+                if (selectedDate < minDate) {
+                    alert('Thời gian mượn tối thiểu là 7 ngày.');
+                    $(this).val(''); // Clear the field
+                } else if (selectedDate > maxDate) {
+                    alert('Thời gian mượn tối đa là 30 ngày.');
+                    $(this).val(''); // Clear the field
+                }
+            });
+            
+            // Validate quantity is positive
+            $('#Quantity').change(function() {
+                if (parseInt($(this).val()) < 1) {
+                    alert('Số lượng phải lớn hơn 0.');
+                    $(this).val(1);
+                }
+            });
+        });
+    </script>
+}mb-3">
+                            <label asp-for="WarehouseAssetId" class="form-label">Tài sản mượn <span class="text-danger">*</span></label>
+                            <select asp-for="WarehouseAssetId" class="form-select" 
+                                    asp-items="@((ViewBag.WarehouseAssets as SelectList) ?? new SelectList(Enumerable.Empty<SelectListItem>()))" required>
+                                <option value="">-- Chọn tài sản --</option>
+                            </select>
+                            <span asp-validation-for="WarehouseAssetId" class="text-danger"></span>
+                            <small class="form-text text-muted">Danh sách các tài sản hiện có trong kho và số lượng có thể mượn.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+                            <input asp-for="Quantity" class="form-control" type="number" min="1" value="1" required />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                            <small class="form-text text-muted">Vui lòng chọn số lượng cần mượn (tối đa theo số lượng hiện có).</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="ReturnDate" class="form-label">Ngày trả dự kiến <span class="text-danger">*</span></label>
+                            <input asp-for="ReturnDate" class="form-control" type="date" 
+                                   min="@ViewBag.MinReturnDate" max="@ViewBag.MaxReturnDate" required />
+                            <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Thời gian mượn tối thiểu là 7 ngày, tối đa là 30 ngày tính từ hiện tại.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Note" class="form-label">Ghi chú</label>
+                            <textarea asp-for="Note" class="form-control" rows="3" placeholder="Nhập lý do mượn hoặc ghi chú khác..."></textarea>
+                            <span asp-validation-for="Note" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            Sau khi gửi yêu cầu, phiếu mượn của bạn sẽ được xem xét và xử lý bởi quản lý kho.
+                            Bạn có thể theo dõi trạng thái phiếu mượn trong mục "Phiếu mượn của tôi".
+                        </div>
+                        
+                        <div class="

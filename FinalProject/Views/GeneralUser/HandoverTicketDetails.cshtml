@@ -1,0 +1,93 @@
+﻿@model FinalProject.Models.HandoverTicket
+@{
+    ViewData["Title"] = "Chi tiết bàn giao";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-info-circle"></i> Chi tiết bàn giao #@Model.Id</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-desktop"></i> Thông tin tài sản bàn giao</h5>
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                        @(Model.IsActive ? "Đang sử dụng" : "Đã kết thúc")
+                    </span>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã phiếu bàn giao:</dt>
+                        <dd class="col-sm-8">@Model.Id</dd>
+
+                        <dt class="col-sm-4">Tên tài sản:</dt>
+                        <dd class="col-sm-8">@(Model.WarehouseAsset?.Asset?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Loại tài sản:</dt>
+                        <dd class="col-sm-8">@(Model.WarehouseAsset?.Asset?.AssetCategory?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Số lượng:</dt>
+                        <dd class="col-sm-8">@Model.Quantity</dd>
+
+                        <dt class="col-sm-4">Từ kho:</dt>
+                        <dd class="col-sm-8">@(Model.WarehouseAsset?.Warehouse?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Phòng ban:</dt>
+                        <dd class="col-sm-8">@(Model.Department?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Người bàn giao:</dt>
+                        <dd class="col-sm-8">@(Model.HandoverBy?.FullName ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Người nhận:</dt>
+                        <dd class="col-sm-8">@(Model.HandoverTo?.FullName ?? "N/A")</dd>
+
+                        <dt class="col-sm-4">Ngày bàn giao:</dt>
+                        <dd class="col-sm-8">@(Model.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+
+                        @if (!Model.IsActive && Model.ActualEndDate.HasValue)
+                        {
+                            <dt class="col-sm-4">Ngày kết thúc:</dt>
+                            <dd class="col-sm-8">@Model.ActualEndDate?.ToString("dd/MM/yyyy")</dd>
+                        }
+
+                        <dt class="col-sm-4">Tình trạng tài sản:</dt>
+                        <dd class="col-sm-8">
+                            @switch (Model.CurrentCondition)
+                            {
+                                case FinalProject.Enums.AssetStatus.GOOD:
+                                    <span class="badge bg-success">Tốt</span>
+                                    break;
+                                case FinalProject.Enums.AssetStatus.BROKEN:
+                                    <span class="badge bg-danger">Hỏng</span>
+                                    break;
+                                case FinalProject.Enums.AssetStatus.FIXING:
+                                    <span class="badge bg-warning">Đang sửa chữa</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Không xác định</span>
+                                    break;
+                            }
+                        </dd>
+
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <dt class="col-sm-4">Ghi chú:</dt>
+                            <dd class="col-sm-8">@Model.Note</dd>
+                        }
+                    </dl>
+
+                    <div class="text-center mt-4">
+                        <a asp-controller="HandoverTicket" asp-action="MyAssignedAssets" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
