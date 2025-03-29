@@ -17,7 +17,8 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Phiếu mượn chờ duyệt</div>
+                                Phiếu mượn chờ duyệt
+                            </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.PendingRequests</div>
                         </div>
                         <div class="col-auto">
@@ -35,7 +36,8 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Đang mượn</div>
+                                Đang mượn
+                            </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ApprovedRequests</div>
                         </div>
                         <div class="col-auto">
@@ -53,7 +55,8 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Tài sản được bàn giao</div>
+                                Tài sản được bàn giao
+                            </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ActiveHandovers</div>
                         </div>
                         <div class="col-auto">
@@ -71,7 +74,8 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                Phiếu mượn bị từ chối</div>
+                                Phiếu mượn bị từ chối
+                            </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.RejectedRequests</div>
                         </div>
                         <div class="col-auto">
@@ -209,7 +213,7 @@
     public string GetStatusClass(FinalProject.Enums.TicketStatus status, bool isReturned)
     {
         if (isReturned) return "bg-success";
-        
+
         return status switch
         {
             FinalProject.Enums.TicketStatus.Approved => "bg-primary",
@@ -218,11 +222,11 @@
             _ => "bg-secondary"
         };
     }
-    
+
     public string GetStatusText(FinalProject.Enums.TicketStatus status, bool isReturned)
     {
         if (isReturned) return "Đã trả";
-        
+
         return status switch
         {
             FinalProject.Enums.TicketStatus.Approved => "Đã duyệt",
@@ -241,13 +245,13 @@
             padding-left: 30px;
             list-style: none;
         }
-        
+
         .timeline-item {
             position: relative;
             padding-bottom: 1.5rem;
             border-left: 2px solid #e9ecef;
         }
-        
+
         .timeline-marker {
             position: absolute;
             left: -9px;
@@ -256,48 +260,48 @@
             border-radius: 50%;
             border: 2px solid #fff;
         }
-        
+
         .timeline-content {
             padding-left: 15px;
         }
-        
+
         .timeline-title {
             font-size: 1rem;
             margin-bottom: 0.25rem;
         }
-        
+
         .timeline-title small {
             font-size: 0.75rem;
             color: #6c757d;
             margin-left: 0.5rem;
         }
-        
+
         /* Status colors */
         .bg-success {
             background-color: #28a745;
         }
-        
+
         .bg-primary {
             background-color: #4e73df;
         }
-        
+
         .bg-warning {
             background-color: #f6c23e;
         }
-        
+
         .bg-danger {
             background-color: #e74a3b;
         }
-        
+
         .bg-secondary {
             background-color: #858796;
         }
-        
+
         /* Action cards */
         .action-card {
             transition: all 0.2s ease-in-out;
         }
-        
+
         .action-card:hover {
             transform: translateY(-5px);
         }

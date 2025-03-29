@@ -29,22 +29,22 @@
                     <dl class="row">
                         <dt class="col-sm-4">Mã phiếu mượn:</dt>
                         <dd class="col-sm-8">@Model.Id</dd>
-                        
+
                         <dt class="col-sm-4">Ngày tạo:</dt>
                         <dd class="col-sm-8">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
-                        
+
                         <dt class="col-sm-4">Người mượn:</dt>
                         <dd class="col-sm-8">@(Model.BorrowBy?.FullName ?? "N/A")</dd>
-                        
+
                         <dt class="col-sm-4">Người phê duyệt:</dt>
                         <dd class="col-sm-8">@(Model.Owner?.FullName ?? "Chưa phê duyệt")</dd>
-                        
+
                         @if (Model.DateModified.HasValue)
                         {
                             <dt class="col-sm-4">Ngày cập nhật:</dt>
                             <dd class="col-sm-8">@Model.DateModified?.ToString("dd/MM/yyyy HH:mm")</dd>
                         }
-                        
+
                         <dt class="col-sm-4">Ngày trả dự kiến:</dt>
                         <dd class="col-sm-8">
                             @if (Model.ReturnDate < DateTime.Now && !Model.IsReturned && Model.ApproveStatus == TicketStatus.Approved)
@@ -59,7 +59,7 @@
                                 <span>@(Model.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</span>
                             }
                         </dd>
-                        
+
                         @if (Model.IsExtended || Model.ExtensionApproveStatus == TicketStatus.Pending)
                         {
                             <dt class="col-sm-4">Trạng thái gia hạn:</dt>
@@ -84,14 +84,14 @@
                                 }
                             </dd>
                         }
-                        
+
                         <dt class="col-sm-4">Ghi chú:</dt>
                         <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Note) ? "Không có ghi chú" : Model.Note)</dd>
                     </dl>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <!-- Asset Information -->
             <div class="card shadow mb-4">
@@ -102,19 +102,19 @@
                     <dl>
                         <dt>Tên tài sản:</dt>
                         <dd>@(Model.WarehouseAsset?.Asset?.Name ?? "N/A")</dd>
-                        
+
                         <dt>Danh mục:</dt>
                         <dd>@(Model.WarehouseAsset?.Asset?.AssetCategory?.Name ?? "N/A")</dd>
-                        
+
                         <dt>Kho xuất:</dt>
                         <dd>@(Model.WarehouseAsset?.Warehouse?.Name ?? "N/A")</dd>
-                        
+
                         <dt>Số lượng mượn:</dt>
                         <dd>@Model.Quantity</dd>
                     </dl>
                 </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="card shadow">
                 <div class="card-header bg-secondary text-white">
@@ -144,7 +144,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Return History (if applicable) -->
     @if (Model.ReturnTickets != null && Model.ReturnTickets.Any())
     {
@@ -232,7 +232,7 @@
     public string GetStatusBadgeClass(TicketStatus status, bool isReturned)
     {
         if (isReturned) return "bg-success";
-        
+
         return status switch
         {
             TicketStatus.Approved => "bg-primary",
@@ -241,11 +241,11 @@
             _ => "bg-secondary"
         };
     }
-    
+
     public string GetStatusText(TicketStatus status, bool isReturned)
     {
         if (isReturned) return "Đã trả";
-        
+
         return status switch
         {
             TicketStatus.Approved => "Đã duyệt",

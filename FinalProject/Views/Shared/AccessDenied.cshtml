@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Từ chối truy cập";
+    Layout = "_AuthLayout";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="my-3"><i class="fas fa-ban me-2"></i> @ViewData["Title"]</h3>
+                </div>
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle fa-4x text-danger"></i>
+                    </div>
+                    <h4 class="mb-3">Bạn không có quyền truy cập</h4>
+                    <p class="lead mb-4">Tài khoản của bạn không có quyền truy cập vào trang này.</p>
+                    <p>Nếu bạn tin rằng đây là một lỗi, vui lòng liên hệ với quản trị viên để được hỗ trợ.</p>
+
+                    <div class="mt-4">
+                        <a asp-action="Login" asp-controller="Account" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> Đăng nhập lại
+                        </a>
+                        <a asp-action="Index" asp-controller="Home" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

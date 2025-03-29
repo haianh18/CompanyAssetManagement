@@ -23,7 +23,7 @@
                 <div class="card-body">
                     <div class="alert alert-info mb-4">
                         <p class="mb-0">
-                            <i class="fas fa-info-circle"></i> 
+                            <i class="fas fa-info-circle"></i>
                             Mỗi phiếu mượn chỉ được gia hạn một lần. Thời gian gia hạn tối đa là 30 ngày kể từ ngày trả ban đầu.
                             Yêu cầu gia hạn của bạn sẽ được xem xét và phê duyệt bởi quản lý kho.
                         </p>
@@ -37,16 +37,16 @@
                             <dl class="row">
                                 <dt class="col-sm-4">Mã phiếu mượn:</dt>
                                 <dd class="col-sm-8">@Model.BorrowTicketId</dd>
-                                
+
                                 <dt class="col-sm-4">Tên tài sản:</dt>
                                 <dd class="col-sm-8">@Model.AssetName</dd>
-                                
+
                                 <dt class="col-sm-4">Số lượng:</dt>
                                 <dd class="col-sm-8">@Model.Quantity</dd>
-                                
+
                                 <dt class="col-sm-4">Ngày mượn ban đầu:</dt>
                                 <dd class="col-sm-8">@(Model.OriginalBorrowDate?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
-                                
+
                                 <dt class="col-sm-4">Ngày trả hiện tại:</dt>
                                 <dd class="col-sm-8">@(Model.CurrentReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
                             </dl>
@@ -60,25 +60,25 @@
                         <input type="hidden" asp-for="OriginalBorrowDate" />
                         <input type="hidden" asp-for="CurrentReturnDate" />
                         <input type="hidden" asp-for="Quantity" />
-                        
+
                         <div class="mb-3">
                             <label asp-for="NewReturnDate" class="form-label">Ngày trả mới <span class="text-danger">*</span></label>
-                            <input asp-for="NewReturnDate" class="form-control" type="date" 
-                                   min="@(Model.CurrentReturnDate?.AddDays(1).ToString("yyyy-MM-dd"))" 
+                            <input asp-for="NewReturnDate" class="form-control" type="date"
+                                   min="@(Model.CurrentReturnDate?.AddDays(1).ToString("yyyy-MM-dd"))"
                                    max="@(Model.CurrentReturnDate?.AddDays(30).ToString("yyyy-MM-dd"))" required />
                             <span asp-validation-for="NewReturnDate" class="text-danger"></span>
                             <small class="form-text text-muted">
                                 Chọn ngày trả mới (tối đa 30 ngày từ ngày trả hiện tại).
                             </small>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label asp-for="Reason" class="form-label">Lý do gia hạn</label>
-                            <textarea asp-for="Reason" class="form-control" rows="3" 
+                            <textarea asp-for="Reason" class="form-control" rows="3"
                                       placeholder="Vui lòng nêu lý do tại sao bạn cần gia hạn thời gian mượn..."></textarea>
                             <span asp-validation-for="Reason" class="text-danger"></span>
                         </div>
-                        
+
                         <div class="form-group mt-4 text-center">
                             <a asp-controller="BorrowRequest" asp-action="MyBorrowRequests" class="btn btn-outline-secondary me-2">
                                 <i class="fas fa-times"></i> Hủy
@@ -95,8 +95,10 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
     <script>
         $(document).ready(function() {
             // Date validation
@@ -105,7 +107,7 @@
                 var currentReturnDate = new Date('@Model.CurrentReturnDate?.ToString("yyyy-MM-dd")');
                 var maxDate = new Date(currentReturnDate);
                 maxDate.setDate(currentReturnDate.getDate() + 30);
-                
+
                 if (selectedDate <= currentReturnDate) {
                     alert('Ngày trả mới phải sau ngày trả hiện tại.');
                     $(this).val('');

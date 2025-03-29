@@ -118,8 +118,8 @@
                                         </a>
                                         @if (item.ApproveStatus == TicketStatus.Approved && !item.IsReturned)
                                         {
-                                            if (item.ReturnDate > DateTime.Now.AddDays(7) && !item.IsExtended && 
-                                                item.ExtensionApproveStatus != TicketStatus.Pending)
+                                            if (item.ReturnDate > DateTime.Now.AddDays(7) && !item.IsExtended &&
+                                            item.ExtensionApproveStatus != TicketStatus.Pending)
                                             {
                                                 <a asp-controller="BorrowRequest" asp-action="RequestExtension" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
                                                     <i class="fas fa-calendar-plus"></i>
@@ -236,15 +236,15 @@
                                         <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i>
                                         </a>
-                                        @if (item.ReturnDate > DateTime.Now.AddDays(7) && !item.IsExtended && 
-                                           item.ExtensionApproveStatus != TicketStatus.Pending)
+                                        @if (item.ReturnDate > DateTime.Now.AddDays(7) && !item.IsExtended &&
+                                       item.ExtensionApproveStatus != TicketStatus.Pending)
                                         {
-                                            <a asp-controller="BorrowRequest" asp-action="RequestExtension" asp-route-id="@item.Id" 
+                                            <a asp-controller="BorrowRequest" asp-action="RequestExtension" asp-route-id="@item.Id"
                                                class="btn btn-sm btn-warning" title="Yêu cầu gia hạn">
                                                 <i class="fas fa-calendar-plus"></i>
                                             </a>
                                         }
-                                        <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@item.Id" 
+                                        <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@item.Id"
                                            class="btn btn-sm btn-success" title="Trả tài sản">
                                             <i class="fas fa-undo-alt"></i>
                                         </a>
@@ -331,7 +331,7 @@
                     <tbody>
                         @foreach (var item in ViewBag.ReturnedRequests)
                         {
-                            var returnTicket = item.ReturnTickets.FirstOrDefault(r => r.ApproveStatus == TicketStatus.Approved);
+                            var returnTicket = ((IEnumerable<FinalProject.Models.ReturnTicket>)item.ReturnTickets).FirstOrDefault(r => r.ApproveStatus == TicketStatus.Approved);
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
@@ -349,7 +349,7 @@
                                 </td>
                             </tr>
                         }
-                    </tbody>
+                        </tbody>
                 </table>
 
                 @if (!ViewBag.ReturnedRequests.Any())
@@ -401,7 +401,7 @@
                                             <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>
-                                            <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@item.Id" 
+                                            <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@item.Id"
                                                class="btn btn-sm btn-success" title="Trả tài sản">
                                                 <i class="fas fa-undo-alt"></i>
                                             </a>
