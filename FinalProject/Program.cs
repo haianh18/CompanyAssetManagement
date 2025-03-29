@@ -2,8 +2,6 @@ using FinalProject.Models;
 using FinalProject.Repositories;
 using FinalProject.Repositories.Common;
 using FinalProject.Repositories.Interfaces;
-using FinalProject.Services;
-using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,22 +41,6 @@ public class Program
         builder.Services.AddScoped<IHandoverTicketRepository, HandoverTicketRepository>();
         builder.Services.AddScoped<IHandoverReturnRepository, HandoverReturnRepository>();
         builder.Services.AddScoped<IReturnTicketRepository, ReturnTicketRepository>();
-
-
-        builder.Services.AddScoped<IAssetService, AssetService>();
-        builder.Services.AddScoped<IAssetCategoryService, AssetCategoryService>();
-        builder.Services.AddScoped<IBorrowTicketService, BorrowTicketService>();
-        builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-        builder.Services.AddScoped<IDisposalTicketService, DisposalTicketService>();
-        builder.Services.AddScoped<IDisposalTicketAssetService, DisposalTicketAssetService>();
-        builder.Services.AddScoped<IHandoverService, HandoverService>();
-        builder.Services.AddScoped<IHandoverTicketService, HandoverTicketService>();
-        builder.Services.AddScoped<IHandoverReturnService, HandoverReturnService>();
-        builder.Services.AddScoped<IReturnTicketService, ReturnTicketService>();
-        builder.Services.AddScoped<IRoleService, RoleService>();
-        builder.Services.AddScoped<IUserService, UserService>();
-        builder.Services.AddScoped<IWarehouseService, WarehouseService>();
-        builder.Services.AddScoped<IWarehouseAssetService, WarehouseAssetService>();
 
         // Register the DataSeeder service
         builder.Services.AddHostedService<DataSeeder>();

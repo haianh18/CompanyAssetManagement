@@ -1,4 +1,5 @@
-﻿using FinalProject.Models;
+﻿using FinalProject.Enums;
+using FinalProject.Models;
 using FinalProject.Repositories.Common;
 using FinalProject.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,13 @@ namespace FinalProject.Repositories
     {
         public HandoverReturnRepository(CompanyAssetManagementContext context) : base(context)
         {
+        }
+
+        public override async Task<HandoverReturn> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(hr => hr.HandoverTicket)
+                .FirstOrDefaultAsync(hr => hr.Id == id);
         }
 
         public async Task<IEnumerable<HandoverReturn>> GetHandoverReturnsByEmployee(int employeeId)
@@ -50,5 +58,6 @@ namespace FinalProject.Repositories
                 .OrderByDescending(hr => hr.ReturnDate)
                 .ToListAsync();
         }
+
     }
 }

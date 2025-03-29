@@ -17,6 +17,41 @@ namespace FinalProject.Repositories
         {
         }
 
+        public override async Task<ReturnTicket> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .FirstOrDefaultAsync(rt => rt.Id == id);
+        }
+
+        public override async Task<IEnumerable<ReturnTicket>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(rt => rt.DateCreated)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<ReturnTicket>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(rt => rt.ReturnBy)
+                .Include(rt => rt.Owner)
+                .Include(rt => rt.BorrowTicket)
+                    .ThenInclude(bt => bt.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(rt => rt.DateCreated)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<ReturnTicket>> GetReturnTicketsByUser(int userId)
         {
             return await _dbSet
@@ -158,6 +193,24 @@ namespace FinalProject.Repositories
                         .ThenInclude(wa => wa.Asset)
                 .OrderByDescending(rt => rt.DateCreated)
                 .ToListAsync();
+        }
+
+        public async Task<ReturnTicket> RejectReturnAsync(int returnTicketId, string rejectionReason)
+        {
+            var returnTicket = await GetByIdAsync(returnTicketId);
+            if (returnTicket == null)
+                throw new Exception("Return ticket not found");
+
+            // Update return ticket
+            returnTicket.ApproveStatus = TicketStatus.Rejected;
+            returnTicket.Note = string.IsNullOrEmpty(returnTicket.Note)
+                ? $"Rejected: {rejectionReason}"
+                : $"{returnTicket.Note}\nRejected: {rejectionReason}";
+            returnTicket.DateModified = DateTime.Now;
+
+            Update(returnTicket);
+
+            return returnTicket;
         }
     }
 }

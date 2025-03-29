@@ -16,6 +16,41 @@ namespace FinalProject.Repositories
         {
         }
 
+        public override async Task<DisposalTicket> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(dt => dt.DisposalBy)
+                .Include(dt => dt.Owner)
+                .Include(dt => dt.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .FirstOrDefaultAsync(dt => dt.Id == id);
+        }
+
+        public override async Task<IEnumerable<DisposalTicket>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(dt => dt.DisposalBy)
+                .Include(dt => dt.Owner)
+                .Include(dt => dt.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(dt => dt.DateCreated)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<DisposalTicket>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(dt => dt.DisposalBy)
+                .Include(dt => dt.Owner)
+                .Include(dt => dt.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(dt => dt.DateCreated)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<DisposalTicket>> GetDisposalTicketsByDisposalBy(int disposalById)
         {
             return await _dbSet

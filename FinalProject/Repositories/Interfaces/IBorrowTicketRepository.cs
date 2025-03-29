@@ -18,4 +18,10 @@ public interface IBorrowTicketRepository : IRepository<BorrowTicket>
     Task<BorrowTicket> GetBorrowTicketWithExtensions(int borrowTicketId);
     Task<bool> HasUserOverdueTickets(int userId);
     Task<bool> HasUserExtendedBorrowTicket(int borrowTicketId);
+
+    Task<bool> RequestExtensionAsync(int borrowTicketId, DateTime newReturnDate);
+    Task<bool> ApproveExtensionAsync(int borrowTicketId);
+    Task<bool> RejectExtensionAsync(int borrowTicketId, string rejectionReason);
+    Task<bool> MarkAsReturnedAsync(int borrowTicketId);
+
 }

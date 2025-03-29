@@ -1,5 +1,5 @@
 ﻿using FinalProject.Models;
-using FinalProject.Services.Interfaces;
+using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,15 +11,11 @@ namespace FinalProject.Controllers
     //[Authorize(Roles = "WarehouseManager")]
     public class AssetCategoryController : Controller
     {
-        private readonly IAssetCategoryService _assetCategoryService;
-        private readonly CompanyAssetManagementContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AssetCategoryController(
-            IAssetCategoryService assetCategoryService,
-            CompanyAssetManagementContext context)
+        public AssetCategoryController(IUnitOfWork unitOfWork)
         {
-            _assetCategoryService = assetCategoryService;
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: AssetCategory
@@ -55,13 +51,13 @@ namespace FinalProject.Controllers
                 // Get categories based on filter
                 if (showDeleted)
                 {
-                    categories = await _assetCategoryService.GetAllInCludeDeletedAsync();
+                    categories = await _unitOfWork.AssetCategories.GetAllIncludingDeletedAsync();
                     // Filter to only show deleted categories
                     categories = categories.Where(c => c.IsDeleted);
                 }
                 else
                 {
-                    categories = await _assetCategoryService.GetAllAsync();
+                    categories = await _unitOfWork.AssetCategories.GetAllAsync();
                 }
 
                 var query = categories.AsQueryable();
@@ -126,7 +122,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id.Value);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -151,7 +147,7 @@ namespace FinalProject.Controllers
                 try
                 {
                     // Check if a category with the same name already exists
-                    var existingCategories = await _assetCategoryService.GetAllAsync();
+                    var existingCategories = await _unitOfWork.AssetCategories.GetAllAsync();
                     if (existingCategories.Any(c => c.Name.Equals(category.Name, StringComparison.OrdinalIgnoreCase)))
                     {
                         ModelState.AddModelError("Name", "Đã tồn tại danh mục với tên này. Vui lòng chọn tên khác.");
@@ -159,7 +155,8 @@ namespace FinalProject.Controllers
                     }
 
                     category.DateCreated = DateTime.Now;
-                    await _assetCategoryService.AddAsync(category);
+                    await _unitOfWork.AssetCategories.AddAsync(category);
+                    await _unitOfWork.SaveChangesAsync();
                     TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được tạo thành công.";
                     return RedirectToAction(nameof(Index));
                 }
@@ -181,7 +178,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id.Value);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id.Value);
 
             if (category.Name == "Chưa phân loại")
             {
@@ -219,7 +216,7 @@ namespace FinalProject.Controllers
                 try
                 {
                     // Lấy thông tin danh mục hiện tại
-                    var existingCategory = await _assetCategoryService.GetByIdIncludeDeletedAsync(id);
+                    var existingCategory = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id);
                     if (existingCategory == null)
                     {
                         TempData["ErrorMessage"] = "Không tìm thấy danh mục cần cập nhật.";
@@ -227,7 +224,7 @@ namespace FinalProject.Controllers
                     }
 
                     // Check if another category with the same name already exists
-                    var allCategories = await _assetCategoryService.GetAllAsync();
+                    var allCategories = await _unitOfWork.AssetCategories.GetAllAsync();
                     if (allCategories.Any(c => c.Id != id && c.Name.Equals(category.Name, StringComparison.OrdinalIgnoreCase)))
                     {
                         ModelState.AddModelError("Name", "Đã tồn tại danh mục khác với tên này. Vui lòng chọn tên khác.");
@@ -235,15 +232,12 @@ namespace FinalProject.Controllers
                     }
 
                     // Bảo toàn các thông tin quan trọng
-                    category.DateCreated = existingCategory.DateCreated;
-                    category.DateModified = DateTime.Now;
-                    category.IsDeleted = existingCategory.IsDeleted;
-                    category.DeletedDate = existingCategory.DeletedDate;
+                    existingCategory.DateModified = DateTime.Now;
+                    existingCategory.Name = category.Name;
 
-                    // Detach entity hiện tại
-                    _context.Entry(existingCategory).State = EntityState.Detached;
 
-                    await _assetCategoryService.UpdateAsync(category);
+                    _unitOfWork.AssetCategories.Update(category);
+                    await _unitOfWork.SaveChangesAsync();
                     TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được cập nhật thành công.";
                     return RedirectToAction(nameof(Index));
                 }
@@ -265,7 +259,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id.Value);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id.Value);
             if (category == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy danh mục với ID này.";
@@ -292,7 +286,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id);
             if (category == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy danh mục với ID này.";
@@ -314,7 +308,8 @@ namespace FinalProject.Controllers
 
             try
             {
-                await _assetCategoryService.SoftDeleteCategoryAsync(id);
+                await _unitOfWork.AssetCategories.SoftDeleteCategoryAsync(id);
+                await _unitOfWork.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được xóa thành công.";
                 return RedirectToAction(nameof(Index));
             }
@@ -333,7 +328,7 @@ namespace FinalProject.Controllers
                 return NotFound();
             }
 
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id.Value);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id.Value);
             if (category == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy danh mục với ID này.";
@@ -354,7 +349,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
-            var category = await _assetCategoryService.GetByIdIncludeDeletedAsync(id);
+            var category = await _unitOfWork.AssetCategories.GetByIdIncludingDeletedAsync(id);
             if (category == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy danh mục với ID này.";
@@ -369,7 +364,8 @@ namespace FinalProject.Controllers
 
             try
             {
-                await _assetCategoryService.RestoreAsync(id);
+                await _unitOfWork.AssetCategories.RestoreDeletedAsync(id);
+                await _unitOfWork.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Danh mục '{category.Name}' đã được khôi phục thành công.";
                 return RedirectToAction(nameof(Index));
             }
@@ -382,7 +378,7 @@ namespace FinalProject.Controllers
 
         private async Task<bool> CategoryExists(int id)
         {
-            var category = await _assetCategoryService.GetByIdAsync(id);
+            var category = await _unitOfWork.AssetCategories.GetByIdAsync(id);
             return category != null;
         }
     }

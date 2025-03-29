@@ -3,7 +3,7 @@ using FinalProject.Enums;
 using FinalProject.Models;
 using FinalProject.Models.ViewModels.BorrowRequest;
 using FinalProject.Models.ViewModels.ReturnRequest;
-using FinalProject.Services.Interfaces;
+using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
@@ -14,24 +14,11 @@ namespace FinalProject.Controllers
 {
     public class BorrowRequestController : Controller
     {
-        private readonly IBorrowTicketService _borrowTicketService;
-        private readonly IReturnTicketService _returnTicketService;
-        private readonly IWarehouseAssetService _warehouseAssetService;
-        private readonly IUserService _userService;
-        private readonly IAssetService _assetService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public BorrowRequestController(
-            IBorrowTicketService borrowTicketService,
-            IReturnTicketService returnTicketService,
-            IWarehouseAssetService warehouseAssetService,
-            IUserService userService,
-            IAssetService assetService)
+        public BorrowRequestController(IUnitOfWork unitOfWork)
         {
-            _borrowTicketService = borrowTicketService;
-            _returnTicketService = returnTicketService;
-            _warehouseAssetService = warehouseAssetService;
-            _userService = userService;
-            _assetService = assetService;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: BorrowRequest/BorrowRequests
@@ -40,7 +27,7 @@ namespace FinalProject.Controllers
             try
             {
                 // Lấy tất cả các yêu cầu mượn, bao gồm cả thông tin liên quan
-                var requests = await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync();
+                var requests = await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
 
                 // Ghi log để debug
                 Console.WriteLine($"Found {requests.Count()} borrow requests");
@@ -51,17 +38,17 @@ namespace FinalProject.Controllers
                     // Đảm bảo đối tượng liên quan được tải
                     if (request.BorrowById.HasValue && request.BorrowBy == null)
                     {
-                        request.BorrowBy = await _userService.GetUserByIdAsync(request.BorrowById.Value);
+                        request.BorrowBy = await _unitOfWork.Users.GetUserByIdAsync(request.BorrowById.Value);
                     }
 
                     if (request.WarehouseAssetId.HasValue && request.WarehouseAsset == null)
                     {
-                        request.WarehouseAsset = await _warehouseAssetService.GetByIdAsync(request.WarehouseAssetId.Value);
+                        request.WarehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(request.WarehouseAssetId.Value);
 
                         // Đảm bảo Asset được tải
                         if (request.WarehouseAsset != null && request.WarehouseAsset.AssetId.HasValue && request.WarehouseAsset.Asset == null)
                         {
-                            request.WarehouseAsset.Asset = await _assetService.GetByIdAsync(request.WarehouseAsset.AssetId.Value);
+                            request.WarehouseAsset.Asset = await _unitOfWork.Assets.GetByIdAsync(request.WarehouseAsset.AssetId.Value);
                         }
                     }
                 }
@@ -78,17 +65,17 @@ namespace FinalProject.Controllers
         // GET: BorrowRequest/Create
         public async Task<IActionResult> Create()
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
 
             // Check if user is eligible for borrowing (no overdue items)
-            if (currentUser != null && !await _borrowTicketService.IsUserEligibleForBorrowingAsync(currentUser.Id))
+            if (currentUser != null && !await _unitOfWork.BorrowTickets.IsUserEligibleForBorrowing(currentUser.Id))
             {
                 TempData["ErrorMessage"] = "Bạn có tài sản đã quá hạn trả. Vui lòng trả lại tài sản trước khi mượn mới.";
                 return RedirectToAction("MyBorrowRequests");
             }
 
             // Get all warehouse assets that are available for borrowing
-            var warehouseAssets = await _warehouseAssetService.GetBorrowableAssetsAsync();
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithAvailableQuantity();
 
             // Create SelectList for dropdown in the view
             ViewBag.WarehouseAssets = new SelectList(warehouseAssets, "Id", "Asset.Name");
@@ -102,7 +89,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BorrowRequestViewModel model)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -131,7 +118,7 @@ namespace FinalProject.Controllers
                     }
 
                     // Get the warehouse asset to check availability
-                    var warehouseAsset = await _warehouseAssetService.GetByIdAsync(model.WarehouseAssetId);
+                    var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(model.WarehouseAssetId);
                     if (warehouseAsset == null)
                     {
                         ModelState.AddModelError("", "Tài sản không tồn tại.");
@@ -162,7 +149,8 @@ namespace FinalProject.Controllers
                         DateCreated = DateTime.Now
                     };
 
-                    await _borrowTicketService.AddAsync(borrowTicket);
+                    await _unitOfWork.BorrowTickets.AddAsync(borrowTicket);
+                    await _unitOfWork.SaveChangesAsync();
 
                     TempData["SuccessMessage"] = "Yêu cầu mượn tài sản đã được tạo thành công và đang chờ phê duyệt.";
                     return RedirectToAction(nameof(MyBorrowRequests));
@@ -180,7 +168,7 @@ namespace FinalProject.Controllers
 
         private async Task PrepareCreateViewBag(int currentUserId)
         {
-            var warehouseAssets = await _warehouseAssetService.GetBorrowableAssetsAsync();
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithAvailableQuantity();
             ViewBag.WarehouseAssets = new SelectList(warehouseAssets, "Id", "Asset.Name");
             ViewBag.CurrentUserId = currentUserId;
             ViewBag.MinReturnDate = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
@@ -190,20 +178,20 @@ namespace FinalProject.Controllers
         // GET: BorrowRequest/MyBorrowRequests
         public async Task<IActionResult> MyBorrowRequests()
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var requests = await _borrowTicketService.GetBorrowTicketsByUserAsync(currentUser.Id);
+            var requests = await _unitOfWork.BorrowTickets.GetBorrowTicketsByUser(currentUser.Id);
             return View(requests);
         }
 
         // GET: BorrowRequest/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var request = await _borrowTicketService.GetByIdAsync(id);
+            var request = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (request == null)
             {
                 return NotFound();
@@ -215,13 +203,13 @@ namespace FinalProject.Controllers
         // GET: BorrowRequest/RequestExtension/5
         public async Task<IActionResult> RequestExtension(int id)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var borrowTicket = await _borrowTicketService.GetBorrowTicketWithExtensionsAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetBorrowTicketWithExtensions(id);
             if (borrowTicket == null)
             {
                 return NotFound();
@@ -281,7 +269,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestExtension(ExtensionRequestViewModel model)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -291,7 +279,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    var borrowTicket = await _borrowTicketService.GetByIdAsync(model.BorrowTicketId);
+                    var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(model.BorrowTicketId);
                     if (borrowTicket == null)
                     {
                         return NotFound();
@@ -324,8 +312,8 @@ namespace FinalProject.Controllers
                     }
 
                     // Request extension
-                    await _borrowTicketService.RequestExtensionAsync(model.BorrowTicketId, model.NewReturnDate.Value);
-
+                    await _unitOfWork.BorrowTickets.RequestExtensionAsync(model.BorrowTicketId, model.NewReturnDate.Value);
+                    await _unitOfWork.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Yêu cầu gia hạn đã được gửi và đang chờ xét duyệt.";
                     return RedirectToAction(nameof(MyBorrowRequests));
                 }
@@ -341,13 +329,13 @@ namespace FinalProject.Controllers
         // GET: BorrowRequest/ReturnAsset/5
         public async Task<IActionResult> ReturnAsset(int id)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
             {
                 return NotFound();
@@ -392,7 +380,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReturnAsset(ReturnAssetViewModel model)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -403,7 +391,7 @@ namespace FinalProject.Controllers
                 try
                 {
                     // Process early return
-                    var returnTicket = await _returnTicketService.ProcessEarlyReturnAsync(
+                    var returnTicket = await ProcessEarlyReturnAsync(
                         model.BorrowTicketId,
                         currentUser.Id,
                         model.Notes
@@ -420,5 +408,37 @@ namespace FinalProject.Controllers
 
             return View(model);
         }
+
+
+        public async Task<ReturnTicket> ProcessEarlyReturnAsync(int borrowTicketId, int returnById, string notes)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null)
+                throw new Exception("Borrow ticket not found");
+
+            if (borrowTicket.IsReturned)
+                throw new Exception("This borrow ticket has already been returned");
+
+            // Create return ticket for early return (initiated by borrower)
+            var returnTicket = new ReturnTicket
+            {
+                BorrowTicketId = borrowTicketId,
+                ReturnById = returnById,
+                OwnerId = borrowTicket.OwnerId,
+                Quantity = borrowTicket.Quantity,
+                Note = notes,
+                ApproveStatus = TicketStatus.Pending,
+                ReturnRequestDate = DateTime.Now,
+                IsEarlyReturn = DateTime.Now < borrowTicket.ReturnDate,
+                DateCreated = DateTime.Now
+            };
+
+            await _unitOfWork.ReturnTickets.AddAsync(returnTicket);
+            await _unitOfWork.SaveChangesAsync();
+            return returnTicket;
+        }
+
+
+
     }
 }

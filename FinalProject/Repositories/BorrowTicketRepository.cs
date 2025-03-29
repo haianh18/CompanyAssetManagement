@@ -17,6 +17,138 @@ namespace FinalProject.Repositories
         {
         }
 
+        public override async Task<IEnumerable<BorrowTicket>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(bt => bt.BorrowBy)
+                .Include(bt => bt.Owner)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .Include(bt => bt.ReturnTickets)
+                .OrderByDescending(bt => bt.DateCreated)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<BorrowTicket>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(bt => bt.BorrowBy)
+                .Include(bt => bt.Owner)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(bt => bt.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .Include(bt => bt.ReturnTickets)
+                .OrderByDescending(bt => bt.DateCreated)
+                .ToListAsync();
+        }
+
+        public async Task<bool> RequestExtensionAsync(int borrowTicketId, DateTime newReturnDate)
+        {
+            var borrowTicket = await GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null) return false;
+
+            // Check if ticket has already been extended
+            if (borrowTicket.IsExtended) return false;
+
+            // Check if extension date is valid (must be after current return date)
+            if (newReturnDate <= borrowTicket.ReturnDate) return false;
+
+            // Check if extension is within limits (max 30 days from original return date)
+            var maxExtendDate = borrowTicket.ReturnDate.Value.AddDays(30);
+            if (newReturnDate > maxExtendDate) return false;
+
+            // Update borrow ticket with extension request
+            borrowTicket.ExtensionRequestDate = DateTime.Now;
+            borrowTicket.ExtensionApproveStatus = TicketStatus.Pending;
+
+            Update(borrowTicket);
+            return true;
+        }
+
+        public async Task<bool> ApproveExtensionAsync(int borrowTicketId)
+        {
+            var borrowTicket = await GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null) return false;
+
+            // Check if there's a pending extension request
+            if (borrowTicket.ExtensionApproveStatus != TicketStatus.Pending || !borrowTicket.ExtensionRequestDate.HasValue)
+                return false;
+
+            // Create a new borrow ticket for the extension
+            var extensionTicket = new BorrowTicket
+            {
+                WarehouseAssetId = borrowTicket.WarehouseAssetId,
+                BorrowById = borrowTicket.BorrowById,
+                OwnerId = borrowTicket.OwnerId,
+                Quantity = borrowTicket.Quantity,
+                Note = $"Extension of ticket #{borrowTicket.Id}",
+                DateCreated = borrowTicket.ReturnDate, // Start date is the end date of original ticket
+                ReturnDate = borrowTicket.ReturnDate.Value.AddDays(30), // 30 days extension
+                ApproveStatus = TicketStatus.Approved,
+                ExtensionBorrowTicketId = borrowTicket.Id,
+                DateModified = DateTime.Now
+            };
+
+            // Update original borrow ticket
+            borrowTicket.IsExtended = true;
+            borrowTicket.ExtensionApproveStatus = TicketStatus.Approved;
+            borrowTicket.DateModified = DateTime.Now;
+
+            await AddAsync(extensionTicket);
+            Update(borrowTicket);
+            return true;
+        }
+
+        public async Task<bool> RejectExtensionAsync(int borrowTicketId, string rejectionReason)
+        {
+            var borrowTicket = await GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null) return false;
+
+            // Check if there's a pending extension request
+            if (borrowTicket.ExtensionApproveStatus != TicketStatus.Pending || !borrowTicket.ExtensionRequestDate.HasValue)
+                return false;
+
+            // Update reject status
+            borrowTicket.ExtensionApproveStatus = TicketStatus.Rejected;
+            borrowTicket.Note += $"\nExtension rejected: {rejectionReason}";
+            borrowTicket.DateModified = DateTime.Now;
+
+            Update(borrowTicket);
+            return true;
+        }
+
+        public async Task<bool> MarkAsReturnedAsync(int borrowTicketId)
+        {
+            var borrowTicket = await GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null) return false;
+
+            // Mark as returned
+            borrowTicket.IsReturned = true;
+            borrowTicket.DateModified = DateTime.Now;
+
+            Update(borrowTicket);
+            return true;
+        }
+
+        public override async Task<BorrowTicket> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                 .Include(bt => bt.BorrowBy)
+                 .Include(bt => bt.Owner)
+                 .Include(bt => bt.WarehouseAsset)
+                     .ThenInclude(wa => wa.Asset)
+                         .ThenInclude(a => a.AssetCategory)
+                 .Include(bt => bt.WarehouseAsset)
+                     .ThenInclude(wa => wa.Warehouse)
+                 .Include(bt => bt.ReturnTickets)
+                 .FirstOrDefaultAsync(bt => bt.Id == id);
+        }
+
         public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsByUser(int userId)
         {
             return await _dbSet

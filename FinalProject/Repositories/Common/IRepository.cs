@@ -32,6 +32,10 @@ namespace FinalProject.Repositories.Common
         // Cập nhật một đối tượng
         void Update(T entity);
 
+        // Update async
+
+        Task UpdateAsync(int id);
+
         // Xóa một đối tượng
         void Remove(T entity);
 

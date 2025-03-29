@@ -1,6 +1,7 @@
 ﻿using FinalProject.Enums;
+using FinalProject.Models;
 using FinalProject.Models.ViewModels.ReturnRequest;
-using FinalProject.Services.Interfaces;
+using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,38 +10,31 @@ namespace FinalProject.Controllers
     //[Authorize(Roles = "WarehouseManager")]
     public class ReturnRequestController : Controller
     {
-        private readonly IReturnTicketService _returnTicketService;
-        private readonly IBorrowTicketService _borrowTicketService;
-        private readonly IUserService _userService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ReturnRequestController(
-            IReturnTicketService returnTicketService,
-            IBorrowTicketService borrowTicketService,
-            IUserService userService)
+        public ReturnRequestController(IUnitOfWork _unitOfWork)
         {
-            _returnTicketService = returnTicketService;
-            _borrowTicketService = borrowTicketService;
-            _userService = userService;
+            this._unitOfWork = _unitOfWork;
         }
 
         // GET: ReturnRequest/Index
         public async Task<IActionResult> Index()
         {
-            var returnRequests = await _returnTicketService.GetAllAsync();
+            var returnRequests = await _unitOfWork.ReturnTickets.GetAllAsync();
             return View(returnRequests);
         }
 
         // GET: ReturnRequest/PendingRequests
         public async Task<IActionResult> PendingRequests()
         {
-            var pendingRequests = await _returnTicketService.GetPendingReturnRequestsAsync();
+            var pendingRequests = await _unitOfWork.ReturnTickets.GetPendingReturnRequests();
             return View(pendingRequests);
         }
 
         // GET: ReturnRequest/Create/5 (Create return request for a borrow ticket)
         public async Task<IActionResult> Create(int id)
         {
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
             {
                 return NotFound();
@@ -71,7 +65,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateReturnRequestViewModel model)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -81,7 +75,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    await _returnTicketService.CreateReturnRequestAsync(
+                    await CreateReturnRequestAsync(
                         model.BorrowTicketId,
                         currentUser.Id,
                         model.Notes
@@ -97,7 +91,7 @@ namespace FinalProject.Controllers
             }
 
             // If we get here, something went wrong, so reload the borrow ticket info
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(model.BorrowTicketId);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(model.BorrowTicketId);
             if (borrowTicket != null)
             {
                 model.AssetName = borrowTicket.WarehouseAsset?.Asset?.Name;
@@ -113,7 +107,7 @@ namespace FinalProject.Controllers
         // GET: ReturnRequest/ProcessReturn/5
         public async Task<IActionResult> ProcessReturn(int id)
         {
-            var returnTicket = await _returnTicketService.GetReturnTicketWithDetailsAsync(id);
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
             if (returnTicket == null)
             {
                 return NotFound();
@@ -143,7 +137,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    await _returnTicketService.ApproveReturnAsync(
+                    await ApproveReturnAsync(
                         model.ReturnTicketId,
                         model.AssetCondition,
                         model.AdditionalNotes
@@ -164,7 +158,7 @@ namespace FinalProject.Controllers
         // GET: ReturnRequest/Reject/5
         public async Task<IActionResult> Reject(int id)
         {
-            var returnTicket = await _returnTicketService.GetReturnTicketWithDetailsAsync(id);
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
             if (returnTicket == null)
             {
                 return NotFound();
@@ -190,7 +184,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    await _returnTicketService.RejectReturnAsync(
+                    await _unitOfWork.ReturnTickets.RejectReturnAsync(
                         model.ReturnTicketId,
                         model.RejectionReason
                     );
@@ -210,13 +204,100 @@ namespace FinalProject.Controllers
         // GET: ReturnRequest/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var returnTicket = await _returnTicketService.GetReturnTicketWithDetailsAsync(id);
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
             if (returnTicket == null)
             {
                 return NotFound();
             }
 
             return View(returnTicket);
+        }
+
+        public async Task<ReturnTicket> CreateReturnRequestAsync(int borrowTicketId, int ownerId, string note)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(borrowTicketId);
+            if (borrowTicket == null)
+                throw new Exception("Borrow ticket not found");
+
+            if (borrowTicket.IsReturned)
+                throw new Exception("This borrow ticket has already been returned");
+
+            // Create return request (initiated by warehouse manager)
+            var returnTicket = new ReturnTicket
+            {
+                BorrowTicketId = borrowTicketId,
+                ReturnById = borrowTicket.BorrowById,
+                OwnerId = ownerId,
+                Quantity = borrowTicket.Quantity,
+                Note = note,
+                ApproveStatus = TicketStatus.Pending,
+                ReturnRequestDate = DateTime.Now,
+                DateCreated = DateTime.Now
+            };
+
+            await _unitOfWork.ReturnTickets.AddAsync(returnTicket);
+            await _unitOfWork.SaveChangesAsync();
+            return returnTicket;
+        }
+
+        public async Task<ReturnTicket> ApproveReturnAsync(int returnTicketId, AssetStatus assetCondition, string notes)
+        {
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithBorrowDetails(returnTicketId);
+            if (returnTicket == null)
+                throw new Exception("Return ticket not found");
+
+            var borrowTicket = returnTicket.BorrowTicket;
+            if (borrowTicket == null)
+                throw new Exception("Related borrow ticket not found");
+
+            // Add notes if provided
+            if (!string.IsNullOrEmpty(notes))
+            {
+                returnTicket.Note = string.IsNullOrEmpty(returnTicket.Note)
+                    ? notes
+                    : $"{returnTicket.Note}\n{notes}";
+            }
+
+            // Update return ticket
+            returnTicket.ApproveStatus = TicketStatus.Approved;
+            returnTicket.ActualReturnDate = DateTime.Now;
+            returnTicket.AssetConditionOnReturn = assetCondition;
+            returnTicket.DateModified = DateTime.Now;
+
+            // Mark borrow ticket as returned
+            await _unitOfWork.BorrowTickets.MarkAsReturnedAsync(borrowTicket.Id);
+
+            // Update warehouse asset quantities
+            var warehouseAsset = borrowTicket.WarehouseAsset;
+            if (warehouseAsset != null)
+            {
+                // Reduce borrowed quantity
+                await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
+                    warehouseAsset.Id,
+                    -(borrowTicket.Quantity ?? 0));
+
+                // Update asset quantities based on condition
+                if (assetCondition == AssetStatus.GOOD)
+                {
+                    await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
+                        warehouseAsset.Id,
+                        AssetStatus.GOOD,
+                        AssetStatus.GOOD,
+                        borrowTicket.Quantity ?? 0);
+                }
+                else
+                {
+                    await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
+                        warehouseAsset.Id,
+                        AssetStatus.GOOD,
+                        assetCondition,
+                        borrowTicket.Quantity ?? 0);
+                }
+            }
+
+            _unitOfWork.ReturnTickets.Update(returnTicket);
+            await _unitOfWork.SaveChangesAsync();
+            return returnTicket;
         }
     }
 }

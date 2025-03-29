@@ -3,13 +3,14 @@ using FinalProject.Models;
 using FinalProject.Models.ViewModels;
 using FinalProject.Models.ViewModels.BorrowRequest;
 using FinalProject.Models.ViewModels.Handover;
-using FinalProject.Services.Interfaces;
+using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 
 namespace FinalProject.Controllers
@@ -17,67 +18,40 @@ namespace FinalProject.Controllers
     //[Authorize(Roles = "WarehouseManager")]
     public class WarehouseManagerController : Controller
     {
-        private readonly IAssetService _assetService;
-        private readonly IAssetCategoryService _assetCategoryService;
-        private readonly IDepartmentService _departmentService;
-        private readonly IBorrowTicketService _borrowTicketService;
-        private readonly IReturnTicketService _returnTicketService;
-        private readonly IHandoverTicketService _handoverTicketService;
-        private readonly IHandoverReturnService _handoverReturnService;
-        private readonly IDisposalTicketService _disposalTicketService;
-        private readonly IUserService _userService;
-        private readonly IWarehouseService _warehouseService;
-        private readonly IWarehouseAssetService _warehouseAssetService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public WarehouseManagerController(
-            IAssetService assetService,
-            IAssetCategoryService assetCategoryService,
-            IDepartmentService departmentService,
-            IBorrowTicketService borrowTicketService,
-            IReturnTicketService returnTicketService,
-            IHandoverTicketService handoverTicketService,
-            IHandoverReturnService handoverReturnService,
-            IDisposalTicketService disposalTicketService,
-            IUserService userService,
-            IWarehouseService warehouseService,
-            IWarehouseAssetService warehouseAssetService)
+        public WarehouseManagerController(IUnitOfWork unitOfWork)
         {
-            _assetService = assetService;
-            _assetCategoryService = assetCategoryService;
-            _departmentService = departmentService;
-            _borrowTicketService = borrowTicketService;
-            _returnTicketService = returnTicketService;
-            _handoverTicketService = handoverTicketService;
-            _handoverReturnService = handoverReturnService;
-            _disposalTicketService = disposalTicketService;
-            _userService = userService;
-            _warehouseService = warehouseService;
-            _warehouseAssetService = warehouseAssetService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IActionResult> Dashboard()
         {
+            var totalDisposedAssets = (await _unitOfWork.WarehouseAssets.GetAssetsWithDisposedQuantity()).Sum(wa => wa.DisposedQuantity);
+            var totalBrokenAssets = (await _unitOfWork.WarehouseAssets.GetAssetsWithBrokenQuantity()).Sum(wa => wa.BrokenQuantity);
+            var totalFixingAssets = (await _unitOfWork.WarehouseAssets.GetAssetsWithFixingQuantity()).Sum(wa => wa.FixingQuantity);
+            var totalGoodAssets = (await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity()).Sum(wa => wa.GoodQuantity);
+            var totalAssets = totalFixingAssets + totalGoodAssets + totalBrokenAssets;
+
             var viewModel = new WarehouseManagerDashboardViewModel
             {
-                TotalAssets = (await _assetService.GetAllInCludeDeletedAsync()).Count(),
-                TotalCategories = (await _assetCategoryService.GetAllInCludeDeletedAsync()).Count(),
-                TotalDepartments = (await _departmentService.GetAllAsync()).Count(),
-                TotalWarehouses = (await _warehouseService.GetAllAsync()).Count(),
-                TotalDisposedAssets = (await _warehouseAssetService.GetAssetsWithDisposedQuantityAsync()).Count(),
-                TotalPendingBorrowRequests = (await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync()).Count(),
-                ActiveAssets = (await _warehouseAssetService.GetAssetsWithGoodQuantityAsync()).Count(),
-                BrokenAssets = (await _warehouseAssetService.GetAssetsWithBrokenQuantityAsync()).Count(),
-                FixingAssets = (await _warehouseAssetService.GetAssetsWithFixingQuantityAsync()).Count()
+                TotalAssets = totalAssets.Value,
+                TotalCategories = (await _unitOfWork.AssetCategories.GetAllAsync()).Count(),
+                TotalDepartments = (await _unitOfWork.Departments.GetAllAsync()).Count(),
+                TotalWarehouses = (await _unitOfWork.Warehouses.GetAllAsync()).Count(),
+                TotalDisposedAssets = totalDisposedAssets.Value,
+                TotalPendingBorrowRequests = (await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn()).Count(),
+                ActiveAssets = totalGoodAssets.Value,
+                BrokenAssets = totalBrokenAssets.Value,
+                FixingAssets = totalFixingAssets.Value
             };
 
             return View(viewModel);
         }
 
-
-        #region Borrow Requests Management
         public async Task<IActionResult> BorrowRequests()
         {
-            var requests = await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync();
+            var requests = await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
 
             // Group by status
             ViewBag.PendingRequests = requests.Where(r => r.ApproveStatus == TicketStatus.Pending).ToList();
@@ -111,14 +85,14 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> ApproveBorrowRequest(int id)
         {
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
             {
                 return NotFound();
             }
 
             // Get current user to set as owner
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -129,15 +103,15 @@ namespace FinalProject.Controllers
             borrowTicket.OwnerId = currentUser.Id;
             borrowTicket.DateModified = DateTime.Now;
 
-            await _borrowTicketService.UpdateAsync(borrowTicket);
-
+            _unitOfWork.BorrowTickets.Update(borrowTicket);
             // Update warehouse asset borrowed quantity
             if (borrowTicket.WarehouseAssetId.HasValue)
             {
-                await _warehouseAssetService.UpdateBorrowedQuantityAsync(
-                    borrowTicket.WarehouseAssetId.Value,
-                    borrowTicket.Quantity ?? 0);
+                await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
+                   borrowTicket.WarehouseAssetId.Value,
+                   borrowTicket.Quantity ?? 0);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Yêu cầu mượn đã được phê duyệt thành công.";
             return RedirectToAction(nameof(BorrowRequests));
@@ -145,7 +119,7 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> RejectBorrowRequest(int id)
         {
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
             {
                 return NotFound();
@@ -171,7 +145,7 @@ namespace FinalProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                var borrowTicket = await _borrowTicketService.GetByIdAsync(model.BorrowTicketId);
+                var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(model.BorrowTicketId);
                 if (borrowTicket == null)
                 {
                     return NotFound();
@@ -184,7 +158,8 @@ namespace FinalProject.Controllers
                     : $"{borrowTicket.Note}\nTừ chối: {model.RejectionReason}";
                 borrowTicket.DateModified = DateTime.Now;
 
-                await _borrowTicketService.UpdateAsync(borrowTicket);
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+                await _unitOfWork.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Yêu cầu mượn đã bị từ chối.";
                 return RedirectToAction(nameof(BorrowRequests));
@@ -198,7 +173,8 @@ namespace FinalProject.Controllers
         {
             try
             {
-                var success = await _borrowTicketService.ApproveExtensionAsync(id);
+                var success = await _unitOfWork.BorrowTickets.ApproveExtensionAsync(id);
+                await _unitOfWork.SaveChangesAsync();
                 if (success)
                 {
                     TempData["SuccessMessage"] = "Yêu cầu gia hạn đã được phê duyệt thành công.";
@@ -219,7 +195,7 @@ namespace FinalProject.Controllers
         // Method to reject extension request
         public async Task<IActionResult> RejectExtension(int id)
         {
-            var borrowTicket = await _borrowTicketService.GetByIdAsync(id);
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
             {
                 return NotFound();
@@ -245,10 +221,10 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    var success = await _borrowTicketService.RejectExtensionAsync(
+                    var success = await _unitOfWork.BorrowTickets.RejectExtensionAsync(
                         model.BorrowTicketId,
                         model.RejectionReason);
-
+                    await _unitOfWork.SaveChangesAsync();
                     if (success)
                     {
                         TempData["SuccessMessage"] = "Yêu cầu gia hạn đã bị từ chối.";
@@ -267,12 +243,10 @@ namespace FinalProject.Controllers
 
             return View(model);
         }
-        #endregion
 
-        #region Return Requests Management
         public async Task<IActionResult> ReturnRequests()
         {
-            var returns = await _returnTicketService.GetAllAsync();
+            var returns = await _unitOfWork.ReturnTickets.GetAllAsync();
 
             // Group by status
             ViewBag.PendingReturns = returns.Where(r => r.ApproveStatus == TicketStatus.Pending).ToList();
@@ -292,19 +266,17 @@ namespace FinalProject.Controllers
         }
 
         // Other return request management methods are handled in ReturnRequestController
-        #endregion
 
-        #region Handover and Return Management
         public async Task<IActionResult> HandoverTickets()
         {
-            var tickets = await _handoverTicketService.GetAllAsync();
+            var tickets = await _unitOfWork.HandoverTickets.GetAllAsync();
 
             // Group by active status
             ViewBag.ActiveHandovers = tickets.Where(h => h.IsActive).ToList();
             ViewBag.InactiveHandovers = tickets.Where(h => !h.IsActive).ToList();
 
             // Get pending returns
-            var pendingReturns = await _handoverReturnService.GetPendingHandoverReturnsAsync();
+            var pendingReturns = await _unitOfWork.HandoverReturns.GetPendingHandoverReturns();
             ViewBag.PendingReturns = pendingReturns;
 
             return View(tickets);
@@ -312,7 +284,7 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> ProcessHandoverReturn(int id)
         {
-            var handoverReturn = await _handoverReturnService.GetHandoverReturnWithDetailsAsync(id);
+            var handoverReturn = await _unitOfWork.HandoverReturns.GetHandoverReturnWithDetails(id);
             if (handoverReturn == null)
             {
                 return NotFound();
@@ -341,7 +313,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    await _handoverReturnService.ApproveHandoverReturnAsync(
+                    await ApproveHandoverReturnAsync(
                         model.HandoverReturnId,
                         model.AssetCondition,
                         model.AdditionalNotes
@@ -361,7 +333,7 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> CreateHandoverReturn(int id)
         {
-            var handoverTicket = await _handoverTicketService.GetByIdAsync(id);
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(id);
             if (handoverTicket == null)
             {
                 return NotFound();
@@ -390,7 +362,7 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateHandoverReturn(CreateHandoverReturnViewModel model)
         {
-            var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -400,7 +372,7 @@ namespace FinalProject.Controllers
             {
                 try
                 {
-                    await _handoverReturnService.CreateHandoverReturnAsync(
+                    await CreateHandoverReturnAsync(
                         model.HandoverTicketId,
                         model.ReturnById ?? currentUser.Id,
                         model.Notes
@@ -416,7 +388,7 @@ namespace FinalProject.Controllers
             }
 
             // Reload handover ticket info if model validation fails
-            var handoverTicket = await _handoverTicketService.GetByIdAsync(model.HandoverTicketId);
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(model.HandoverTicketId);
             if (handoverTicket != null)
             {
                 model.AssetName = handoverTicket.WarehouseAsset?.Asset?.Name;
@@ -428,98 +400,82 @@ namespace FinalProject.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> ProcessEmployeeTermination(int id)
+        public async Task<HandoverReturn> CreateHandoverReturnAsync(int handoverTicketId, int returnById, string notes)
         {
-            var employee = await _userService.GetUserByIdAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
+            // Get the handover ticket
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(handoverTicketId);
+            if (handoverTicket == null)
+                throw new Exception("Handover ticket not found");
 
-            var model = new ProcessEmployeeTerminationViewModel
+            if (!handoverTicket.IsActive)
+                throw new Exception("This handover ticket is no longer active");
+
+            // Create handover return record
+            var handoverReturn = new HandoverReturn
             {
-                EmployeeId = employee.Id,
-                EmployeeName = employee.FullName,
-                DepartmentName = employee.Department?.Name,
-                ConfirmText = string.Empty // User will need to type confirmation
+                HandoverTicketId = handoverTicketId,
+                ReturnById = returnById,
+                ReceivedById = handoverTicket.HandoverById, // Default to original handover person
+                ReturnDate = DateTime.Now,
+                Note = notes,
+                DateCreated = DateTime.Now
             };
 
-            // Get active assets
-            var activeHandovers = await _handoverTicketService.GetActiveHandoversByEmployeeAsync(id);
-            var activeBorrows = await _borrowTicketService.GetActiveBorrowTicketsByUserAsync(id);
+            await _unitOfWork.HandoverReturns.AddAsync(handoverReturn);
+            await _unitOfWork.SaveChangesAsync();
 
-            model.ActiveHandoverAssets = activeHandovers.ToList();
-            model.ActiveBorrowedAssets = activeBorrows.ToList();
-
-            return View(model);
+            return handoverReturn;
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessEmployeeTermination(ProcessEmployeeTerminationViewModel model)
+        public async Task<HandoverReturn> ApproveHandoverReturnAsync(int handoverReturnId, AssetStatus assetCondition, string notes)
         {
-            if (ModelState.IsValid)
+            var handoverReturn = await _unitOfWork.HandoverReturns.GetByIdAsync(handoverReturnId);
+            if (handoverReturn == null)
+                throw new Exception("Handover return record not found");
+
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(handoverReturn.HandoverTicketId);
+            if (handoverTicket == null)
+                throw new Exception("Related handover ticket not found");
+
+            // Update handover return if notes provided
+            if (!string.IsNullOrEmpty(notes))
             {
-                // Confirm termination with text verification
-                if (model.ConfirmText != $"TERMINATE-{model.EmployeeId}")
-                {
-                    ModelState.AddModelError("ConfirmText", "Mã xác nhận không chính xác. Vui lòng nhập đúng theo hướng dẫn.");
-
-                    // Reload lists
-                    var activeHandovers = await _handoverTicketService.GetActiveHandoversByEmployeeAsync(model.EmployeeId);
-                    var activeBorrows = await _borrowTicketService.GetActiveBorrowTicketsByUserAsync(model.EmployeeId);
-
-                    model.ActiveHandoverAssets = activeHandovers.ToList();
-                    model.ActiveBorrowedAssets = activeBorrows.ToList();
-
-                    return View(model);
-                }
-
-                try
-                {
-                    // Process handover returns
-                    await _handoverTicketService.ProcessEmployeeTerminationAsync(model.EmployeeId);
-
-                    // Mark borrowed assets as needing return
-                    var activeBorrows = await _borrowTicketService.GetActiveBorrowTicketsByUserAsync(model.EmployeeId);
-                    var currentUser = await _userService.GetUserByUserNameAsync(User.Identity.Name);
-
-                    foreach (var borrow in activeBorrows)
-                    {
-                        await _returnTicketService.CreateReturnRequestAsync(
-                            borrow.Id,
-                            currentUser.Id,
-                            "Nhân viên nghỉ việc - yêu cầu trả tài sản"
-                        );
-                    }
-
-                    // Update employee status (if needed - this would depend on your system)
-                    // await _userService.DeactivateUserAsync(model.EmployeeId);
-
-                    TempData["SuccessMessage"] = "Quy trình xử lý nghỉ việc đã được hoàn tất. Tất cả tài sản đã được yêu cầu trả lại.";
-                    return RedirectToAction("Index", "User"); // Assuming you have a user management controller
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
-                }
+                handoverReturn.Note = string.IsNullOrEmpty(handoverReturn.Note)
+                    ? notes
+                    : $"{handoverReturn.Note}\n{notes}";
             }
 
-            // Reload lists
-            var reloadHandovers = await _handoverTicketService.GetActiveHandoversByEmployeeAsync(model.EmployeeId);
-            var reloadBorrows = await _borrowTicketService.GetActiveBorrowTicketsByUserAsync(model.EmployeeId);
+            // Set asset condition on return
+            handoverReturn.AssetConditionOnReturn = assetCondition;
+            handoverReturn.DateModified = DateTime.Now;
 
-            model.ActiveHandoverAssets = reloadHandovers.ToList();
-            model.ActiveBorrowedAssets = reloadBorrows.ToList();
+            // Update handover ticket status
+            await _unitOfWork.HandoverTickets.UpdateHandoverTicketStatus(
+                handoverTicket.Id,
+                false,  // isActive = false
+                DateTime.Now // actualEndDate
+            );
 
-            return View(model);
+            // Update warehouse asset quantities
+            if (handoverTicket.WarehouseAssetId.HasValue)
+            {
+                await _unitOfWork.WarehouseAssets.UpdateWarehouseAssetQuantitiesForHandover(
+                    handoverTicket.WarehouseAssetId.Value,
+                    handoverTicket.Quantity ?? 0,
+                    true, // isReturn
+                    assetCondition
+                );
+            }
+
+            _unitOfWork.HandoverReturns.Update(handoverReturn);
+            await _unitOfWork.SaveChangesAsync();
+
+            return handoverReturn;
         }
-        #endregion
 
-        #region Disposal Management
         public async Task<IActionResult> CreateDisposalTicket()
         {
-            ViewBag.WarehouseAssets = await _warehouseAssetService.GetAllAsync();
+            ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
             return View();
         }
 
@@ -530,21 +486,20 @@ namespace FinalProject.Controllers
             if (ModelState.IsValid)
             {
                 ticket.DateCreated = DateTime.Now;
-                await _disposalTicketService.AddAsync(ticket);
+                await _unitOfWork.DisposalTickets.AddAsync(ticket);
+                await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(DisposalTickets));
             }
-            ViewBag.WarehouseAssets = await _warehouseAssetService.GetAllAsync();
+            ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
             return View(ticket);
         }
 
         public async Task<IActionResult> DisposalTickets()
         {
-            var tickets = await _disposalTicketService.GetAllAsync();
+            var tickets = await _unitOfWork.DisposalTickets.GetAllAsync();
             return View(tickets);
         }
-        #endregion
 
-        #region Reports
         public async Task<IActionResult> Reports()
         {
             return View();
@@ -552,31 +507,36 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> BorrowReport()
         {
-            var borrowTickets = await _borrowTicketService.GetAllAsync();
+            var borrowTickets = await _unitOfWork.BorrowTickets.GetAllAsync();
             return View(borrowTickets);
         }
 
         public async Task<IActionResult> ReturnReport()
         {
-            var returnTickets = await _returnTicketService.GetAllAsync();
+            var returnTickets = await _unitOfWork.ReturnTickets.GetAllAsync();
             return View(returnTickets);
         }
 
         public async Task<IActionResult> AssetSummaryReport()
         {
-            var assets = await _assetService.GetAllAsync();
-            var categories = await _assetCategoryService.GetAllAsync();
-            var warehouses = await _warehouseService.GetAllAsync();
-            var goodAssets = await _warehouseAssetService.GetAssetsWithGoodQuantityAsync();
-            var brokenAssets = await _warehouseAssetService.GetAssetsWithBrokenQuantityAsync();
-            var fixingAssets = await _warehouseAssetService.GetAssetsWithFixingQuantityAsync();
-            var disposedAssets = await _warehouseAssetService.GetAssetsWithDisposedQuantityAsync();
+            var assets = await _unitOfWork.Assets.GetAllAsync();
+            var categories = await _unitOfWork.AssetCategories.GetAllAsync();
+            var warehouses = await _unitOfWork.Warehouses.GetAllAsync();
+            var goodAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity();
+            var brokenAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithBrokenQuantity();
+            var fixingAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithFixingQuantity();
+            var disposedAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithDisposedQuantity();
+            double totalValue = 0;
+            foreach (var wa in goodAssets)
+            {
+                totalValue += wa.Asset.Price * (wa.GoodQuantity ?? 0);
+            }
             var viewModel = new AssetSummaryReportViewModel
             {
                 Assets = assets.ToList(),
                 Categories = categories.ToList(),
                 Warehouses = warehouses.ToList(),
-                TotalValue = await _assetService.GetTotalAssetsValueAsync(),
+                TotalValue = totalValue,
                 AssetCountByStatus = new Dictionary<AssetStatus, int>
                 {
                     { AssetStatus.GOOD, goodAssets.Count() },
@@ -591,30 +551,28 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> DisposalReport()
         {
-            var disposalTickets = await _disposalTicketService.GetAllAsync();
+            var disposalTickets = await _unitOfWork.DisposalTickets.GetAllAsync();
             return View(disposalTickets);
         }
 
         public async Task<IActionResult> WarehouseInventoryReport()
         {
-            var warehouseAssets = await _warehouseAssetService.GetAllAsync();
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
             return View(warehouseAssets);
         }
 
         public async Task<IActionResult> BorrowedAssetsReport()
         {
-            var borrowTickets = await _borrowTicketService.GetBorrowTicketsWithoutReturnAsync();
+            var borrowTickets = await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
             return View(borrowTickets);
         }
 
         public async Task<IActionResult> HandoverReport()
         {
-            var handoverTickets = await _handoverTicketService.GetAllAsync();
+            var handoverTickets = await _unitOfWork.HandoverTickets.GetAllAsync();
             return View(handoverTickets);
         }
-        #endregion
 
-        #region Account Management
         public IActionResult ChangePassword()
         {
             return View();
@@ -629,13 +587,13 @@ namespace FinalProject.Controllers
                 return View(model);
             }
 
-            var user = await _userService.GetUserByUserNameAsync(User.Identity.Name);
+            var user = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var result = await _userService.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            var result = await _unitOfWork.Users.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result)
             {
                 ViewBag.Message = "Password changed successfully";
@@ -647,6 +605,6 @@ namespace FinalProject.Controllers
                 return View(model);
             }
         }
-        #endregion
+
     }
 }

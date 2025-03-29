@@ -13,5 +13,7 @@ public interface IReturnTicketRepository : IRepository<ReturnTicket>
     Task<ReturnTicket> GetReturnTicketWithBorrowDetails(int returnTicketId);
     Task<IEnumerable<ReturnTicket>> GetPendingReturnRequests();
     Task<IEnumerable<ReturnTicket>> GetReturnTicketsWithCondition(AssetStatus condition);
+    Task<ReturnTicket> RejectReturnAsync(int returnTicketId, string rejectionReason);
+
 
 }

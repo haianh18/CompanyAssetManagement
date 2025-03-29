@@ -104,6 +104,15 @@ namespace FinalProject.Repositories.Common
             _context.Entry(entity).State = EntityState.Modified;
         }
 
+        public async Task UpdateAsync(int id)
+        {
+            T entity = await _dbSet.FindAsync(id);
+            if (entity != null)
+            {
+                Update(entity);
+            }
+        }
+
         public void Remove(T entity)
         {
             if (_context.Entry(entity).State == EntityState.Detached)

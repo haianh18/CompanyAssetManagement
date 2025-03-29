@@ -2,7 +2,6 @@
 using FinalProject.Models;
 using FinalProject.Models.ViewModels;
 using FinalProject.Repositories.Common;
-using FinalProject.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;

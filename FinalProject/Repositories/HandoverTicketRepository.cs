@@ -16,6 +16,21 @@ namespace FinalProject.Repositories
         {
         }
 
+        public override async Task<HandoverTicket> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.Owner)
+                .Include(ht => ht.Department)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .FirstOrDefaultAsync(ht => ht.Id == id);
+        }
+
         public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByAssetIdAsync(int assetId)
         {
             return await _dbSet
