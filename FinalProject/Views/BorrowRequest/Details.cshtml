@@ -126,17 +126,17 @@
                         <div class="d-grid gap-2">
                             @if (Model.ReturnDate > DateTime.Now.AddDays(7) && !Model.IsExtended && Model.ExtensionApproveStatus != TicketStatus.Pending)
                             {
-                                <a asp-controller="BorrowRequest" asp-action="RequestExtension" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <a asp-controller="GeneralUser" asp-action="RequestExtension" asp-route-id="@Model.Id" class="btn btn-warning">
                                     <i class="fas fa-calendar-plus"></i> Yêu cầu gia hạn
                                 </a>
                             }
-                            <a asp-controller="BorrowRequest" asp-action="ReturnAsset" asp-route-id="@Model.Id" class="btn btn-success">
+                            <a asp-controller="GeneralUser" asp-action="ReturnAsset" asp-route-id="@Model.Id" class="btn btn-success">
                                 <i class="fas fa-undo-alt"></i> Trả tài sản
                             </a>
                         </div>
                     }
                     <div class="d-grid mt-2">
-                        <a asp-controller="BorrowRequest" asp-action="MyBorrowRequests" class="btn btn-outline-secondary">
+                        <a asp-controller="GeneralUser" asp-action="MyBorrowRequests" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left"></i> Quay lại danh sách
                         </a>
                     </div>

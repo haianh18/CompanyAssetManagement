@@ -39,20 +39,20 @@ namespace FinalProject.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+                // Attempt to sign in the user
+                var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
+
                 if (result.Succeeded)
                 {
-                    // Redirect to appropriate dashboard based on user role
-                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    // Redirect based on user role
+                    var user = await _userManager.FindByNameAsync(model.UserName);
                     if (user != null)
                     {
-                        if (await _userManager.IsInRoleAsync(user, "ADMIN"))
+                        if (await _userManager.IsInRoleAsync(user, "Admin"))
                         {
                             return RedirectToAction("Dashboard", "Admin");
                         }
-                        else if (await _userManager.IsInRoleAsync(user, "WAREHOUSE_MANAGER"))
+                        else if (await _userManager.IsInRoleAsync(user, "WarehouseManager"))
                         {
                             return RedirectToAction("Dashboard", "WarehouseManager");
                         }
@@ -75,7 +75,6 @@ namespace FinalProject.Controllers
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Đăng nhập không thành công.");
-                    return View(model);
                 }
             }
 
@@ -284,3 +283,4 @@ namespace FinalProject.Controllers
         }
     }
 }
+

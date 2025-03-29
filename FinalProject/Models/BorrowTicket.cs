@@ -32,7 +32,7 @@ namespace FinalProject.Models
         public int? ExtensionBorrowTicketId { get; set; }
         public bool IsExtended { get; set; } = false;
         public DateTime? ExtensionRequestDate { get; set; }
-        public TicketStatus ExtensionApproveStatus { get; set; } = TicketStatus.Pending;
+        public TicketStatus? ExtensionApproveStatus { get; set; }
         public bool IsReturned { get; set; } = false;
 
         // Navigation properties

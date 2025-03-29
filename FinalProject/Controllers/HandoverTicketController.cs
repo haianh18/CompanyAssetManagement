@@ -43,7 +43,7 @@ namespace FinalProject.Controllers
             ViewBag.ActiveHandovers = handoverTickets.Where(h => h.IsActive).ToList();
             ViewBag.InactiveHandovers = handoverTickets.Where(h => !h.IsActive).ToList();
 
-            return View(handoverTickets);
+            return View("~/Views/GeneralUser/MyAssignedAssets.cshtml");
         }
     }
 }

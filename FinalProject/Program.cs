@@ -19,7 +19,7 @@ public class Program
             options.UseSqlServer(connectionString));
 
         // Add Identity services
-        builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+        builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
             .AddRoles<AppRole>()
             .AddEntityFrameworkStores<CompanyAssetManagementContext>();
 
@@ -44,6 +44,13 @@ public class Program
 
         // Register the DataSeeder service
         builder.Services.AddHostedService<DataSeeder>();
+
+        // Configure authentication and authorization
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/Account/Login";
+            options.AccessDeniedPath = "/Account/AccessDenied";
+        });
 
         var app = builder.Build();
 

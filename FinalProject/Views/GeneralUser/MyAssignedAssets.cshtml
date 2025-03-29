@@ -1,4 +1,4 @@
-﻿@model IEnumerable<FinalProject.Models.HandoverTicket>
+﻿@model FinalProject.Models.ViewModels.Handover.HandoverTicketsViewModel
 @{
     ViewData["Title"] = "Tài sản được bàn giao";
     Layout = "_GeneralUserLayout";
@@ -20,19 +20,19 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="true">
                         <i class="fas fa-check-circle"></i> Đang sử dụng
-                        <span class="badge bg-success">@ViewBag.ActiveHandovers.Count</span>
+                        <span class="badge bg-success">@Model.ActiveHandovers.Count()</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="inactive-tab" data-bs-toggle="tab" data-bs-target="#inactive" type="button" role="tab" aria-controls="inactive" aria-selected="false">
                         <i class="fas fa-history"></i> Lịch sử bàn giao
-                        <span class="badge bg-secondary">@ViewBag.InactiveHandovers.Count</span>
+                        <span class="badge bg-secondary">@Model.InactiveHandovers.Count()</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="false">
                         <i class="fas fa-list"></i> Tất cả
-                        <span class="badge bg-primary">@Model.Count()</span>
+                        <span class="badge bg-primary">@Model.AllHandovers.Count()</span>
                     </button>
                 </li>
             </ul>
@@ -42,10 +42,10 @@
     <div class="tab-content" id="handoverTabsContent">
         <!-- Active Handovers Tab -->
         <div class="tab-pane fade show active" id="active" role="tabpanel" aria-labelledby="active-tab">
-            @if (ViewBag.ActiveHandovers.Count > 0)
+            @if (Model.ActiveHandovers.Any())
             {
                 <div class="row">
-                    @foreach (var item in ViewBag.ActiveHandovers)
+                    @foreach (var item in Model.ActiveHandovers)
                     {
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100 shadow-sm">
@@ -85,7 +85,7 @@
                                     }
                                 </div>
                                 <div class="card-footer text-center">
-                                    <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    <a asp-controller="GeneralUser" asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
                                         <i class="fas fa-info-circle"></i> Chi tiết
                                     </a>
                                 </div>
@@ -104,7 +104,7 @@
 
         <!-- Inactive Handovers Tab -->
         <div class="tab-pane fade" id="inactive" role="tabpanel" aria-labelledby="inactive-tab">
-            @if (ViewBag.InactiveHandovers.Count > 0)
+            @if (Model.InactiveHandovers.Any())
             {
                 <div class="table-container">
                     <table class="table custom-table table-hover">
@@ -120,7 +120,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in ViewBag.InactiveHandovers)
+                            @foreach (var item in Model.InactiveHandovers)
                             {
                                 <tr>
                                     <td>@item.Id</td>
@@ -131,7 +131,7 @@
                                     <td>@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <a asp-controller="GeneralUser" asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>
                                         </div>
@@ -152,7 +152,7 @@
 
         <!-- All Handovers Tab -->
         <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
-            @if (Model.Count() > 0)
+            @if (Model.AllHandovers.Any())
             {
                 <div class="table-container">
                     <table class="table custom-table table-hover">
@@ -169,7 +169,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.AllHandovers)
                             {
                                 <tr>
                                     <td>@item.Id</td>
@@ -190,7 +190,7 @@
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a asp-controller="HandoverTicket" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <a asp-controller="GeneralUser" asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>
                                         </div>

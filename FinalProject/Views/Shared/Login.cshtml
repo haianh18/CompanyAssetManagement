@@ -18,9 +18,9 @@
                             <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
                             <div class="form-floating mb-3">
-                                <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                                <label asp-for="Email">Email</label>
-                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <input asp-for="UserName" class="form-control" autocomplete="username" aria-required="true" placeholder="username" />
+                                <label asp-for="UserName">Tên đăng nhập</label>
+                                <span asp-validation-for="UserName" class="text-danger"></span>
                             </div>
 
                             <div class="form-floating mb-3">
@@ -57,3 +57,4 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+

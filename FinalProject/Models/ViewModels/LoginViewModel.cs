@@ -4,10 +4,9 @@ namespace FinalProject.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Email là bắt buộc")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
+        [Display(Name = "Tên đăng nhập")]
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
         [DataType(DataType.Password)]
@@ -46,3 +45,4 @@ namespace FinalProject.Models.ViewModels
         public string ConfirmPassword { get; set; }
     }
 }
+

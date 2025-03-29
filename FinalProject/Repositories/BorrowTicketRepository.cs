@@ -149,9 +149,13 @@ namespace FinalProject.Repositories
                  .FirstOrDefaultAsync(bt => bt.Id == id);
         }
 
+        // Kiểm tra lại phương thức này, đảm bảo nó truy vấn đúng
         public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsByUser(int userId)
         {
-            return await _dbSet
+            // Thêm logging để debug
+            Console.WriteLine($"Looking for borrow tickets for user ID: {userId}");
+
+            var tickets = await _dbSet
                 .Where(bt => bt.BorrowById == userId)
                 .Include(bt => bt.BorrowBy)
                 .Include(bt => bt.Owner)
@@ -163,6 +167,11 @@ namespace FinalProject.Repositories
                 .Include(bt => bt.ReturnTickets)
                 .OrderByDescending(bt => bt.DateCreated)
                 .ToListAsync();
+
+            // Thêm logging để debug
+            Console.WriteLine($"Found {tickets.Count()} tickets");
+
+            return tickets;
         }
 
         public async Task<IEnumerable<BorrowTicket>> GetBorrowTicketsByOwner(int ownerId)
