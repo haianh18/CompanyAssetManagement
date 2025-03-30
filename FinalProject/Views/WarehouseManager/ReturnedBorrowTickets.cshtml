@@ -18,7 +18,7 @@
         <div class="col-md-8">
             <form method="get" action="@Url.Action("ReturnedBorrowTickets")" class="d-flex">
                 <div class="input-group">
-                    <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên người mượn hoặc tài sản..." 
+                    <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên người mượn hoặc tài sản..."
                            value="@ViewBag.CurrentFilter">
                     <button type="submit" class="btn btn-outline-secondary">
                         <i class="fas fa-search"></i>
@@ -62,7 +62,7 @@
                             var returnTicket = item.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
                             var actualReturnDate = returnTicket?.ActualReturnDate;
                             var isLateReturn = actualReturnDate.HasValue && item.ReturnDate.HasValue && actualReturnDate.Value > item.ReturnDate.Value;
-                            
+
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@(item.BorrowBy?.FullName ?? "N/A")</td>

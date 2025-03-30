@@ -216,9 +216,7 @@
             }
             else if (Model.ApproveStatus == TicketStatus.Approved && !Model.IsReturned)
             {
-                <a asp-controller="ReturnRequest" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-warning me-2">
-                    <i class="fas fa-undo-alt"></i> Tạo yêu cầu trả
-                </a>
+                
                 <a asp-action="CreateManagerReturnRequest" asp-route-id="@Model.Id" class="btn btn-info me-2">
                     <i class="fas fa-clock"></i> Yêu cầu trả sớm
                 </a>

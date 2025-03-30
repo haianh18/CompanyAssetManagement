@@ -33,14 +33,19 @@
                 <div class="card-body">
                     <h5 class="card-title">Trung bình số ngày trễ</h5>
                     @{
-                        var avgDelayDays = Model.Average(b => {
-                            var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
-                            if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                        double avgDelayDays = 0;
+                        if (Model.Any())
+                        {
+                            avgDelayDays = Model.Average(b =>
                             {
-                                return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
-                            }
-                            return 0;
-                        });
+                                var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
+                                if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                                {
+                                    return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
+                                }
+                                return 0;
+                            });
+                        }
                     }
                     <p class="card-text display-4">@avgDelayDays.ToString("F1")</p>
                 </div>
@@ -51,14 +56,19 @@
                 <div class="card-body">
                     <h5 class="card-title">Trễ hạn nhiều nhất</h5>
                     @{
-                        var maxDelayDays = Model.Max(b => {
-                            var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
-                            if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                        int maxDelayDays = 0;
+                        if (Model.Any())
+                        {
+                            maxDelayDays = Model.Max(b =>
                             {
-                                return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
-                            }
-                            return 0;
-                        });
+                                var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
+                                if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                                {
+                                    return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
+                                }
+                                return 0;
+                            });
+                        }
                     }
                     <p class="card-text display-4">@maxDelayDays</p>
                 </div>
@@ -93,12 +103,12 @@
                             var returnTicket = item.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
                             var actualReturnDate = returnTicket?.ActualReturnDate;
                             int delayDays = 0;
-                            
+
                             if (actualReturnDate.HasValue && item.ReturnDate.HasValue)
                             {
                                 delayDays = (actualReturnDate.Value - item.ReturnDate.Value).Days;
                             }
-                            
+
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@(item.BorrowBy?.FullName ?? "N/A")</td>

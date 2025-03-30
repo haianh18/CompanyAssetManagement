@@ -189,6 +189,16 @@
                     </div>
 
                     <div class="form-group mb-3">
+                        <label for="assetCondition" class="form-label">Tình trạng tài sản khi nhận lại</label>
+                        <select id="assetCondition" name="assetCondition" class="form-select" required>
+                            <option value="@AssetStatus.GOOD">Tốt</option>
+                            <option value="@AssetStatus.BROKEN">Hỏng</option>
+                            <option value="@AssetStatus.FIXING">Cần sửa chữa</option>
+                        </select>
+                        <div class="form-text">Tình trạng tài sản khi thu hồi sẽ ảnh hưởng đến trạng thái của tài sản trong kho.</div>
+                    </div>
+
+                    <div class="form-group mb-3">
                         <label for="note" class="form-label">Lý do thu hồi</label>
                         <textarea id="note" name="note" class="form-control" rows="3" required></textarea>
                         <div class="form-text">Ghi chú về việc thu hồi tài sản sẽ được lưu lại và thông báo đến người mượn.</div>
@@ -202,7 +212,6 @@
         </div>
     </div>
 </div>
-
 <!-- Batch Reminder Modal -->
 <div class="modal fade" id="batchReminderModal" tabindex="-1" aria-labelledby="batchReminderModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -261,26 +270,29 @@
                 modal.find('#reminderMessage').val(defaultMessage);
             });
 
-            // Force Return modal
-            $('#forceReturnModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var id = button.data('id');
-                var name = button.data('name');
-                var asset = button.data('asset');
-                var days = button.data('days');
+                    // Force Return modal
+        $('#forceReturnModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('id');
+            var name = button.data('name');
+            var asset = button.data('asset');
+            var days = button.data('days');
 
-                var modal = $(this);
-                modal.find('#forceReturnTicketId').val(id);
-                modal.find('#forceReturnInfo').html(
-                    '<strong>' + name + '</strong> đã mượn <strong>' + asset + '</strong> và quá hạn <strong>' + days + '</strong> ngày. ' +
-                    'Bạn có chắc chắn muốn thu hồi tài sản này?'
-                );
+            var modal = $(this);
+            modal.find('#forceReturnTicketId').val(id);
+            modal.find('#forceReturnInfo').html(
+                '<strong>' + name + '</strong> đã mượn <strong>' + asset + '</strong> và quá hạn <strong>' + days + '</strong> ngày. ' +
+                'Bạn có chắc chắn muốn thu hồi tài sản này?'
+            );
 
-                // Set default message
-                var defaultNote = 'Thu hồi do quá hạn ' + days + ' ngày. Tài sản được thu hồi vào ngày ' +
-                                 new Date().toLocaleDateString('vi-VN') + '.';
-                modal.find('#note').val(defaultNote);
-            });
+            // Set default asset condition to GOOD
+            modal.find('#assetCondition').val('GOOD');
+
+            // Set default message
+            var defaultNote = 'Thu hồi do quá hạn ' + days + ' ngày. Tài sản được thu hồi vào ngày ' +
+                             new Date().toLocaleDateString('vi-VN') + '.';
+            modal.find('#note').val(defaultNote);
+        });
 
             // Select all checkbox
             $('#selectAll').change(function() {

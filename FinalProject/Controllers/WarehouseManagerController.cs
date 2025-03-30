@@ -293,6 +293,7 @@ namespace FinalProject.Controllers
 
         #region Return Request Management
 
+        //GET: WarehouseManager/ReturnRequests
         public async Task<IActionResult> ReturnRequests()
         {
             var returns = await _unitOfWork.ReturnTickets.GetAllAsync();
@@ -314,6 +315,197 @@ namespace FinalProject.Controllers
             return View(returns);
         }
 
+        // GET: WarehouseManager/ProcessReturnRequest/5
+        public async Task<IActionResult> ProcessReturnRequest(int id)
+        {
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
+            if (returnTicket == null)
+            {
+                return NotFound();
+            }
+
+            // Only process pending return requests
+            if (returnTicket.ApproveStatus != TicketStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể xử lý yêu cầu trả đang chờ duyệt.";
+                return RedirectToAction(nameof(ReturnRequests));
+            }
+
+            var model = new ProcessReturnViewModel
+            {
+                ReturnTicketId = returnTicket.Id,
+                BorrowTicketId = returnTicket.BorrowTicketId ?? 0,
+                AssetName = returnTicket.BorrowTicket?.WarehouseAsset?.Asset?.Name,
+                ReturnedBy = returnTicket.ReturnBy?.FullName,
+                ReturnDate = returnTicket.ReturnRequestDate,
+                Quantity = returnTicket.Quantity,
+                Notes = returnTicket.Note,
+                AssetCondition = AssetStatus.GOOD // Default to good condition
+            };
+
+            return View(model);
+        }
+
+        // POST: WarehouseManager/ProcessReturnRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessReturnRequest(ProcessReturnViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var returnTicket = await _unitOfWork.ReturnTickets.GetByIdAsync(model.ReturnTicketId);
+                    if (returnTicket == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Only process pending return requests
+                    if (returnTicket.ApproveStatus != TicketStatus.Pending)
+                    {
+                        TempData["ErrorMessage"] = "Chỉ có thể xử lý yêu cầu trả đang chờ duyệt.";
+                        return RedirectToAction(nameof(ReturnRequests));
+                    }
+
+                    // Get current user to set as owner
+                    var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                    if (currentUser == null)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
+                    // Update return ticket
+                    returnTicket.ApproveStatus = TicketStatus.Approved;
+                    returnTicket.OwnerId = currentUser.Id;
+                    returnTicket.DateModified = DateTime.Now;
+                    returnTicket.ActualReturnDate = DateTime.Now;
+                    returnTicket.AssetConditionOnReturn = model.AssetCondition;
+
+                    // Add additional notes if provided
+                    if (!string.IsNullOrEmpty(model.AdditionalNotes))
+                    {
+                        returnTicket.Note = string.IsNullOrEmpty(returnTicket.Note)
+                            ? model.AdditionalNotes
+                            : $"{returnTicket.Note}\n{model.AdditionalNotes}";
+                    }
+
+                    _unitOfWork.ReturnTickets.Update(returnTicket);
+
+                    // Mark the borrow ticket as returned
+                    if (returnTicket.BorrowTicketId.HasValue)
+                    {
+                        var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(returnTicket.BorrowTicketId.Value);
+                        if (borrowTicket != null)
+                        {
+                            borrowTicket.IsReturned = true;
+                            borrowTicket.DateModified = DateTime.Now;
+                            _unitOfWork.BorrowTickets.Update(borrowTicket);
+
+                            // Update warehouse asset quantities
+                            if (borrowTicket.WarehouseAssetId.HasValue)
+                            {
+                                // Decrease borrowed quantity
+                                await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
+                                    borrowTicket.WarehouseAssetId.Value,
+                                    -(returnTicket.Quantity ?? 0));
+
+                                // If asset is returned in non-GOOD condition, update status
+                                if (model.AssetCondition != AssetStatus.GOOD)
+                                {
+                                    await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
+                                        borrowTicket.WarehouseAssetId.Value,
+                                        AssetStatus.GOOD,
+                                        model.AssetCondition,
+                                        returnTicket.Quantity ?? 0);
+                                }
+                            }
+                        }
+                    }
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Yêu cầu trả đã được duyệt thành công. Tài sản đã được cập nhật vào kho với trạng thái {model.AssetCondition}.";
+                    return RedirectToAction(nameof(ReturnRequests));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                }
+            }
+
+            return View(model);
+        }
+
+        // GET: WarehouseManager/RejectReturnRequest/5
+        public async Task<IActionResult> RejectReturnRequest(int id)
+        {
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
+            if (returnTicket == null)
+            {
+                return NotFound();
+            }
+
+            // Only reject pending return requests
+            if (returnTicket.ApproveStatus != TicketStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể từ chối yêu cầu trả đang chờ duyệt.";
+                return RedirectToAction(nameof(ReturnRequests));
+            }
+
+            var model = new RejectReturnViewModel
+            {
+                ReturnTicketId = returnTicket.Id,
+                AssetName = returnTicket.BorrowTicket?.WarehouseAsset?.Asset?.Name,
+                ReturnedBy = returnTicket.ReturnBy?.FullName,
+                Notes = returnTicket.Note
+            };
+
+            return View(model);
+        }
+
+        // POST: WarehouseManager/RejectReturnRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectReturnRequest(RejectReturnViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var returnTicket = await _unitOfWork.ReturnTickets.RejectReturnAsync(model.ReturnTicketId, model.RejectionReason);
+                    if (returnTicket != null)
+                    {
+                        await _unitOfWork.SaveChangesAsync();
+                        TempData["SuccessMessage"] = "Yêu cầu trả đã bị từ chối.";
+                        return RedirectToAction(nameof(ReturnRequests));
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Không tìm thấy yêu cầu trả hoặc yêu cầu không ở trạng thái chờ duyệt.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                }
+            }
+
+            return View(model);
+        }
+
+        // GET: WarehouseManager/ReturnRequestDetail/5
+        public async Task<IActionResult> ReturnRequestDetail(int id)
+        {
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
+            if (returnTicket == null)
+            {
+                return NotFound();
+            }
+
+            return View(returnTicket);
+        }
+
         // GET: WarehouseManager/CreateManagerReturnRequest/5
         public async Task<IActionResult> CreateManagerReturnRequest(int id)
         {
@@ -325,6 +517,14 @@ namespace FinalProject.Controllers
 
             if (borrowTicket.IsReturned == false && borrowTicket.ApproveStatus == TicketStatus.Approved)
             {
+                // Check if there's already a pending return ticket for this borrow ticket
+                var pendingReturnTickets = await _unitOfWork.ReturnTickets.GetReturnTicketsByBorrowTicket(id);
+                if (pendingReturnTickets.Any(rt => rt.ApproveStatus == TicketStatus.Pending))
+                {
+                    TempData["ErrorMessage"] = "Đã có yêu cầu trả đang chờ duyệt cho phiếu mượn này. Không thể tạo yêu cầu trả sớm mới.";
+                    return RedirectToAction(nameof(OverdueAssets));
+                }
+
                 var model = new ManagerReturnRequestViewModel
                 {
                     BorrowTicketId = borrowTicket.Id,
@@ -338,7 +538,6 @@ namespace FinalProject.Controllers
                 };
 
                 return View(model);
-
             }
             else
             {
@@ -361,6 +560,14 @@ namespace FinalProject.Controllers
             if (borrowTicket == null)
             {
                 return NotFound();
+            }
+
+            // Check if there's already a pending return ticket for this borrow ticket
+            var pendingReturnTickets = await _unitOfWork.ReturnTickets.GetReturnTicketsByBorrowTicket(model.BorrowTicketId);
+            if (pendingReturnTickets.Any(rt => rt.ApproveStatus == TicketStatus.Pending))
+            {
+                TempData["ErrorMessage"] = "Đã có yêu cầu trả đang chờ duyệt cho phiếu mượn này. Không thể tạo yêu cầu trả sớm mới.";
+                return RedirectToAction(nameof(OverdueAssets));
             }
 
             try
@@ -559,6 +766,15 @@ namespace FinalProject.Controllers
 
         #region Overdue Asset Management
 
+        //GET 
+        public async Task<int> GetOverdueCount()
+        {
+            var currentDate = DateTime.Now;
+            // Get all overdue borrow tickets
+            var overdueTickets = await _unitOfWork.BorrowTickets.GetOverdueBorrowTickets();
+            return overdueTickets.Count();
+        }
+
         // GET: WarehouseManager/OverdueAssets
         public async Task<IActionResult> OverdueAssets()
         {
@@ -573,7 +789,7 @@ namespace FinalProject.Controllers
         // POST: WarehouseManager/ForceReturn/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForceReturn(int id, string note)
+        public async Task<IActionResult> ForceReturn(int id, string note, AssetStatus assetCondition)
         {
             var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
             if (borrowTicket == null)
@@ -607,7 +823,7 @@ namespace FinalProject.Controllers
                     ReturnRequestDate = DateTime.Now,
                     ActualReturnDate = DateTime.Now,
                     Note = $"Thu hồi bắt buộc do quá hạn: {note}",
-                    AssetConditionOnReturn = AssetStatus.GOOD, // Assume good condition
+                    AssetConditionOnReturn = assetCondition, // Use the selected asset condition
                     DateCreated = DateTime.Now
                 };
 
@@ -634,11 +850,21 @@ namespace FinalProject.Controllers
                     await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
                         borrowTicket.WarehouseAssetId.Value,
                         -borrowTicket.Quantity ?? 0); // Negative to decrease the borrowed count
+
+                    // If asset is not in good condition, update the status accordingly
+                    if (assetCondition != AssetStatus.GOOD)
+                    {
+                        await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
+                            borrowTicket.WarehouseAssetId.Value,
+                            AssetStatus.GOOD, // From good status
+                            assetCondition,   // To selected status
+                            borrowTicket.Quantity ?? 0);
+                    }
                 }
 
                 await _unitOfWork.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "Tài sản đã được thu hồi thành công.";
+                TempData["SuccessMessage"] = $"Tài sản đã được thu hồi thành công với trạng thái {assetCondition}.";
                 return RedirectToAction(nameof(OverdueAssets));
             }
             catch (Exception ex)

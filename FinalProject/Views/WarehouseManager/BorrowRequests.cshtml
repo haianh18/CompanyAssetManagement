@@ -131,7 +131,7 @@
                                         <a asp-action="DetailsBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
-                                        <a asp-controller="ReturnRequest" asp-action="Create" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                        <a asp-controller="WarehouseManager" asp-action="CreateManagerReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
                                             <i class="fas fa-undo-alt"></i> Yêu cầu trả
                                         </a>
                                     </div>

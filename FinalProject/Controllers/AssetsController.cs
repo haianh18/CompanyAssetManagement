@@ -446,137 +446,61 @@ namespace FinalProject.Controllers
         }
 
 
-
-        // GET: Assets/ManageQuantity/5
-        public async Task<IActionResult> ManageQuantity(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var asset = await _unitOfWork.Assets.GetByIdAsync(id.Value);
-            if (asset == null)
-            {
-                return NotFound();
-            }
-
-            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetWarehouseAssetsByAsset(id.Value);
-            var warehouses = await _unitOfWork.WarehouseAssets.GetAllAsync();
-            ViewBag.Warehouses = new SelectList(warehouses, "Id", "Name");
-
-            var viewModel = new AssetQuantityViewModel
-            {
-                Asset = asset,
-                WarehouseAssets = warehouseAssets.ToList()
-            };
-
-            return View(viewModel);
-        }
-
-        // POST: Assets/UpdateAssetQuantity
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateAssetQuantity(AssetQuantityUpdateViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Handle updating or creating warehouse asset
-                    if (model.WarehouseAssetId.HasValue)
-                    {
-                        // Update existing warehouse asset
-                        var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(model.WarehouseAssetId.Value);
-                        if (warehouseAsset == null)
-                        {
-                            TempData["ErrorMessage"] = "Không tìm thấy thông tin tài sản trong kho.";
-                            return RedirectToAction(nameof(ManageQuantity), new { id = model.AssetId });
-                        }
-
-                        // Update quantities
-                        if (model.GoodQuantity.HasValue) warehouseAsset.GoodQuantity = model.GoodQuantity;
-                        if (model.BrokenQuantity.HasValue) warehouseAsset.BrokenQuantity = model.BrokenQuantity;
-                        if (model.FixingQuantity.HasValue) warehouseAsset.FixingQuantity = model.FixingQuantity;
-                        if (model.DisposedQuantity.HasValue) warehouseAsset.DisposedQuantity = model.DisposedQuantity;
-                        warehouseAsset.DateModified = DateTime.Now;
-
-                        _unitOfWork.WarehouseAssets.Update(warehouseAsset);
-                        await _unitOfWork.SaveChangesAsync();
-                        TempData["SuccessMessage"] = "Cập nhật số lượng tài sản thành công.";
-                    }
-                    else if (model.WarehouseId.HasValue && model.AssetId.HasValue)
-                    {
-                        // Create new warehouse asset entry
-                        var warehouseAsset = new WarehouseAsset
-                        {
-                            WarehouseId = model.WarehouseId,
-                            AssetId = model.AssetId,
-                            GoodQuantity = model.GoodQuantity ?? 0,
-                            BrokenQuantity = model.BrokenQuantity ?? 0,
-                            FixingQuantity = model.FixingQuantity ?? 0,
-                            DisposedQuantity = model.DisposedQuantity ?? 0,
-                            DateCreated = DateTime.Now
-                        };
-
-                        await _unitOfWork.WarehouseAssets.AddAsync(warehouseAsset);
-                        await _unitOfWork.SaveChangesAsync();
-                        TempData["SuccessMessage"] = "Thêm số lượng tài sản vào kho thành công.";
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("", "Thông tin kho hoặc tài sản không hợp lệ.");
-                        return RedirectToAction(nameof(ManageQuantity), new { id = model.AssetId });
-                    }
-
-                    return RedirectToAction(nameof(Details), new { id = model.AssetId });
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Cập nhật số lượng thất bại: {ex.Message}";
-                }
-            }
-
-            return RedirectToAction(nameof(ManageQuantity), new { id = model.AssetId });
-        }
-
         // POST: Assets/TransferAssetStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TransferAssetStatus(AssetStatusTransferViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    var result = await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(
-                        model.WarehouseAssetId,
-                        model.FromStatus,
-                        model.ToStatus,
-                        model.Quantity);
-
-                    if (result)
-                    {
-                        TempData["SuccessMessage"] = $"Chuyển {model.Quantity} tài sản từ trạng thái {GetStatusName(model.FromStatus)} sang {GetStatusName(model.ToStatus)} thành công.";
-                    }
-                    else
-                    {
-                        TempData["ErrorMessage"] = "Không thể chuyển trạng thái tài sản. Số lượng không đủ hoặc không hợp lệ.";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Chuyển trạng thái thất bại: {ex.Message}";
-                }
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Thông tin không hợp lệ. Vui lòng kiểm tra lại.";
+                TempData["ErrorMessage"] = "Thông tin không hợp lệ.";
+                return RedirectToAction("Details", new { id = model.AssetId });
             }
 
-            return RedirectToAction(nameof(Details), new { id = model.AssetId });
+            if (model.FromStatus == model.ToStatus)
+            {
+                TempData["ErrorMessage"] = "Trạng thái đích không thể giống trạng thái nguồn.";
+                return RedirectToAction("Details", new { id = model.AssetId });
+            }
+
+            var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(model.WarehouseAssetId);
+            if (warehouseAsset == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài sản trong kho.";
+                return RedirectToAction("Details", new { id = model.AssetId });
+            }
+
+            // Validate quantity
+            int availableQuantity = model.FromStatus switch
+            {
+                AssetStatus.GOOD => warehouseAsset.GoodQuantity ?? 0,
+                AssetStatus.BROKEN => warehouseAsset.BrokenQuantity ?? 0,
+                AssetStatus.FIXING => warehouseAsset.FixingQuantity ?? 0,
+                AssetStatus.DISPOSED => warehouseAsset.DisposedQuantity ?? 0,
+                _ => 0
+            };
+
+            if (model.Quantity > availableQuantity)
+            {
+                TempData["ErrorMessage"] = "Số lượng chuyển trạng thái vượt quá số lượng hiện có.";
+                return RedirectToAction("Details", new { id = model.AssetId });
+            }
+
+            // Update quantities
+            bool updateResult = await _unitOfWork.WarehouseAssets.UpdateAssetStatusQuantity(model.WarehouseAssetId, model.FromStatus, model.ToStatus, model.Quantity);
+            if (!updateResult)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật trạng thái tài sản.";
+                return RedirectToAction("Details", new { id = model.AssetId });
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Trạng thái tài sản đã được cập nhật thành công.";
+            return RedirectToAction("Details", new { id = model.AssetId });
         }
-        // GET: Assets/Delete/5
+
+
+        // GET: Assets/Delete/5?2
         public async Task<IActionResult> Delete(int? id, int? warehouseId)
         {
             if (id == null || warehouseId == null)
@@ -604,7 +528,7 @@ namespace FinalProject.Controllers
             return View(asset);
         }
 
-        // POST: Assets/Delete/5
+        // POST: Assets/Delete/5?2
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, int warehouseId)

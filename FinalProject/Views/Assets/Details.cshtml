@@ -20,9 +20,6 @@
                     <a asp-action="Edit" asp-route-id="@Model.Asset.Id" class="btn btn-primary btn-sm me-2">
                         <i class="fas fa-edit"></i> Chỉnh sửa
                     </a>
-                    <a asp-action="Delete" asp-route-id="@Model.Asset.Id" class="btn btn-danger btn-sm">
-                        <i class="fas fa-trash"></i> Xóa
-                    </a>
                 </div>
             </div>
         </div>
@@ -98,9 +95,6 @@
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Tổng quan trạng thái tài sản</h5>
-                <a asp-action="ManageQuantity" asp-route-id="@Model.Asset.Id" class="btn btn-primary btn-sm">
-                    <i class="fas fa-edit"></i> Quản lý số lượng
-                </a>
             </div>
         </div>
         <div class="card-body">
@@ -344,8 +338,8 @@
     </div>
 
     <div class="form-group text-end">
-        <a asp-action="ManageQuantity" asp-route-id="@Model.Asset.Id" class="btn btn-primary me-2">
-            <i class="fas fa-cubes"></i> Quản lý số lượng
+        <a asp-action="Edit" asp-route-id="@Model.Asset.Id" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-edit"></i> Chỉnh sửa
         </a>
         <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại danh sách
@@ -363,39 +357,44 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="warehouseAssetId" name="WarehouseAssetId" />
-                    <input type="hidden" id="assetId" name="AssetId" />
+                    <input type="hidden" id="WarehouseAssetId" name="WarehouseAssetId" />
+                    <input type="hidden" id="AssetId" name="AssetId" />
 
                     <div class="mb-3">
                         <label class="form-label">Kho</label>
-                        <input type="text" class="form-control" id="warehouseName" readonly />
+                        <input type="text" class="form-control" id="WarehouseName" readonly />
                     </div>
 
                     <div class="mb-3">
-                        <label for="fromStatus" class="form-label">Từ trạng thái</label>
-                        <select class="form-select" id="fromStatus" name="FromStatus" required>
+                        <label for="FromStatus" class="form-label">Từ trạng thái</label>
+                        <select class="form-select" id="FromStatus" name="FromStatus" required>
                             <option value="">-- Chọn trạng thái --</option>
-                            <option value="GOOD">Tốt</option>
-                            <option value="BROKEN">Hỏng</option>
-                            <option value="FIXING">Đang sửa</option>
-                            <option value="DISPOSED">Đã thanh lý</option>
+                            <option value="@((int)AssetStatus.GOOD)">Tốt</option>
+                            <option value="@((int)AssetStatus.BROKEN)">Hỏng</option>
+                            <option value="@((int)AssetStatus.FIXING)">Đang sửa</option>
+                            <option value="@((int)AssetStatus.DISPOSED)">Đã thanh lý</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="toStatus" class="form-label">Đến trạng thái</label>
-                        <select class="form-select" id="toStatus" name="ToStatus" required>
+                        <label for="ToStatus" class="form-label">Đến trạng thái</label>
+                        <select class="form-select" id="ToStatus" name="ToStatus" required>
                             <option value="">-- Chọn trạng thái --</option>
-                            <option value="GOOD">Tốt</option>
-                            <option value="BROKEN">Hỏng</option>
-                            <option value="FIXING">Đang sửa</option>
-                            <option value="DISPOSED">Đã thanh lý</option>
+                            <option value="@((int)AssetStatus.GOOD)">Tốt</option>
+                            <option value="@((int)AssetStatus.BROKEN)">Hỏng</option>
+                            <option value="@((int)AssetStatus.FIXING)">Đang sửa</option>
+                            <option value="@((int)AssetStatus.DISPOSED)">Đã thanh lý</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="quantity" class="form-label">Số lượng</label>
-                        <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required />
+                        <label for="Quantity" class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" id="Quantity" name="Quantity" min="1" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Note" class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="Note" name="Note"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -416,15 +415,16 @@
                 var warehouseAssetId = button.data('warehouse-asset-id');
                 var assetId = button.data('asset-id');
                 var warehouseName = button.data('warehouse-name');
-
-                $('#warehouseAssetId').val(warehouseAssetId);
-                $('#assetId').val(assetId);
-                $('#warehouseName').val(warehouseName);
+                console.log(warehouseAssetId);
+                console.log(assetId);
+                $('#WarehouseAssetId').val(warehouseAssetId);
+                $('#AssetId').val(assetId);
+                $('#WarehouseName').val(warehouseName);
             });
 
             // Validate không chọn cùng trạng thái
-            $('#toStatus').on('change', function() {
-                if ($(this).val() === $('#fromStatus').val()) {
+            $('#ToStatus').on('change', function() {
+                if ($(this).val() === $('#FromStatus').val()) {
                     alert('Trạng thái đích không thể giống trạng thái nguồn.');
                     $(this).val('');
                 }

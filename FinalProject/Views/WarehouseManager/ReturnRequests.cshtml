@@ -81,13 +81,13 @@
                                 <td>@item.Note</td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="ProcessReturn" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                                        <a asp-action="ProcessReturnRequest" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-success">
                                             <i class="fas fa-check"></i> Duyệt
                                         </a>
-                                        <a asp-action="Reject" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                        <a asp-action="RejectReturnRequest" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
                                             <i class="fas fa-times"></i> Từ chối
                                         </a>
-                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="ReturnRequestDetail" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -144,7 +144,7 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="ReturnRequestDetail" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -192,7 +192,7 @@
                                 <td>@item.Note</td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="ReturnRequestDetail" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>
@@ -265,7 +265,7 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a asp-action="Details" asp-controller="ReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        <a asp-action="ReturnRequestDetail" asp-controller="WarehouseManager" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </a>
                                     </div>

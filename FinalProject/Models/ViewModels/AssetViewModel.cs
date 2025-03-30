@@ -179,7 +179,7 @@ namespace FinalProject.Models.ViewModels
         public int Quantity { get; set; }
 
         [Display(Name = "Ghi chú")]
-        public string Note { get; set; }
+        public string? Note { get; set; }
     }
 
     // ViewModel để theo dõi lịch sử thay đổi trạng thái tài sản
