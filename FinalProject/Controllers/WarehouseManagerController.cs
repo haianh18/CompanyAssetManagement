@@ -49,6 +49,8 @@ namespace FinalProject.Controllers
             return View(viewModel);
         }
 
+        #region Borrow Request Management
+
         public async Task<IActionResult> BorrowRequests()
         {
             var requests = await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn();
@@ -81,6 +83,18 @@ namespace FinalProject.Controllers
                 .ToList();
 
             return View(requests);
+        }
+
+        // GET: WarehouseManager/DetailsBorrowRequest/5
+        public async Task<IActionResult> DetailsBorrowRequest(int id)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            return View(borrowTicket);
         }
 
         public async Task<IActionResult> ApproveBorrowRequest(int id)
@@ -244,6 +258,10 @@ namespace FinalProject.Controllers
             return View(model);
         }
 
+        #endregion
+
+        #region Return Request Management
+
         public async Task<IActionResult> ReturnRequests()
         {
             var returns = await _unitOfWork.ReturnTickets.GetAllAsync();
@@ -266,7 +284,110 @@ namespace FinalProject.Controllers
         }
 
         // Other return request management methods are handled in ReturnRequestController
+        #endregion
 
+        #region Overdue Asset Management
+
+        // GET: WarehouseManager/OverdueAssets
+        public async Task<IActionResult> OverdueAssets()
+        {
+            var currentDate = DateTime.Now;
+
+            // Get all overdue borrow tickets
+            var overdueTickets = await _unitOfWork.BorrowTickets.GetOverdueBorrowTickets();
+
+            return View(overdueTickets);
+        }
+
+        // POST: WarehouseManager/SendOverdueReminder
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendOverdueReminder(int id, string reminderMessage)
+        {
+            try
+            {
+                var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+                if (borrowTicket == null)
+                {
+                    return NotFound();
+                }
+
+                if (string.IsNullOrEmpty(reminderMessage))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập nội dung nhắc nhở.";
+                    return RedirectToAction("OverdueAssets");
+                }
+
+                // Add reminder to note
+                borrowTicket.Note = string.IsNullOrEmpty(borrowTicket.Note)
+                    ? $"Nhắc nhở {DateTime.Now.ToString("dd/MM/yyyy")}: {reminderMessage}"
+                    : $"{borrowTicket.Note}\nNhắc nhở {DateTime.Now.ToString("dd/MM/yyyy")}: {reminderMessage}";
+
+                borrowTicket.DateModified = DateTime.Now;
+
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+                await _unitOfWork.SaveChangesAsync();
+
+                // In a real application, you might send an email or notification here
+
+                TempData["SuccessMessage"] = "Đã gửi nhắc nhở cho người mượn.";
+                return RedirectToAction("OverdueAssets");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction("OverdueAssets");
+            }
+        }
+
+        //
+        // SendBatchOverdueReminders Action
+        //
+        // POST: WarehouseManager/SendBatchOverdueReminders
+        [HttpPost]
+        public async Task<IActionResult> SendBatchOverdueReminders(int[] ids, string reminderMessage)
+        {
+            if (ids == null || ids.Length == 0 || string.IsNullOrEmpty(reminderMessage))
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            try
+            {
+                int successCount = 0;
+                foreach (var id in ids)
+                {
+                    var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+                    if (borrowTicket == null)
+                        continue;
+
+                    // Add reminder to note
+                    borrowTicket.Note = string.IsNullOrEmpty(borrowTicket.Note)
+                        ? $"Nhắc nhở {DateTime.Now.ToString("dd/MM/yyyy")}: {reminderMessage}"
+                        : $"{borrowTicket.Note}\nNhắc nhở {DateTime.Now.ToString("dd/MM/yyyy")}: {reminderMessage}";
+
+                    borrowTicket.DateModified = DateTime.Now;
+
+                    _unitOfWork.BorrowTickets.Update(borrowTicket);
+                    successCount++;
+                }
+
+                // Save all changes at once
+                await _unitOfWork.SaveChangesAsync();
+
+                // In a real application, you might send emails or notifications here
+
+                return Json(new { success = true, message = $"Đã gửi nhắc nhở thành công cho {successCount} người mượn." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
+
+        #endregion
+
+        #region Handover Management
         public async Task<IActionResult> HandoverTickets()
         {
             var tickets = await _unitOfWork.HandoverTickets.GetAllAsync();
@@ -473,6 +594,10 @@ namespace FinalProject.Controllers
             return handoverReturn;
         }
 
+        #endregion
+
+        #region Dispose Asset Management
+
         public async Task<IActionResult> CreateDisposalTicket()
         {
             ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
@@ -500,6 +625,9 @@ namespace FinalProject.Controllers
             return View(tickets);
         }
 
+        #endregion
+
+        #region Reports
         public async Task<IActionResult> Reports()
         {
             return View();
@@ -572,6 +700,8 @@ namespace FinalProject.Controllers
             var handoverTickets = await _unitOfWork.HandoverTickets.GetAllAsync();
             return View(handoverTickets);
         }
+
+        #endregion
 
         public IActionResult ChangePassword()
         {

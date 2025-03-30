@@ -1,0 +1,112 @@
+﻿@model FinalProject.Models.ViewModels.ReturnRequest.ProcessReturnViewModel
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Xử lý yêu cầu trả tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-check-circle"></i> Xử lý yêu cầu trả tài sản</h2>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin yêu cầu trả</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tài sản</dt>
+                <dd class="col-sm-9">@Model.AssetName</dd>
+
+                <dt class="col-sm-3">Người trả</dt>
+                <dd class="col-sm-9">@Model.ReturnedBy</dd>
+
+                <dt class="col-sm-3">Ngày trả</dt>
+                <dd class="col-sm-9">@(Model.ReturnDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Số lượng</dt>
+                <dd class="col-sm-9">@Model.Quantity</dd>
+
+                <dt class="col-sm-3">Ghi chú từ người trả</dt>
+                <dd class="col-sm-9">
+                    @if (string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <span>Không có ghi chú</span>
+                    }
+                    else
+                    {
+                        <pre class="note-pre">@Model.Notes</pre>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="ProcessReturnRequest" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="ReturnTicketId" />
+            <input type="hidden" asp-for="BorrowTicketId" />
+            <input type="hidden" asp-for="AssetName" />
+            <input type="hidden" asp-for="ReturnedBy" />
+            <input type="hidden" asp-for="ReturnDate" />
+            <input type="hidden" asp-for="Quantity" />
+            <input type="hidden" asp-for="Notes" />
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Xác nhận tình trạng tài sản khi nhận lại</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="AssetCondition" class="form-label">Tình trạng tài sản</label>
+                        <select asp-for="AssetCondition" class="form-select">
+                            <option value="@AssetStatus.GOOD">Tốt</option>
+                            <option value="@AssetStatus.BROKEN">Hỏng</option>
+                            <option value="@AssetStatus.FIXING">Cần sửa chữa</option>
+                        </select>
+                        <span asp-validation-for="AssetCondition" class="text-danger"></span>
+                        <div class="form-text">Nếu tài sản không còn trong tình trạng tốt, sẽ được chuyển sang trạng thái tương ứng trong kho.</div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="AdditionalNotes" class="form-label">Ghi chú thêm</label>
+                        <textarea asp-for="AdditionalNotes" class="form-control" rows="3" placeholder="Nhập ghi chú về tình trạng tài sản khi nhận lại..."></textarea>
+                        <span asp-validation-for="AdditionalNotes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="ReturnRequests" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Xác nhận trả tài sản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .note-pre {
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

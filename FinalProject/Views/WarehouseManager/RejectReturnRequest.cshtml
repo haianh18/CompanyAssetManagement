@@ -1,13 +1,14 @@
 ﻿@model FinalProject.Models.ReturnTicket
+@using FinalProject.Enums
 @{
-    ViewData["Title"] = "Từ chối yêu cầu trả";
+    ViewData["Title"] = "Từ chối yêu cầu trả tài sản";
     Layout = "_WarehouseManagerLayout";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2><i class="fas fa-times-circle text-danger"></i> Từ chối yêu cầu trả</h2>
+            <h2><i class="fas fa-times-circle text-danger"></i> Từ chối yêu cầu trả tài sản</h2>
         </div>
     </div>
 
@@ -21,10 +22,12 @@
                 <dd class="col-sm-9">@Model.Id</dd>
 
                 <dt class="col-sm-3">Người trả</dt>
-                <dd class="col-sm-9">@Model.ReturnBy.FullName</dd>
+                <dd class="col-sm-9">@Model.ReturnBy?.FullName</dd>
 
                 <dt class="col-sm-3">Phiếu mượn</dt>
-                <dd class="col-sm-9">@Model.BorrowTicketId</dd>
+                <dd class="col-sm-9">
+                    <a asp-action="DetailsBorrowRequest" asp-route-id="@Model.BorrowTicketId" class="link-info">@Model.BorrowTicketId</a>
+                </dd>
 
                 <dt class="col-sm-3">Tài sản</dt>
                 <dd class="col-sm-9">@(Model.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</dd>
@@ -36,23 +39,32 @@
                 <dd class="col-sm-9">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
 
                 <dt class="col-sm-3">Ghi chú</dt>
-                <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Note) ? "Không có" : Model.Note)</dd>
+                <dd class="col-sm-9">
+                    @if (string.IsNullOrEmpty(Model.Note))
+                    {
+                        <span>Không có ghi chú</span>
+                    }
+                    else
+                    {
+                        <pre class="note-pre">@Model.Note</pre>
+                    }
+                </dd>
             </dl>
         </div>
     </div>
 
     <div class="alert alert-danger">
         <h5><i class="fas fa-exclamation-triangle"></i> Xác nhận từ chối yêu cầu</h5>
-        <p>Bạn có chắc chắn muốn từ chối yêu cầu trả này?</p>
+        <p>Bạn có chắc chắn muốn từ chối yêu cầu trả này? Vui lòng cung cấp lý do từ chối.</p>
     </div>
 
     <div class="form-container">
         <form asp-action="RejectReturnRequest" method="post">
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" name="id" value="@Model.Id" />
 
             <div class="form-group mb-3">
                 <label for="rejectionReason" class="form-label">Lý do từ chối</label>
-                <textarea name="rejectionReason" id="rejectionReason" class="form-control" rows="3" placeholder="Nhập lý do từ chối yêu cầu trả..."></textarea>
+                <textarea name="rejectionReason" id="rejectionReason" class="form-control" rows="3" required placeholder="Nhập lý do từ chối yêu cầu trả..."></textarea>
                 <div class="form-text">Lý do từ chối sẽ được thông báo đến người yêu cầu.</div>
             </div>
 
@@ -67,3 +79,15 @@
         </form>
     </div>
 </div>
+
+<style>
+    .note-pre {
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>

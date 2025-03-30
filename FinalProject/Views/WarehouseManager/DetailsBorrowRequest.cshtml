@@ -1,0 +1,253 @@
+﻿@model FinalProject.Models.BorrowTicket
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Chi tiết yêu cầu mượn";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-info-circle"></i> Chi tiết yêu cầu mượn</h2>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin yêu cầu mượn</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ID Phiếu mượn</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Người mượn</dt>
+                <dd class="col-sm-9">@Model.BorrowBy?.FullName</dd>
+
+                <dt class="col-sm-3">Phòng ban</dt>
+                <dd class="col-sm-9">@(Model.BorrowBy?.Department?.Name ?? "Không có")</dd>
+
+                <dt class="col-sm-3">Tài sản</dt>
+                <dd class="col-sm-9">@(Model.WarehouseAsset?.Asset?.Name ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Kho</dt>
+                <dd class="col-sm-9">@(Model.WarehouseAsset?.Warehouse?.Name ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Số lượng</dt>
+                <dd class="col-sm-9">@Model.Quantity</dd>
+
+                <dt class="col-sm-3">Ngày yêu cầu</dt>
+                <dd class="col-sm-9">@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Ngày hẹn trả</dt>
+                <dd class="col-sm-9">@(Model.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Trạng thái</dt>
+                <dd class="col-sm-9">
+                    @if (Model.IsReturned)
+                    {
+                        <span class="badge bg-success">Đã trả</span>
+                    }
+                    else
+                    {
+                        switch (Model.ApproveStatus)
+                        {
+                            case TicketStatus.Approved:
+                                <span class="badge bg-primary">Đã duyệt</span>
+                                break;
+                            case TicketStatus.Pending:
+                                <span class="badge bg-warning">Chờ duyệt</span>
+                                break;
+                            case TicketStatus.Rejected:
+                                <span class="badge bg-danger">Từ chối</span>
+                                break;
+                            default:
+                                <span class="badge bg-secondary">Không xác định</span>
+                                break;
+                        }
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Người duyệt</dt>
+                <dd class="col-sm-9">@(Model.Owner?.FullName ?? "Chưa có")</dd>
+
+                <dt class="col-sm-3">Ngày cập nhật</dt>
+                <dd class="col-sm-9">@(Model.DateModified?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa cập nhật")</dd>
+
+                @if (Model.ExtensionRequestDate.HasValue)
+                {
+                    <dt class="col-sm-3">Yêu cầu gia hạn</dt>
+                    <dd class="col-sm-9">
+                        <span>Ngày yêu cầu: @Model.ExtensionRequestDate?.ToString("dd/MM/yyyy HH:mm")</span><br />
+                        <span>
+                            Trạng thái:
+                            @if (Model.ExtensionApproveStatus.HasValue)
+                            {
+                                switch (Model.ExtensionApproveStatus.Value)
+                                {
+                                    case TicketStatus.Approved:
+                                        <span class="badge bg-success">Đã duyệt</span>
+                                        break;
+                                    case TicketStatus.Pending:
+                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                        break;
+                                    case TicketStatus.Rejected:
+                                        <span class="badge bg-danger">Từ chối</span>
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Không xác định</span>
+                            }
+                        </span>
+                    </dd>
+                }
+
+                <dt class="col-sm-3">Ghi chú</dt>
+                <dd class="col-sm-9">
+                    @if (string.IsNullOrEmpty(Model.Note))
+                    {
+                        <span>Không có ghi chú</span>
+                    }
+                    else
+                    {
+                        <pre class="note-pre">@Model.Note</pre>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Return Tickets Information if any -->
+    @if (Model.ReturnTickets != null && Model.ReturnTickets.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Lịch sử trả tài sản</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ngày yêu cầu</th>
+                                <th>Người trả</th>
+                                <th>Số lượng</th>
+                                <th>Trạng thái</th>
+                                <th>Tình trạng tài sản</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var returnTicket in Model.ReturnTickets)
+                            {
+                                <tr>
+                                    <td>@returnTicket.Id</td>
+                                    <td>@returnTicket.DateCreated?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@returnTicket.ReturnBy?.FullName</td>
+                                    <td>@returnTicket.Quantity</td>
+                                    <td>
+                                        @switch (returnTicket.ApproveStatus)
+                                        {
+                                            case TicketStatus.Approved:
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                                break;
+                                            case TicketStatus.Pending:
+                                                <span class="badge bg-warning">Chờ duyệt</span>
+                                                break;
+                                            case TicketStatus.Rejected:
+                                                <span class="badge bg-danger">Từ chối</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (returnTicket.ApproveStatus == TicketStatus.Approved)
+                                        {
+                                            switch (returnTicket.AssetConditionOnReturn)
+                                            {
+                                                case AssetStatus.GOOD:
+                                                    <span class="badge bg-success">Tốt</span>
+                                                    break;
+                                                case AssetStatus.BROKEN:
+                                                    <span class="badge bg-danger">Hỏng</span>
+                                                    break;
+                                                case AssetStatus.FIXING:
+                                                    <span class="badge bg-warning">Cần sửa chữa</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-secondary">Không xác định</span>
+                                                    break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>--</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-controller="ReturnRequest" asp-action="Details" asp-route-id="@returnTicket.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card-footer text-end">
+        <div class="btn-group">
+            @if (Model.ApproveStatus == TicketStatus.Pending)
+            {
+                <a asp-action="ApproveBorrowRequest" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                    <i class="fas fa-check"></i> Duyệt
+                </a>
+                <a asp-action="RejectBorrowRequest" asp-route-id="@Model.Id" class="btn btn-danger me-2">
+                    <i class="fas fa-times"></i> Từ chối
+                </a>
+            }
+            else if (Model.ApproveStatus == TicketStatus.Approved && !Model.IsReturned)
+            {
+                <a asp-controller="ReturnRequest" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                    <i class="fas fa-undo-alt"></i> Tạo yêu cầu trả
+                </a>
+                <a asp-action="CreateManagerReturnRequest" asp-route-id="@Model.Id" class="btn btn-info me-2">
+                    <i class="fas fa-clock"></i> Yêu cầu trả sớm
+                </a>
+
+                @if (Model.ExtensionApproveStatus == TicketStatus.Pending)
+                {
+                    <a asp-action="ApproveExtension" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                        <i class="fas fa-check"></i> Duyệt gia hạn
+                    </a>
+                    <a asp-action="RejectExtension" asp-route-id="@Model.Id" class="btn btn-danger me-2">
+                        <i class="fas fa-times"></i> Từ chối gia hạn
+                    </a>
+                }
+            }
+            <a asp-action="BorrowRequests" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .note-pre {
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>

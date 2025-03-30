@@ -1,0 +1,100 @@
+﻿@model FinalProject.Models.ViewModels.ReturnRequest.ManagerReturnRequestViewModel
+@{
+    ViewData["Title"] = "Yêu cầu trả tài sản sớm";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-clock"></i> Yêu cầu trả tài sản sớm</h2>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Thông tin phiếu mượn</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tài sản</dt>
+                <dd class="col-sm-9">@Model.AssetName</dd>
+
+                <dt class="col-sm-3">Người mượn</dt>
+                <dd class="col-sm-9">@Model.BorrowerName</dd>
+
+                <dt class="col-sm-3">Số lượng</dt>
+                <dd class="col-sm-9">@Model.Quantity</dd>
+
+                <dt class="col-sm-3">Ngày mượn</dt>
+                <dd class="col-sm-9">@(Model.BorrowDate?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Ngày hẹn trả</dt>
+                <dd class="col-sm-9">@(Model.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Tạo yêu cầu trả sớm sẽ gửi thông báo đến người mượn, yêu cầu họ trả tài sản trước thời hạn đã thỏa thuận.
+    </div>
+
+    <div class="form-container">
+        <form asp-action="CreateManagerReturnRequest" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="BorrowTicketId" />
+            <input type="hidden" asp-for="AssetName" />
+            <input type="hidden" asp-for="BorrowerName" />
+            <input type="hidden" asp-for="BorrowDate" />
+            <input type="hidden" asp-for="ReturnDate" />
+            <input type="hidden" asp-for="Quantity" />
+
+            <div class="form-group mb-3">
+                <label asp-for="Reason" class="form-label">Lý do yêu cầu trả sớm</label>
+                <textarea asp-for="Reason" class="form-control" rows="3" required></textarea>
+                <span asp-validation-for="Reason" class="text-danger"></span>
+                <div class="form-text">Vui lòng cung cấp lý do cụ thể tại sao cần trả tài sản sớm hơn thời hạn.</div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="DueDate" class="form-label">Thời hạn trả mới</label>
+                <input asp-for="DueDate" type="date" class="form-control" required />
+                <span asp-validation-for="DueDate" class="text-danger"></span>
+                <div class="form-text">Chọn ngày mà người mượn cần trả tài sản.</div>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="BorrowRequests" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+        <script>
+            $(document).ready(function() {
+                // Set minimum date to today
+                var today = new Date();
+                var formattedDate = today.toISOString().split('T')[0];
+                $('#DueDate').attr('min', formattedDate);
+
+                // Set maximum date to the scheduled return date
+        @if (Model.ReturnDate.HasValue)
+        {
+            <text>
+                        var returnDate = new Date('@Model.ReturnDate?.ToString("yyyy-MM-dd")');
+                        var formattedReturnDate = returnDate.toISOString().split('T')[0];
+                        $('#DueDate').attr('max', formattedReturnDate);
+            </text>
+        }
+            });
+        </script>
+}

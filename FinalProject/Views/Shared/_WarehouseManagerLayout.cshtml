@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@* Updated _WarehouseManagerLayout.cshtml *@
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -28,10 +29,13 @@
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a>
                 </li>
+
+                <!-- Quản lý tài sản group -->
+                <li class="nav-item nav-header">QUẢN LÝ TÀI SẢN</li>
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Assets" ? "active" : "")"
                        asp-controller="Assets" asp-action="Index">
-                        <i class="fas fa-boxes"></i> Quản lý tài sản
+                        <i class="fas fa-boxes"></i> Tài sản
                     </a>
                 </li>
                 <li class="nav-item">
@@ -40,46 +44,67 @@
                         <i class="fas fa-th-list"></i> Danh mục tài sản
                     </a>
                 </li>
+
+                <!-- Quản lý mượn/trả group -->
+                <li class="nav-item nav-header">QUẢN LÝ MƯỢN/TRẢ</li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString().Contains("Borrow") ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "BorrowRequests" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="BorrowRequests">
                         <i class="fas fa-clipboard-check"></i> Yêu cầu mượn
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString().Contains("Return") ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ReturnRequests" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="ReturnRequests">
                         <i class="fas fa-undo-alt"></i> Yêu cầu trả
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString().Contains("Handover") ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "OverdueAssets" ? "active" : "")"
+                       asp-controller="WarehouseManager" asp-action="OverdueAssets">
+                        <i class="fas fa-exclamation-triangle"></i> Tài sản quá hạn
+                        <span class="badge bg-danger ms-2" id="overdueCount"></span>
+                    </a>
+                </li>
+
+                <!-- Bàn giao/Thanh lý group -->
+                <li class="nav-item nav-header">BÀN GIAO & THANH LÝ</li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "HandoverTickets" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="HandoverTickets">
                         <i class="fas fa-exchange-alt"></i> Bàn giao tài sản
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString().Contains("Disposal") ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "DisposalTickets" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="DisposalTickets">
                         <i class="fas fa-trash-alt"></i> Thanh lý tài sản
                     </a>
                 </li>
+
+                <!-- Báo cáo group -->
+                <li class="nav-item nav-header">BÁO CÁO</li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString().Contains("Report") ? "active" : "")"
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="Reports">
-                        <i class="fas fa-chart-bar"></i> Báo cáo - Thống kê
+                        <i class="fas fa-chart-bar"></i> Báo cáo thống kê
                     </a>
                 </li>
+
+                <!-- Tài khoản group -->
+                <li class="nav-item nav-header">TÀI KHOẢN</li>
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ChangePassword" ? "active" : "")"
-                       asp-controller="WarehouseManager" asp-action="ChangePassword">
+                       asp-controller="Account" asp-action="ChangePassword">
                         <i class="fas fa-key"></i> Đổi mật khẩu
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Logout">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </a>
+                    <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" class="nav-link">
+                        <button type="submit" class="btn btn-link p-0 text-white">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </button>
+                    </form>
                 </li>
             </ul>
         </nav>
@@ -97,12 +122,30 @@
                     <!-- Page Title -->
                     <h4 class="dashboard-title d-none d-md-block">@ViewData["Title"]</h4>
 
-                    <!-- User Info -->
-                    <div class="user-info ml-auto">
+                    <!-- User Info and Quick Actions -->
+                    <div class="user-info ml-auto d-flex align-items-center">
+                        <!-- Notifications dropdown -->
+                        <div class="dropdown me-3">
+                            <button class="btn btn-outline-secondary position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge">
+                                    0
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" id="notificationsList">
+                                <li><h6 class="dropdown-header">Thông báo</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)">Không có thông báo mới</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- User greeting -->
                         <span class="user-greeting d-none d-md-inline-block">Xin chào, @User.Identity?.Name</span>
-                        <a asp-area="Identity" asp-page="/Account/Logout" class="btn btn-sm btn-outline-secondary ms-2">
-                            <i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline-block">Đăng xuất</span>
-                        </a>
+                        <form id="logoutFormHeader" asp-controller="Account" asp-action="Logout" method="post" class="d-inline ms-2">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline-block">Đăng xuất</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </nav>
@@ -120,9 +163,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Chart.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="~/js/blazor-charts.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="_framework/blazor.server.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -150,6 +191,44 @@
             $(window).resize(function() {
                 checkWindowSize();
             });
+
+            // Fetch overdue count for notification badge
+            function fetchOverdueCount() {
+                $.ajax({
+                    url: '@Url.Action("GetOverdueCount", "WarehouseManager")',
+                    type: 'GET',
+                    success: function(data) {
+                        if (data > 0) {
+                            $('#overdueCount').text(data);
+                            $('#notificationBadge').text(data);
+
+                            // Populate notification dropdown
+                            var notificationsList = $('#notificationsList');
+                            notificationsList.empty();
+                            notificationsList.append('<li><h6 class="dropdown-header">Thông báo</h6></li>');
+                            notificationsList.append('<li><hr class="dropdown-divider"></li>');
+
+                            if (data > 0) {
+                                notificationsList.append(
+                                    '<li><a class="dropdown-item text-danger" href="@Url.Action("OverdueAssets", "WarehouseManager")">' +
+                                    '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                                    'Có ' + data + ' tài sản đang quá hạn trả' +
+                                    '</a></li>'
+                                );
+                            } else {
+                                notificationsList.append('<li><a class="dropdown-item" href="javascript:void(0)">Không có thông báo mới</a></li>');
+                            }
+                        } else {
+                            $('#overdueCount').text('');
+                            $('#notificationBadge').text('0');
+                        }
+                    }
+                });
+            }
+
+            // Initial fetch and set interval
+            fetchOverdueCount();
+            setInterval(fetchOverdueCount, 300000); // Refresh every 5 minutes
         });
     </script>
 

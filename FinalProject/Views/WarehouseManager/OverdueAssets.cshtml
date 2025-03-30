@@ -1,0 +1,322 @@
+﻿@model IEnumerable<FinalProject.Models.BorrowTicket>
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Quản lý tài sản quá hạn";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Tài sản quá hạn trả</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="BorrowRequests" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại phiếu mượn
+            </a>
+        </div>
+    </div>
+
+    <!-- Overdue Summary -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Tổng số: @Model.Count() phiếu mượn quá hạn</h5>
+                            <p class="mb-0">
+                                <span class="badge bg-danger me-2">@Model.Count(b => (DateTime.Now - b.ReturnDate?.Date)?.Days > 30) phiếu</span> Quá hạn trên 30 ngày
+                                <span class="badge bg-warning mx-2">@Model.Count(b => (DateTime.Now - b.ReturnDate?.Date)?.Days <= 30 && (DateTime.Now - b.ReturnDate?.Date)?.Days > 7) phiếu</span> Quá hạn 8-30 ngày
+                                <span class="badge bg-info ms-2">@Model.Count(b => (DateTime.Now - b.ReturnDate?.Date)?.Days <= 7) phiếu</span> Quá hạn 1-7 ngày
+                            </p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary" id="btnBatchReminder">
+                                <i class="fas fa-bell"></i> Gửi nhắc nhở hàng loạt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table custom-table" id="overdueTable">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                        </div>
+                    </th>
+                    <th>ID</th>
+                    <th>Người mượn</th>
+                    <th>Tài sản</th>
+                    <th>Số lượng</th>
+                    <th>Ngày mượn</th>
+                    <th>Ngày hẹn trả</th>
+                    <th>Quá hạn</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(b => (DateTime.Now - b.ReturnDate?.Date)?.Days))
+                {
+                    var overdueClass = "";
+                    var overdueDays = (DateTime.Now - item.ReturnDate?.Date)?.Days ?? 0;
+
+                    if (overdueDays > 30)
+                    {
+                        overdueClass = "table-danger";
+                    }
+                    else if (overdueDays > 7)
+                    {
+                        overdueClass = "table-warning";
+                    }
+                    else
+                    {
+                        overdueClass = "table-info";
+                    }
+
+                    <tr class="@overdueClass">
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input row-checkbox" type="checkbox" value="@item.Id" data-username="@item.BorrowBy?.UserName">
+                            </div>
+                        </td>
+                        <td>@item.Id</td>
+                        <td>
+                            <div>@item.BorrowBy?.FullName</div>
+                            <small class="text-muted">@item.BorrowBy?.Email</small>
+                        </td>
+                        <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                        <td>@item.Quantity</td>
+                        <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                        <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                        <td>
+                            <span class="badge @(overdueDays > 30 ? "bg-danger" : (overdueDays > 7 ? "bg-warning" : "bg-info"))">
+                                @overdueDays ngày
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a asp-action="DetailsBorrowRequest" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning" title="Gửi nhắc nhở"
+                                        data-bs-toggle="modal" data-bs-target="#reminderModal"
+                                        data-id="@item.Id"
+                                        data-name="@item.BorrowBy?.FullName"
+                                        data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")"
+                                        data-days="@overdueDays">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                                <a asp-action="CreateManagerReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Yêu cầu trả ngay">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-success text-center" role="alert">
+                <i class="fas fa-check-circle"></i> Không có tài sản nào quá hạn trả.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reminderForm" asp-action="SendOverdueReminder" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reminderModalLabel">Gửi nhắc nhở</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="borrowTicketId" name="id" />
+
+                    <div class="alert alert-warning">
+                        <div id="reminderInfo"></div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="reminderMessage" class="form-label">Nội dung nhắc nhở</label>
+                        <textarea id="reminderMessage" name="reminderMessage" class="form-control" rows="3" required></textarea>
+                        <div class="form-text">Nội dung nhắc nhở sẽ được gửi đến người mượn.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Gửi nhắc nhở</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Reminder Modal -->
+<div class="modal fade" id="batchReminderModal" tabindex="-1" aria-labelledby="batchReminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchReminderModalLabel">Gửi nhắc nhở hàng loạt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <div id="batchReminderInfo">Đã chọn <span id="selectedCount">0</span> phiếu mượn</div>
+                    <div id="selectedTickets"></div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="batchReminderMessage" class="form-label">Nội dung nhắc nhở</label>
+                    <textarea id="batchReminderMessage" class="form-control" rows="3" required></textarea>
+                    <div class="form-text">Nội dung nhắc nhở sẽ được gửi đến tất cả người mượn được chọn.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" id="sendBatchReminders" class="btn btn-primary">Gửi nhắc nhở</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Reminder modal
+            $('#reminderModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var name = button.data('name');
+                var asset = button.data('asset');
+                var days = button.data('days');
+
+                var modal = $(this);
+                modal.find('#borrowTicketId').val(id);
+                modal.find('#reminderInfo').html(
+                    '<strong>' + name + '</strong> đã mượn <strong>' + asset + '</strong> và quá hạn <strong>' + days + '</strong> ngày.'
+                );
+
+                // Set default message based on overdue days
+                var defaultMessage = '';
+                if (days > 30) {
+                    defaultMessage = 'Tài sản "' + asset + '" đã quá hạn trả ' + days + ' ngày. Vui lòng trả lại tài sản ngay lập tức hoặc liên hệ với thủ kho để được xử lý.';
+                } else if (days > 7) {
+                    defaultMessage = 'Nhắc nhở: Tài sản "' + asset + '" đã quá hạn trả ' + days + ' ngày. Vui lòng sắp xếp thời gian để trả lại tài sản.';
+                } else {
+                    defaultMessage = 'Nhắc nhở thân thiện: Tài sản "' + asset + '" đã quá hạn trả ' + days + ' ngày. Vui lòng trả lại khi có thể.';
+                }
+
+                modal.find('#reminderMessage').val(defaultMessage);
+            });
+
+            // Select all checkbox
+            $('#selectAll').change(function() {
+                $('.row-checkbox').prop('checked', $(this).prop('checked'));
+                updateSelectedCount();
+            });
+
+            // Update count when individual checkboxes change
+            $('.row-checkbox').change(function() {
+                updateSelectedCount();
+
+                // If any checkbox is unchecked, uncheck "select all" too
+                if (!$(this).prop('checked')) {
+                    $('#selectAll').prop('checked', false);
+                }
+                // If all checkboxes are checked, check "select all" too
+                else if ($('.row-checkbox:checked').length === $('.row-checkbox').length) {
+                    $('#selectAll').prop('checked', true);
+                }
+            });
+
+            // Button to show batch reminder modal
+            $('#btnBatchReminder').click(function() {
+                if ($('.row-checkbox:checked').length === 0) {
+                    alert('Vui lòng chọn ít nhất một phiếu mượn.');
+                    return;
+                }
+
+                updateSelectedTickets();
+                $('#batchReminderModal').modal('show');
+            });
+
+            // Send batch reminders
+            $('#sendBatchReminders').click(function() {
+                var message = $('#batchReminderMessage').val();
+                if (!message) {
+                    alert('Vui lòng nhập nội dung nhắc nhở.');
+                    return;
+                }
+
+                var selectedIds = [];
+                $('.row-checkbox:checked').each(function() {
+                    selectedIds.push($(this).val());
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Vui lòng chọn ít nhất một phiếu mượn.');
+                    return;
+                }
+
+                // Send AJAX request to send reminders
+                $.ajax({
+                    url: '@Url.Action("SendBatchOverdueReminders")',
+                    type: 'POST',
+                    data: {
+                        ids: selectedIds,
+                        reminderMessage: message
+                    },
+                    traditional: true,
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Đã gửi nhắc nhở thành công!');
+                            $('#batchReminderModal').modal('hide');
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Đã xảy ra lỗi khi gửi nhắc nhở.');
+                    }
+                });
+            });
+
+            // Update selected count
+            function updateSelectedCount() {
+                var count = $('.row-checkbox:checked').length;
+                $('#selectedCount').text(count);
+            }
+
+            // Update selected tickets display
+            function updateSelectedTickets() {
+                var ticketsHtml = '<ul class="mb-0 mt-2">';
+
+                $('.row-checkbox:checked').each(function() {
+                    var row = $(this).closest('tr');
+                    var id = $(this).val();
+                    var name = row.find('td:eq(2)').text().trim();
+                    var asset = row.find('td:eq(3)').text().trim();
+
+                    ticketsHtml += '<li>' + name + ' - ' + asset + '</li>';
+                });
+
+                ticketsHtml += '</ul>';
+
+                $('#selectedTickets').html(ticketsHtml);
+            }
+        });
+    </script>
+}
+            $('#reminderModal
