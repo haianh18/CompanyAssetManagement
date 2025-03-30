@@ -16,6 +16,7 @@ namespace FinalProject.Repositories.Common
         IReturnTicketRepository ReturnTickets { get; }
         IHandoverTicketRepository HandoverTickets { get; }
         IHandoverReturnRepository HandoverReturns { get; }
+        IManagerReturnRequestRepository ManagerReturnRequests { get; }
 
         IDisposalTicketRepository DisposalTickets { get; }
         IDisposalTicketAssetRepository DisposalTicketAssets { get; }

@@ -147,8 +147,8 @@ namespace FinalProject.Controllers
                 try
                 {
                     // Validate request date range (7-30 days)
-                    var minReturnDate = DateTime.Now.AddDays(7);
-                    var maxReturnDate = DateTime.Now.AddDays(30);
+                    var minReturnDate = DateTime.Today.AddDays(7);
+                    var maxReturnDate = DateTime.Today.AddDays(30);
 
                     if (model.ReturnDate < minReturnDate)
                     {

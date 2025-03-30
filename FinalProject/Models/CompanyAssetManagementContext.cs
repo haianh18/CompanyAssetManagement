@@ -21,6 +21,8 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
     public virtual DbSet<ReturnTicket> ReturnTickets { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
     public virtual DbSet<WarehouseAsset> WarehouseAssets { get; set; }
+    public virtual DbSet<HandoverReturn> HandoverReturn { get; set; }
+    public virtual DbSet<ManagerReturnRequest> ManagerReturnRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +39,52 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
         modelBuilder.Entity<DisposalTicket>().HasQueryFilter(dt => !dt.IsDeleted);
         modelBuilder.Entity<DisposalTicketAsset>().HasQueryFilter(dta => !dta.IsDeleted);
         modelBuilder.Entity<WarehouseAsset>().HasQueryFilter(wa => !wa.IsDeleted);
+
+        modelBuilder.Entity<ManagerReturnRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(d => d.BorrowTicket)
+                .WithMany()
+                .HasForeignKey(d => d.BorrowTicketId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(d => d.RequestedBy)
+                .WithMany()
+                .HasForeignKey(d => d.RequestedById);
+
+            entity.HasOne(d => d.ReturnTicket)
+                .WithOne()
+                .HasForeignKey<ManagerReturnRequest>(d => d.RelatedReturnTicketId)
+                .IsRequired(false);
+
+            // Apply global query filter for soft delete
+            entity.HasQueryFilter(mr => !mr.IsDeleted);
+        });
+
+        // Configuration for HandoverReturn
+        modelBuilder.Entity<HandoverReturn>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(d => d.HandoverTicket)
+                .WithMany()
+                .HasForeignKey(d => d.HandoverTicketId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(d => d.ReturnBy)
+                .WithMany()
+                .HasForeignKey(d => d.ReturnById)
+                .IsRequired(false);
+
+            entity.HasOne(d => d.ReceivedBy)
+                .WithMany()
+                .HasForeignKey(d => d.ReceivedById)
+                .IsRequired(false);
+
+            // Apply global query filter for soft delete
+            entity.HasQueryFilter(hr => !hr.IsDeleted);
+        });
 
         modelBuilder.Entity<AppRole>(entity =>
         {

@@ -41,9 +41,10 @@ public class Program
         builder.Services.AddScoped<IHandoverTicketRepository, HandoverTicketRepository>();
         builder.Services.AddScoped<IHandoverReturnRepository, HandoverReturnRepository>();
         builder.Services.AddScoped<IReturnTicketRepository, ReturnTicketRepository>();
+        builder.Services.AddScoped<IManagerReturnRequestRepository, ManagerReturnRequestRepository>();
 
         // Register the DataSeeder service
-        builder.Services.AddHostedService<DataSeeder>();
+        //builder.Services.AddHostedService<DataSeeder>();
 
         // Configure authentication and authorization
         builder.Services.ConfigureApplicationCookie(options =>

@@ -26,6 +26,7 @@ namespace FinalProject.Repositories.Common
         private IHandoverTicketRepository _handoverTicketRepository;
         private IHandoverReturnRepository _handoverReturnRepository;
         private IDisposalTicketRepository _disposalTicketRepository;
+        private IManagerReturnRequestRepository _managerReturnRequestRepository;
         private IDisposalTicketAssetRepository _disposalTicketAssetRepository;
         private IUserRepository _userRepository;
         private IRoleRepository _roleRepository;
@@ -45,6 +46,8 @@ namespace FinalProject.Repositories.Common
         }
 
         public IAssetRepository Assets => _assetRepository ??= new AssetRepository(_context);
+        public IManagerReturnRequestRepository ManagerReturnRequests => _managerReturnRequestRepository ??= new ManagerReturnRequestRepository(_context);
+
         public IAssetCategoryRepository AssetCategories => _assetCategoryRepository ??= new AssetCategoryRepository(_context);
         public IWarehouseRepository Warehouses => _warehouseRepository ??= new WarehouseRepository(_context);
         public IWarehouseAssetRepository WarehouseAssets => _warehouseAssetRepository ??= new WarehouseAssetRepository(_context);

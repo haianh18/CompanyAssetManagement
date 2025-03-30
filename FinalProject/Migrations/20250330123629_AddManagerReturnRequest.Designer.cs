@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinalProject.Migrations
 {
     [DbContext(typeof(CompanyAssetManagementContext))]
-    partial class CompanyAssetManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20250330123629_AddManagerReturnRequest")]
+    partial class AddManagerReturnRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -440,55 +443,6 @@ namespace FinalProject.Migrations
                     b.ToTable("DisposalTicketAssets");
                 });
 
-            modelBuilder.Entity("FinalProject.Models.HandoverReturn", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AssetConditionOnReturn")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("HandoverTicketId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ReceivedById")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ReturnById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReturnDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HandoverTicketId");
-
-                    b.HasIndex("ReceivedById");
-
-                    b.HasIndex("ReturnById");
-
-                    b.ToTable("HandoverReturn");
-                });
-
             modelBuilder.Entity("FinalProject.Models.HandoverTicket", b =>
                 {
                     b.Property<int>("Id")
@@ -558,61 +512,6 @@ namespace FinalProject.Migrations
                     b.HasIndex("WarehouseAssetId");
 
                     b.ToTable("HandoverTickets");
-                });
-
-            modelBuilder.Entity("FinalProject.Models.ManagerReturnRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BorrowTicketId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RelatedReturnTicketId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestedById")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BorrowTicketId");
-
-                    b.HasIndex("RelatedReturnTicketId")
-                        .IsUnique()
-                        .HasFilter("[RelatedReturnTicketId] IS NOT NULL");
-
-                    b.HasIndex("RequestedById");
-
-                    b.ToTable("ManagerReturnRequests");
                 });
 
             modelBuilder.Entity("FinalProject.Models.ReturnTicket", b =>
@@ -961,29 +860,6 @@ namespace FinalProject.Migrations
                     b.Navigation("WarehouseAsset");
                 });
 
-            modelBuilder.Entity("FinalProject.Models.HandoverReturn", b =>
-                {
-                    b.HasOne("FinalProject.Models.HandoverTicket", "HandoverTicket")
-                        .WithMany()
-                        .HasForeignKey("HandoverTicketId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("AppUser", "ReceivedBy")
-                        .WithMany()
-                        .HasForeignKey("ReceivedById");
-
-                    b.HasOne("AppUser", "ReturnBy")
-                        .WithMany()
-                        .HasForeignKey("ReturnById");
-
-                    b.Navigation("HandoverTicket");
-
-                    b.Navigation("ReceivedBy");
-
-                    b.Navigation("ReturnBy");
-                });
-
             modelBuilder.Entity("FinalProject.Models.HandoverTicket", b =>
                 {
                     b.HasOne("FinalProject.Models.Department", "Department")
@@ -1015,31 +891,6 @@ namespace FinalProject.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("WarehouseAsset");
-                });
-
-            modelBuilder.Entity("FinalProject.Models.ManagerReturnRequest", b =>
-                {
-                    b.HasOne("FinalProject.Models.BorrowTicket", "BorrowTicket")
-                        .WithMany()
-                        .HasForeignKey("BorrowTicketId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("FinalProject.Models.ReturnTicket", "ReturnTicket")
-                        .WithOne()
-                        .HasForeignKey("FinalProject.Models.ManagerReturnRequest", "RelatedReturnTicketId");
-
-                    b.HasOne("AppUser", "RequestedBy")
-                        .WithMany()
-                        .HasForeignKey("RequestedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BorrowTicket");
-
-                    b.Navigation("RequestedBy");
-
-                    b.Navigation("ReturnTicket");
                 });
 
             modelBuilder.Entity("FinalProject.Models.ReturnTicket", b =>
