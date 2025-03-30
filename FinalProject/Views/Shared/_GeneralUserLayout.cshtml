@@ -49,6 +49,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "MyReturnRequests" ? "active" : "")"
+                           asp-controller="GeneralUser" asp-action="MyReturnRequests">
+                            <i class="fas fa-undo-alt"></i> <span>Phiếu trả của tôi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "MyAssignedAssets" ? "active" : "")"
                            asp-controller="GeneralUser" asp-action="MyAssignedAssets">
                             <i class="fas fa-desktop"></i> <span>Tài sản được bàn giao</span>

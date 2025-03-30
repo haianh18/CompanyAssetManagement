@@ -1,0 +1,365 @@
+﻿@model FinalProject.Models.ViewModels.ReturnRequest.MyReturnRequestsViewModel
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Phiếu trả của tôi";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-undo-alt"></i> Phiếu trả của tôi</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-controller="GeneralUser" asp-action="MyBorrowRequests" class="btn btn-primary">
+                <i class="fas fa-clipboard-list"></i> Xem phiếu mượn
+            </a>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+    @if (Model.AllReturnRequests == null || !Model.AllReturnRequests.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Bạn chưa có phiếu trả nào.
+        </div>
+    }
+    else
+    {
+        <!-- Hiển thị danh sách phiếu trả ở đây -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <ul class="nav nav-tabs" id="returnTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                            <i class="fas fa-list"></i> Tất cả <span class="badge bg-primary">@Model.AllReturnRequests.Count()</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                            <i class="fas fa-clock"></i> Chờ duyệt <span class="badge bg-warning">@Model.PendingReturnRequests.Count()</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" aria-controls="approved" aria-selected="false">
+                            <i class="fas fa-check"></i> Đã duyệt <span class="badge bg-success">@Model.ApprovedReturnRequests.Count()</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">
+                            <i class="fas fa-times"></i> Từ chối <span class="badge bg-danger">@Model.RejectedReturnRequests.Count()</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-content" id="returnTabsContent">
+            <!-- All Return Requests Tab -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Phiếu mượn</th>
+                                <th>Tài sản</th>
+                                <th>Số lượng</th>
+                                <th>Ngày yêu cầu trả</th>
+                                <th>Ngày trả thực tế</th>
+                                <th>Tình trạng</th>
+                                <th>Trạng thái</th>
+                                <th>Ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.AllReturnRequests)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>
+                                        <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.BorrowTicketId">
+                                            #@item.BorrowTicketId
+                                        </a>
+                                    </td>
+                                    <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.ReturnRequestDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.ActualReturnDate?.ToString("dd/MM/yyyy") ?? "Chưa trả")</td>
+                                    <td>
+                                        @switch (item.AssetConditionOnReturn)
+                                        {
+                                            case AssetStatus.GOOD:
+                                                <span class="badge bg-success">Tốt</span>
+                                                break;
+                                            case AssetStatus.BROKEN:
+                                                <span class="badge bg-danger">Hỏng</span>
+                                                break;
+                                            case AssetStatus.FIXING:
+                                                <span class="badge bg-warning">Cần sửa chữa</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Chưa xác định</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (item.ApproveStatus)
+                                        {
+                                            case TicketStatus.Approved:
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                                break;
+                                            case TicketStatus.Pending:
+                                                <span class="badge bg-warning">Chờ duyệt</span>
+                                                break;
+                                            case TicketStatus.Rejected:
+                                                <span class="badge bg-danger">Từ chối</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@(item.Note ?? "Không có ghi chú")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="GeneralUser" asp-action="ReturnTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.AllReturnRequests.Any())
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            Bạn chưa có phiếu trả nào.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Pending Return Requests Tab -->
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Phiếu mượn</th>
+                                <th>Tài sản</th>
+                                <th>Số lượng</th>
+                                <th>Ngày yêu cầu trả</th>
+                                <th>Ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PendingReturnRequests)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>
+                                        <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.BorrowTicketId">
+                                            #@item.BorrowTicketId
+                                        </a>
+                                    </td>
+                                    <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.ReturnRequestDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.Note ?? "Không có ghi chú")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="GeneralUser" asp-action="ReturnTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.PendingReturnRequests.Any())
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            Không có phiếu trả nào đang chờ duyệt.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Approved Return Requests Tab -->
+            <div class="tab-pane fade" id="approved" role="tabpanel" aria-labelledby="approved-tab">
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Phiếu mượn</th>
+                                <th>Tài sản</th>
+                                <th>Số lượng</th>
+                                <th>Ngày yêu cầu trả</th>
+                                <th>Ngày trả thực tế</th>
+                                <th>Tình trạng khi trả</th>
+                                <th>Ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ApprovedReturnRequests)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>
+                                        <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.BorrowTicketId">
+                                            #@item.BorrowTicketId
+                                        </a>
+                                    </td>
+                                    <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.ReturnRequestDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.ActualReturnDate?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</td>
+                                    <td>
+                                        @switch (item.AssetConditionOnReturn)
+                                        {
+                                            case AssetStatus.GOOD:
+                                                <span class="badge bg-success">Tốt</span>
+                                                break;
+                                            case AssetStatus.BROKEN:
+                                                <span class="badge bg-danger">Hỏng</span>
+                                                break;
+                                            case AssetStatus.FIXING:
+                                                <span class="badge bg-warning">Cần sửa chữa</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Chưa xác định</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@(item.Note ?? "Không có ghi chú")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="GeneralUser" asp-action="ReturnTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.ApprovedReturnRequests.Any())
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            Không có phiếu trả nào đã được duyệt.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Rejected Return Requests Tab -->
+            <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                <div class="table-container">
+                    <table class="table custom-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Phiếu mượn</th>
+                                <th>Tài sản</th>
+                                <th>Số lượng</th>
+                                <th>Ngày yêu cầu trả</th>
+                                <th>Ngày từ chối</th>
+                                <th>Lý do từ chối</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RejectedReturnRequests)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>
+                                        <a asp-controller="BorrowRequest" asp-action="Details" asp-route-id="@item.BorrowTicketId">
+                                            #@item.BorrowTicketId
+                                        </a>
+                                    </td>
+                                    <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@(item.ReturnRequestDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.DateModified?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@(item.Note ?? "Không có ghi chú")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-controller="GeneralUser" asp-action="ReturnTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.RejectedReturnRequests.Any())
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            Không có phiếu trả nào bị từ chối.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Save active tab
+            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                localStorage.setItem('activeReturnTab', $(e.target).attr('href'));
+            });
+
+            // Check for previously selected tab and activate it
+            var activeTab = localStorage.getItem('activeReturnTab');
+            if (activeTab) {
+                $('#returnTabs a[href="' + activeTab + '"]').tab('show');
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .custom-table {
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .custom-table th, .custom-table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .action-buttons .btn {
+            margin-right: 5px;
+        }
+        
+        .action-buttons .btn:last-child {
+            margin-right: 0;
+        }
+    </style>
+}

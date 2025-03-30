@@ -389,6 +389,14 @@ namespace FinalProject.Controllers
                 return RedirectToAction(nameof(MyBorrowRequests));
             }
 
+            // Check if there's a pending return request
+            var pendingReturnRequest = borrowTicket.ReturnTickets?.FirstOrDefault(r => r.ApproveStatus == TicketStatus.Pending);
+            if (pendingReturnRequest != null)
+            {
+                TempData["ErrorMessage"] = "Tài sản này đang có yêu cầu trả đang chờ xét duyệt.";
+                return RedirectToAction(nameof(MyBorrowRequests));
+            }
+
             // Check if approved
             if (borrowTicket.ApproveStatus != TicketStatus.Approved)
             {
@@ -407,6 +415,56 @@ namespace FinalProject.Controllers
             };
 
             return View(model);
+        }
+
+        // GET: GeneralUser/MyReturnRequests
+        public async Task<IActionResult> MyReturnRequests()
+        {
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Get all return tickets for the current user
+            var returnTickets = await _unitOfWork.ReturnTickets.GetReturnTicketsByUser(currentUser.Id);
+
+            var viewModel = new MyReturnRequestsViewModel();
+
+            if (returnTickets != null && returnTickets.Any())
+            {
+                viewModel.AllReturnRequests = returnTickets;
+                viewModel.PendingReturnRequests = returnTickets.Where(r => r.ApproveStatus == TicketStatus.Pending).ToList();
+                viewModel.ApprovedReturnRequests = returnTickets.Where(r => r.ApproveStatus == TicketStatus.Approved).ToList();
+                viewModel.RejectedReturnRequests = returnTickets.Where(r => r.ApproveStatus == TicketStatus.Rejected).ToList();
+            }
+
+            return View(viewModel);
+        }
+
+        // GET: GeneralUser/ReturnTicketDetails/5
+        public async Task<IActionResult> ReturnTicketDetails(int id)
+        {
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var returnTicket = await _unitOfWork.ReturnTickets.GetReturnTicketWithDetails(id);
+            if (returnTicket == null)
+            {
+                return NotFound();
+            }
+
+            // Check if user is the one who created the return request
+            if (returnTicket.ReturnById != currentUser.Id)
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xem thông tin phiếu trả này.";
+                return RedirectToAction(nameof(MyReturnRequests));
+            }
+
+            return View(returnTicket);
         }
 
         // POST: GeneralUser/ReturnAsset

@@ -130,9 +130,22 @@
                                     <i class="fas fa-calendar-plus"></i> Yêu cầu gia hạn
                                 </a>
                             }
-                            <a asp-controller="GeneralUser" asp-action="ReturnAsset" asp-route-id="@Model.Id" class="btn btn-success">
-                                <i class="fas fa-undo-alt"></i> Trả tài sản
-                            </a>
+                            @{
+                                var hasPendingReturn = Model.ReturnTickets != null && Model.ReturnTickets.Any(r => r.ApproveStatus == TicketStatus.Pending);
+                            }
+
+                            @if (!hasPendingReturn)
+                            {
+                                <a asp-controller="GeneralUser" asp-action="ReturnAsset" asp-route-id="@Model.Id" class="btn btn-success">
+                                    <i class="fas fa-undo-alt"></i> Trả tài sản
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-undo-alt"></i> Đang có yêu cầu trả chờ duyệt
+                                </button>
+                            }
                         </div>
                     }
                     <div class="d-grid mt-2">
