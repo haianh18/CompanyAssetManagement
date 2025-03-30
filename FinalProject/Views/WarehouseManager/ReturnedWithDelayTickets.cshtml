@@ -1,0 +1,141 @@
+﻿@model IEnumerable<FinalProject.Models.BorrowTicket>
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Phiếu mượn trả muộn";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-hourglass-end text-warning"></i> Phiếu mượn trả muộn</h2>
+            <p>Danh sách các phiếu mượn đã trả sau ngày hẹn trả</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="@Url.Action("ReturnedBorrowTickets")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách phiếu đã trả
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số phiếu trả muộn</h5>
+                    <p class="card-text display-4">@Model.Count()</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Trung bình số ngày trễ</h5>
+                    @{
+                        var avgDelayDays = Model.Average(b => {
+                            var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
+                            if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                            {
+                                return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
+                            }
+                            return 0;
+                        });
+                    }
+                    <p class="card-text display-4">@avgDelayDays.ToString("F1")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Trễ hạn nhiều nhất</h5>
+                    @{
+                        var maxDelayDays = Model.Max(b => {
+                            var returnTicket = b.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
+                            if (returnTicket?.ActualReturnDate.HasValue == true && b.ReturnDate.HasValue)
+                            {
+                                return (returnTicket.ActualReturnDate.Value - b.ReturnDate.Value).Days;
+                            }
+                            return 0;
+                        });
+                    }
+                    <p class="card-text display-4">@maxDelayDays</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0 text-white"><i class="fas fa-exclamation-triangle"></i> Phiếu mượn trả muộn</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người mượn</th>
+                            <th>Phòng ban</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày mượn</th>
+                            <th>Ngày hẹn trả</th>
+                            <th>Ngày trả thực tế</th>
+                            <th>Số ngày trễ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var returnTicket = item.ReturnTickets?.FirstOrDefault(rt => rt.ApproveStatus == TicketStatus.Approved);
+                            var actualReturnDate = returnTicket?.ActualReturnDate;
+                            int delayDays = 0;
+                            
+                            if (actualReturnDate.HasValue && item.ReturnDate.HasValue)
+                            {
+                                delayDays = (actualReturnDate.Value - item.ReturnDate.Value).Days;
+                            }
+                            
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@(item.BorrowBy?.FullName ?? "N/A")</td>
+                                <td>@(item.BorrowBy?.Department?.Name ?? "N/A")</td>
+                                <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td class="text-danger">@(actualReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>
+                                    <span class="badge bg-danger">@delayDays ngày</span>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("DetailsBorrowRequest", new { id = item.Id })" class="btn btn-sm btn-info">
+                                        <i class="fas fa-info-circle"></i> Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-success text-center" role="alert">
+                    <i class="fas fa-check-circle"></i> Không có phiếu mượn nào trả muộn. Rất tốt!
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any client-side script here if needed
+        });
+    </script>
+}

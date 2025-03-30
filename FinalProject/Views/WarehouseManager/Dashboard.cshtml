@@ -7,74 +7,43 @@
 
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Phần mềm quản lý tài sản công ty.</h1>
+        <h1 class="h3 mb-0 text-gray-800">Bảng điều khiển Quản lý tài sản</h1>
     </div>
 
-    <!-- Content Row -->
+    <!-- Content Row - Key Metrics -->
     <div class="row">
         <!-- Total Assets Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
             <a href="@Url.Action("Index", "Assets")" class="text-decoration-none">
                 <div class="stat-card">
                     <div class="stat-card-icon bg-primary">
-                        <i class="fas fa-desktop"></i>
+                        <i class="fas fa-boxes"></i>
                     </div>
                     <div class="stat-card-content">
                         <h5 class="stat-card-title">@Model.TotalAssets</h5>
-                        <p class="stat-card-text">Tất Cả Các Tài Sản</p>
+                        <p class="stat-card-text">Tổng số tài sản</p>
                     </div>
                 </div>
             </a>
         </div>
 
-        <!-- Disposed Assets Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <a href="@Url.Action("DisposalTickets", "WarehouseManager")" class="text-decoration-none">
+        <!-- Active Assets Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="@Url.Action("Index", "Assets", new { status = "GOOD" })" class="text-decoration-none">
                 <div class="stat-card">
-                    <div class="stat-card-icon bg-danger">
-                        <i class="fas fa-trash-alt"></i>
+                    <div class="stat-card-icon bg-success">
+                        <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-card-content">
-                        <h5 class="stat-card-title">@Model.TotalDisposedAssets</h5>
-                        <p class="stat-card-text">Thiết Bị Bị Thanh Lý</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Asset Categories Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <a href="@Url.Action("Index", "AssetCategory")" class="text-decoration-none">
-                <div class="stat-card">
-                    <div class="stat-card-icon bg-warning">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <div class="stat-card-content">
-                        <h5 class="stat-card-title">@Model.TotalCategories</h5>
-                        <p class="stat-card-text">Quản Lý Loại Thiết Bị</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Departments Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <a href="#" class="text-decoration-none">
-                <!-- Có thể thay bằng link đến trang quản lý phòng ban nếu có -->
-                <div class="stat-card">
-                    <div class="stat-card-icon bg-danger">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="stat-card-content">
-                        <h5 class="stat-card-title">@Model.TotalDepartments</h5>
-                        <p class="stat-card-text">Phòng Ban</p>
+                        <h5 class="stat-card-title">@Model.ActiveAssets</h5>
+                        <p class="stat-card-text">Tài sản hoạt động tốt</p>
                     </div>
                 </div>
             </a>
         </div>
 
         <!-- Pending Borrow Requests Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
             <a href="@Url.Action("BorrowRequests", "WarehouseManager")" class="text-decoration-none">
                 <div class="stat-card">
                     <div class="stat-card-icon bg-warning">
@@ -82,161 +51,215 @@
                     </div>
                     <div class="stat-card-content">
                         <h5 class="stat-card-title">@Model.TotalPendingBorrowRequests</h5>
-                        <p class="stat-card-text">Yêu Cầu Thiết Bị</p>
+                        <p class="stat-card-text">Yêu cầu mượn chờ duyệt</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Asset Categories Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="@Url.Action("Index", "AssetCategory")" class="text-decoration-none">
+                <div class="stat-card">
+                    <div class="stat-card-icon bg-info">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h5 class="stat-card-title">@Model.TotalCategories</h5>
+                        <p class="stat-card-text">Danh mục tài sản</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Second Row - Asset Status -->
+    <div class="row">
+        <!-- Broken Assets Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="@Url.Action("Index", "Assets", new { status = "BROKEN" })" class="text-decoration-none">
+                <div class="stat-card">
+                    <div class="stat-card-icon bg-danger">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h5 class="stat-card-title">@Model.BrokenAssets</h5>
+                        <p class="stat-card-text">Tài sản hỏng</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Fixing Assets Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="@Url.Action("Index", "Assets", new { status = "FIXING" })" class="text-decoration-none">
+                <div class="stat-card">
+                    <div class="stat-card-icon bg-secondary">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h5 class="stat-card-title">@Model.FixingAssets</h5>
+                        <p class="stat-card-text">Tài sản đang sửa</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Disposed Assets Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="@Url.Action("Index", "Assets", new { status = "DISPOSED" })" class="text-decoration-none">
+                <div class="stat-card">
+                    <div class="stat-card-icon bg-dark">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h5 class="stat-card-title">@Model.TotalDisposedAssets</h5>
+                        <p class="stat-card-text">Tài sản đã thanh lý</p>
                     </div>
                 </div>
             </a>
         </div>
 
         <!-- Warehouse Count Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <a href="#" class="text-decoration-none">
-                <!-- Có thể thay bằng link đến trang quản lý kho nếu có -->
-                <div class="stat-card">
-                    <div class="stat-card-icon bg-info">
-                        <i class="fas fa-warehouse"></i>
-                    </div>
-                    <div class="stat-card-content">
-                        <h5 class="stat-card-title">@Model.TotalWarehouses</h5>
-                        <p class="stat-card-text">Kho</p>
-                    </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-light">
+                    <i class="fas fa-warehouse"></i>
                 </div>
-            </a>
+                <div class="stat-card-content">
+                    <h5 class="stat-card-title">@Model.TotalWarehouses</h5>
+                    <p class="stat-card-text">Kho</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Action Cards Row -->
-    <div class="row mt-4">
-        <!-- Search Assets Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("Index", "Assets")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-dark">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Tìm kiếm tài sản</h6>
+    <!-- Quick Actions Row -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Thao tác nhanh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Create", "Assets")" class="btn btn-primary btn-block w-100">
+                                <i class="fas fa-plus-circle"></i> Thêm tài sản mới
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Create", "AssetCategory")" class="btn btn-secondary btn-block w-100">
+                                <i class="fas fa-folder-plus"></i> Thêm danh mục
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("OverdueAssets", "WarehouseManager")" class="btn btn-warning btn-block w-100">
+                                <i class="fas fa-exclamation-triangle"></i> Tài sản quá hạn
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("PendingExpiredTickets", "WarehouseManager")" class="btn btn-danger btn-block w-100">
+                                <i class="fas fa-calendar-times"></i> Phiếu chờ duyệt quá hạn
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </a>
-        </div>
-
-        <!-- Asset Statistics Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("AssetSummaryReport", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-info">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Thống Kê Thiết Bị</h6>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Department Statistics Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("Reports", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-dark">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Thống Kê Phòng Ban</h6>
-                    </div>
-                </div>
-            </a>
+            </div>
         </div>
     </div>
 
-    <!-- Additional Action Cards Row -->
+    <!-- Feature Sections -->
     <div class="row">
-        <!-- Borrow Requests Management Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("BorrowRequests", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-warning">
-                        <i class="fas fa-hand-holding"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Quản lý yêu cầu mượn</h6>
+        <!-- Asset Management Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-boxes"></i> Quản lý tài sản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="@Url.Action("Index", "Assets")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-list"></i> Danh sách tài sản
+                        </a>
+                        <a href="@Url.Action("Index", "AssetCategory")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tags"></i> Quản lý danh mục
+                        </a>
+                        <a href="@Url.Action("DisposalTickets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-trash-alt"></i> Quản lý thanh lý tài sản
+                        </a>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
 
-        <!-- Return Requests Management Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("ReturnRequests", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-success">
-                        <i class="fas fa-undo"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Quản lý yêu cầu trả</h6>
+        <!-- Borrow and Return Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Mượn và trả tài sản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="@Url.Action("BorrowRequests", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-hand-holding"></i> Phê duyệt yêu cầu mượn
+                            @if (Model.TotalPendingBorrowRequests > 0)
+                            {
+                                <span class="badge bg-warning float-end">@Model.TotalPendingBorrowRequests</span>
+                            }
+                        </a>
+                        <a href="@Url.Action("ReturnRequests", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-undo-alt"></i> Xử lý yêu cầu trả
+                        </a>
+                        <a href="@Url.Action("OverdueAssets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-exclamation-triangle"></i> Quản lý tài sản quá hạn
+                        </a>
+                        <a href="@Url.Action("PendingExpiredTickets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-times"></i> Xử lý phiếu mượn quá hạn duyệt
+                        </a>
                     </div>
                 </div>
-            </a>
-        </div>
-
-        <!-- Create Handover Ticket Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("CreateHandoverTicket", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-primary">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Tạo phiếu bàn giao</h6>
-                    </div>
-                </div>
-            </a>
+            </div>
         </div>
     </div>
 
-    <!-- Final Action Cards Row -->
     <div class="row">
-        <!-- Create Disposal Ticket Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("CreateDisposalTicket", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-danger">
-                        <i class="fas fa-trash"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Tạo phiếu thanh lý</h6>
+        <!-- Handover Management Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-people-carry"></i> Bàn giao tài sản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="@Url.Action("HandoverTickets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-check"></i> Quản lý phiếu bàn giao
+                        </a>
+                        <a href="@Url.Action("CreateHandoverTicket", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-signature"></i> Tạo phiếu bàn giao mới
+                        </a>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
 
-        <!-- Asset Categories Management Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("Index", "AssetCategory")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-warning">
-                        <i class="fas fa-list-alt"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Quản lý danh mục tài sản</h6>
+        <!-- Returned Tickets Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Phiếu mượn đã trả</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="@Url.Action("ReturnedBorrowTickets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-check"></i> Danh sách phiếu mượn đã trả
+                        </a>
+                        <a href="@Url.Action("ReturnedWithDelayTickets", "WarehouseManager")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-hourglass-end"></i> Phiếu mượn trả muộn
+                        </a>
                     </div>
                 </div>
-            </a>
-        </div>
-
-        <!-- Change Password Card -->
-        <div class="col-md-4 mb-4">
-            <a href="@Url.Action("ChangePassword", "WarehouseManager")" class="text-decoration-none">
-                <div class="action-card">
-                    <div class="action-card-icon bg-secondary">
-                        <i class="fas fa-key"></i>
-                    </div>
-                    <div class="action-card-content">
-                        <h6 class="action-card-title">Đổi mật khẩu</h6>
-                    </div>
-                </div>
-            </a>
+            </div>
         </div>
     </div>
 </div>

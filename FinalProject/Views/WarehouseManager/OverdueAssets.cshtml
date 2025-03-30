@@ -17,6 +17,9 @@
         </div>
     </div>
 
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
     <!-- Overdue Summary -->
     <div class="row mb-4">
         <div class="col-md-12">
@@ -113,9 +116,14 @@
                                         data-days="@overdueDays">
                                     <i class="fas fa-bell"></i>
                                 </button>
-                                <a asp-action="CreateManagerReturnRequest" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Yêu cầu trả ngay">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" title="Thu hồi tài sản"
+                                        data-bs-toggle="modal" data-bs-target="#forceReturnModal"
+                                        data-id="@item.Id"
+                                        data-name="@item.BorrowBy?.FullName"
+                                        data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")"
+                                        data-days="@overdueDays">
+                                    <i class="fas fa-undo-alt"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -157,6 +165,38 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-primary">Gửi nhắc nhở</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Force Return Modal -->
+<div class="modal fade" id="forceReturnModal" tabindex="-1" aria-labelledby="forceReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ForceReturn" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forceReturnModalLabel">Thu hồi tài sản</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="forceReturnTicketId" name="id" />
+
+                    <div class="alert alert-danger">
+                        <div id="forceReturnInfo"></div>
+                        <p class="mt-2 mb-0"><strong>Lưu ý:</strong> Tài sản sẽ được đánh dấu là đã trả và thu hồi về kho.</p>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="note" class="form-label">Lý do thu hồi</label>
+                        <textarea id="note" name="note" class="form-control" rows="3" required></textarea>
+                        <div class="form-text">Ghi chú về việc thu hồi tài sản sẽ được lưu lại và thông báo đến người mượn.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Thu hồi tài sản</button>
                 </div>
             </form>
         </div>
@@ -219,6 +259,27 @@
                 }
 
                 modal.find('#reminderMessage').val(defaultMessage);
+            });
+
+            // Force Return modal
+            $('#forceReturnModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var name = button.data('name');
+                var asset = button.data('asset');
+                var days = button.data('days');
+
+                var modal = $(this);
+                modal.find('#forceReturnTicketId').val(id);
+                modal.find('#forceReturnInfo').html(
+                    '<strong>' + name + '</strong> đã mượn <strong>' + asset + '</strong> và quá hạn <strong>' + days + '</strong> ngày. ' +
+                    'Bạn có chắc chắn muốn thu hồi tài sản này?'
+                );
+
+                // Set default message
+                var defaultNote = 'Thu hồi do quá hạn ' + days + ' ngày. Tài sản được thu hồi vào ngày ' +
+                                 new Date().toLocaleDateString('vi-VN') + '.';
+                modal.find('#note').val(defaultNote);
             });
 
             // Select all checkbox
@@ -319,4 +380,3 @@
         });
     </script>
 }
-            $('#reminderModal

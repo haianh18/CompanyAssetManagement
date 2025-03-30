@@ -3,6 +3,7 @@ using FinalProject.Models;
 using FinalProject.Models.ViewModels;
 using FinalProject.Models.ViewModels.BorrowRequest;
 using FinalProject.Models.ViewModels.Handover;
+using FinalProject.Models.ViewModels.ReturnRequest;
 using FinalProject.Repositories.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -182,6 +183,36 @@ namespace FinalProject.Controllers
             return View(model);
         }
 
+        // GET: WarehouseManager/ReturnedBorrowTickets
+        public async Task<IActionResult> ReturnedBorrowTickets()
+        {
+            // Get all borrow tickets that have been returned
+            var returnedTickets = await _unitOfWork.BorrowTickets.GetAllAsync();
+            returnedTickets = returnedTickets
+                .Where(b => b.IsReturned)
+                .OrderByDescending(b => b.DateModified)
+                .ToList();
+
+            return View(returnedTickets);
+        }
+
+        // GET: WarehouseManager/ReturnedWithDelayTickets
+        public async Task<IActionResult> ReturnedWithDelayTickets()
+        {
+            // Get all returned tickets that were returned after their scheduled return date
+            var returnedTickets = await _unitOfWork.BorrowTickets.GetAllAsync();
+            var delayedTickets = returnedTickets
+                .Where(b => b.IsReturned &&
+                           b.ReturnDate.HasValue &&
+                           b.ReturnTickets.Any(rt => rt.ApproveStatus == TicketStatus.Approved &&
+                                                     rt.ActualReturnDate.HasValue &&
+                                                     rt.ActualReturnDate.Value > b.ReturnDate.Value))
+                .OrderByDescending(b => b.DateModified)
+                .ToList();
+
+            return View(delayedTickets);
+        }
+
         // Method to approve extension request
         public async Task<IActionResult> ApproveExtension(int id)
         {
@@ -283,7 +314,247 @@ namespace FinalProject.Controllers
             return View(returns);
         }
 
-        // Other return request management methods are handled in ReturnRequestController
+        // GET: WarehouseManager/CreateManagerReturnRequest/5
+        public async Task<IActionResult> CreateManagerReturnRequest(int id)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            if (borrowTicket.IsReturned == false && borrowTicket.ApproveStatus == TicketStatus.Approved)
+            {
+                var model = new ManagerReturnRequestViewModel
+                {
+                    BorrowTicketId = borrowTicket.Id,
+                    AssetName = borrowTicket.WarehouseAsset?.Asset?.Name,
+                    BorrowerName = borrowTicket.BorrowBy?.FullName,
+                    Quantity = borrowTicket.Quantity,
+                    BorrowDate = borrowTicket.DateCreated,
+                    ReturnDate = borrowTicket.ReturnDate,
+                    // Set default due date to 3 days from now
+                    DueDate = DateTime.Now.AddDays(3)
+                };
+
+                return View(model);
+
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể yêu cầu trả sớm đối với tài sản đã được duyệt và chưa trả.";
+                return RedirectToAction(nameof(OverdueAssets));
+            }
+        }
+
+        // POST: WarehouseManager/CreateManagerReturnRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateManagerReturnRequest(ManagerReturnRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(model.BorrowTicketId);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Get current user to set as requester
+                var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                if (currentUser == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Create the manager return request
+                var managerReturnRequest = new ManagerReturnRequest
+                {
+                    BorrowTicketId = model.BorrowTicketId,
+                    RequestedById = currentUser.Id,
+                    Reason = model.Reason,
+                    DueDate = model.DueDate,
+                    Status = TicketStatus.Pending,
+                    DateCreated = DateTime.Now
+                };
+
+                await _unitOfWork.ManagerReturnRequests.AddAsync(managerReturnRequest);
+
+                // Update the borrow ticket note to include the early return request
+                if (!string.IsNullOrEmpty(borrowTicket.Note))
+                {
+                    borrowTicket.Note += $"\n[{DateTime.Now:yyyy-MM-dd HH:mm}] Yêu cầu trả sớm: {model.Reason}";
+                }
+                else
+                {
+                    borrowTicket.Note = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Yêu cầu trả sớm: {model.Reason}";
+                }
+
+                borrowTicket.DateModified = DateTime.Now;
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Yêu cầu trả sớm đã được tạo và gửi đến người mượn.";
+                return RedirectToAction(nameof(BorrowRequests));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra: {ex.Message}";
+                ModelState.AddModelError("", "Có lỗi xảy ra khi tạo yêu cầu trả sớm.");
+                return View(model);
+            }
+        }
+        #endregion
+
+        #region Pending Expired Ticket Management
+
+        // GET: WarehouseManager/PendingExpiredTickets
+        public async Task<IActionResult> PendingExpiredTickets()
+        {
+            var currentDate = DateTime.Now;
+
+            // Get pending borrow tickets with return date in the past
+            var pendingExpiredTickets = await _unitOfWork.BorrowTickets.GetAllAsync();
+            pendingExpiredTickets = pendingExpiredTickets
+                .Where(b => b.ApproveStatus == TicketStatus.Pending &&
+                            b.ReturnDate.HasValue &&
+                            b.ReturnDate.Value < currentDate)
+                .ToList();
+
+            return View(pendingExpiredTickets);
+        }
+
+        // POST: WarehouseManager/RejectExpiredPendingTicket/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectExpiredPendingTicket(int id)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            if (borrowTicket.ApproveStatus != TicketStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể từ chối phiếu mượn đang chờ duyệt.";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+
+            try
+            {
+                // Update ticket status to rejected
+                borrowTicket.ApproveStatus = TicketStatus.Rejected;
+
+                // Add automatic rejection note
+                string rejectionReason = "Tự động từ chối: Ngày trả dự kiến đã qua.";
+                if (string.IsNullOrEmpty(borrowTicket.Note))
+                {
+                    borrowTicket.Note = rejectionReason;
+                }
+                else
+                {
+                    borrowTicket.Note += $"\n{rejectionReason}";
+                }
+
+                borrowTicket.DateModified = DateTime.Now;
+
+                // Get current user to set as owner
+                var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                if (currentUser != null)
+                {
+                    borrowTicket.OwnerId = currentUser.Id;
+                }
+
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+                await _unitOfWork.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Phiếu mượn đã bị từ chối do quá hạn.";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi cập nhật phiếu mượn: {ex.Message}";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+        }
+
+        // POST: WarehouseManager/ApproveExpiredPendingTicket/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveExpiredPendingTicket(int id, DateTime newReturnDate)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            if (borrowTicket.ApproveStatus != TicketStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể duyệt phiếu mượn đang chờ duyệt.";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+
+            if (newReturnDate <= DateTime.Now)
+            {
+                TempData["ErrorMessage"] = "Ngày trả mới phải lớn hơn ngày hiện tại.";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+
+            try
+            {
+                // Update ticket status to approved with new return date
+                borrowTicket.ApproveStatus = TicketStatus.Approved;
+                borrowTicket.ReturnDate = newReturnDate;
+
+                // Add note about return date adjustment
+                string approvalNote = $"Đã duyệt với điều chỉnh ngày trả từ {borrowTicket.ReturnDate?.ToString("dd/MM/yyyy")} thành {newReturnDate.ToString("dd/MM/yyyy")}";
+                if (string.IsNullOrEmpty(borrowTicket.Note))
+                {
+                    borrowTicket.Note = approvalNote;
+                }
+                else
+                {
+                    borrowTicket.Note += $"\n{approvalNote}";
+                }
+
+                borrowTicket.DateModified = DateTime.Now;
+
+                // Get current user to set as owner
+                var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                if (currentUser != null)
+                {
+                    borrowTicket.OwnerId = currentUser.Id;
+                }
+
+                // Update warehouse asset borrowed quantity
+                if (borrowTicket.WarehouseAssetId.HasValue)
+                {
+                    await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
+                       borrowTicket.WarehouseAssetId.Value,
+                       borrowTicket.Quantity ?? 0);
+                }
+
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+                await _unitOfWork.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Phiếu mượn đã được duyệt với ngày trả mới.";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi cập nhật phiếu mượn: {ex.Message}";
+                return RedirectToAction(nameof(PendingExpiredTickets));
+            }
+        }
+
         #endregion
 
         #region Overdue Asset Management
@@ -298,6 +569,85 @@ namespace FinalProject.Controllers
 
             return View(overdueTickets);
         }
+
+        // POST: WarehouseManager/ForceReturn/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForceReturn(int id, string note)
+        {
+            var borrowTicket = await _unitOfWork.BorrowTickets.GetByIdAsync(id);
+            if (borrowTicket == null)
+            {
+                return NotFound();
+            }
+
+            if (borrowTicket.IsReturned || borrowTicket.ApproveStatus != TicketStatus.Approved)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể thu hồi tài sản đã được duyệt và chưa trả.";
+                return RedirectToAction(nameof(OverdueAssets));
+            }
+
+            try
+            {
+                // Get current user to set as the return receiver
+                var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                if (currentUser == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Create a return ticket for this forced return
+                var returnTicket = new ReturnTicket
+                {
+                    BorrowTicketId = borrowTicket.Id,
+                    ReturnById = borrowTicket.BorrowById, // The borrower is technically returning it, even if forced
+                    OwnerId = currentUser.Id, // The manager is receiving it
+                    Quantity = borrowTicket.Quantity,
+                    ApproveStatus = TicketStatus.Approved, // Auto-approve the return
+                    ReturnRequestDate = DateTime.Now,
+                    ActualReturnDate = DateTime.Now,
+                    Note = $"Thu hồi bắt buộc do quá hạn: {note}",
+                    AssetConditionOnReturn = AssetStatus.GOOD, // Assume good condition
+                    DateCreated = DateTime.Now
+                };
+
+                await _unitOfWork.ReturnTickets.AddAsync(returnTicket);
+
+                // Mark borrow ticket as returned
+                borrowTicket.IsReturned = true;
+                if (!string.IsNullOrEmpty(borrowTicket.Note))
+                {
+                    borrowTicket.Note += $"\n[{DateTime.Now:yyyy-MM-dd HH:mm}] Thu hồi bắt buộc do quá hạn: {note}";
+                }
+                else
+                {
+                    borrowTicket.Note = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Thu hồi bắt buộc do quá hạn: {note}";
+                }
+                borrowTicket.DateModified = DateTime.Now;
+
+                _unitOfWork.BorrowTickets.Update(borrowTicket);
+
+                // Update warehouse asset quantities
+                if (borrowTicket.WarehouseAssetId.HasValue)
+                {
+                    // Revert the borrowed quantity back to available
+                    await _unitOfWork.WarehouseAssets.UpdateBorrowedQuantity(
+                        borrowTicket.WarehouseAssetId.Value,
+                        -borrowTicket.Quantity ?? 0); // Negative to decrease the borrowed count
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Tài sản đã được thu hồi thành công.";
+                return RedirectToAction(nameof(OverdueAssets));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction(nameof(OverdueAssets));
+            }
+        }
+
 
         // POST: WarehouseManager/SendOverdueReminder
         [HttpPost]

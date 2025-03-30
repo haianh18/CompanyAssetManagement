@@ -226,7 +226,7 @@ namespace FinalProject.Repositories
         {
             var currentDate = DateTime.Now;
             return await _dbSet
-                .Where(bt => bt.ReturnDate.HasValue && bt.ReturnDate < currentDate && bt.ReturnTickets.Count == 0)
+                .Where(bt => bt.ReturnDate.HasValue && bt.ReturnDate < currentDate && bt.ReturnTickets.Count == 0 && !bt.IsReturned)
                 .Include(bt => bt.BorrowBy)
                 .Include(bt => bt.Owner)
                 .Include(bt => bt.WarehouseAsset)

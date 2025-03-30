@@ -1,0 +1,155 @@
+﻿@model IEnumerable<FinalProject.Models.BorrowTicket>
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Phiếu mượn chờ duyệt quá hạn";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-calendar-times text-danger"></i> Phiếu mượn chờ duyệt quá hạn</h2>
+            <p>Danh sách các phiếu mượn đang chờ duyệt nhưng đã quá ngày trả dự kiến</p>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-circle"></i> Cần xử lý</h5>
+        </div>
+        <div class="card-body">
+            <p class="alert alert-warning">
+                <i class="fas fa-info-circle"></i> Các phiếu mượn này có ngày trả dự kiến đã qua. Vui lòng xử lý bằng cách:
+                <ul>
+                    <li>Từ chối phiếu mượn do quá hạn</li>
+                    <li>Duyệt phiếu mượn và cập nhật ngày trả mới</li>
+                </ul>
+            </p>
+
+            <div class="table-container">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người mượn</th>
+                            <th>Tài sản</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                            <th>Ngày hẹn trả</th>
+                            <th>Quá hạn (ngày)</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var daysOverdue = (DateTime.Now - item.ReturnDate?.Date)?.Days ?? 0;
+                            
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@(item.BorrowBy?.FullName ?? "N/A")</td>
+                                <td>@(item.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td class="text-danger font-weight-bold">@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td><span class="badge bg-danger">@daysOverdue ngày</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("DetailsBorrowRequest", new { id = item.Id })" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" 
+                                                data-id="@item.Id" data-name="@(item.BorrowBy?.FullName ?? "N/A")" 
+                                                data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")">
+                                            <i class="fas fa-check"></i> Duyệt với ngày mới
+                                        </button>
+                                        <form asp-action="RejectExpiredPendingTicket" method="post" style="display: inline-block;">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger" 
+                                                    onclick="return confirm('Bạn có chắc chắn muốn từ chối phiếu mượn này?');">
+                                                <i class="fas fa-times"></i> Từ chối
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-success text-center" role="alert">
+                        <i class="fas fa-check-circle"></i> Không có phiếu mượn chờ duyệt nào đã quá hạn.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal with New Return Date -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ApproveExpiredPendingTicket" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveModalLabel">Duyệt phiếu mượn với ngày trả mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ticketId" name="id" />
+                    
+                    <div class="alert alert-info">
+                        <div id="ticketInfo"></div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="newReturnDate" class="form-label">Ngày trả mới</label>
+                        <input type="date" id="newReturnDate" name="newReturnDate" class="form-control" required />
+                        <div class="form-text">Chọn ngày trả mới cho phiếu mượn này.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success">Duyệt với ngày mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Set min date for new return date
+            var today = new Date();
+            today.setDate(today.getDate() + 1); // Set minimum to tomorrow
+            var formattedDate = today.toISOString().split('T')[0];
+            $('#newReturnDate').attr('min', formattedDate);
+            
+            // Handle approve modal
+            $('#approveModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var name = button.data('name');
+                var asset = button.data('asset');
+                
+                var modal = $(this);
+                modal.find('#ticketId').val(id);
+                modal.find('#ticketInfo').html(
+                    '<strong>' + name + '</strong> đã yêu cầu mượn <strong>' + asset + '</strong> với ngày trả đã quá hạn. ' +
+                    'Vui lòng chọn ngày trả mới nếu bạn muốn duyệt phiếu mượn này.'
+                );
+                
+                // Set default new return date to 7 days from now
+                var defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 7);
+                var formattedDefaultDate = defaultDate.toISOString().split('T')[0];
+                modal.find('#newReturnDate').val(formattedDefaultDate);
+            });
+	});
+</script>}
