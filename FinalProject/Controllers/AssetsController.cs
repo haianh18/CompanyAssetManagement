@@ -2,6 +2,7 @@
 using FinalProject.Models;
 using FinalProject.Models.ViewModels;
 using FinalProject.Repositories.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FinalProject.Controllers
 {
-    //[Authorize(Roles = "WarehouseManager")]
+    [Authorize(Roles = "WarehouseManager")]
     public class AssetsController : Controller
     {
 

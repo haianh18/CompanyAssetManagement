@@ -61,7 +61,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" class="nav-link">
+                        <form id="logoutFormSider" asp-controller="Account" asp-action="Logout" method="post" class="nav-link">
                             <button type="submit" class="btn btn-link p-0 text-white">
                                 <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
                             </button>
@@ -81,7 +81,7 @@
                         <!-- User Info -->
                         <div class="user-info ml-auto">
                             <span class="user-greeting d-none d-md-inline-block">Xin chào, @User.Identity?.Name</span>
-                            <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <form id="logoutFormUpper" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-secondary ms-2">
                                     <i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline-block">Đăng xuất</span>
                                 </button>

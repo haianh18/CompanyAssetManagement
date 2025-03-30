@@ -22,9 +22,27 @@
                         <a asp-action="Login" asp-controller="Account" class="btn btn-outline-secondary me-2">
                             <i class="fas fa-arrow-left"></i> Đăng nhập lại
                         </a>
-                        <a asp-action="Index" asp-controller="Home" class="btn btn-primary">
-                            <i class="fas fa-home"></i> Trang chủ
-                        </a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Dashboard" asp-controller="Admin" class="btn btn-primary">
+                                    <i class="fas fa-tachometer-alt"></i> Bảng điều khiển
+                                </a>
+                            }
+                            else if (User.IsInRole("WarehouseManager"))
+                            {
+                                <a asp-action="Dashboard" asp-controller="WarehouseManager" class="btn btn-primary">
+                                    <i class="fas fa-tachometer-alt"></i> Bảng điều khiển
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Dashboard" asp-controller="GeneralUser" class="btn btn-primary">
+                                    <i class="fas fa-tachometer-alt"></i> Bảng điều khiển
+                                </a>
+                            }
+                        }
                     </div>
                 </div>
             </div>

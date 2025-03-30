@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace FinalProject.Controllers
 {
-    //[Authorize(Roles = "WarehouseManager")]
+    [Authorize(Roles = "WarehouseManager")]
     public class WarehouseManagerController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

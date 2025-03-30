@@ -194,7 +194,7 @@ namespace FinalProject.Controllers
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            TempData["StatusMessage"] = "Mật khẩu của bạn đã được thay đổi.";
+            TempData["SuccessMessage"] = "Mật khẩu của bạn đã được thay đổi.";
 
             // Redirect based on user role
             if (await _userManager.IsInRoleAsync(user, "ADMIN"))
@@ -258,7 +258,7 @@ namespace FinalProject.Controllers
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            TempData["StatusMessage"] = "Mật khẩu của bạn đã được thiết lập.";
+            TempData["SuccessMessage"] = "Mật khẩu của bạn đã được thiết lập.";
 
             return RedirectToAction(nameof(ChangePassword));
         }

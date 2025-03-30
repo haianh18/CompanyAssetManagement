@@ -4,6 +4,7 @@ using FinalProject.Models;
 using FinalProject.Models.ViewModels.BorrowRequest;
 using FinalProject.Models.ViewModels.ReturnRequest;
 using FinalProject.Repositories.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace FinalProject.Controllers
 {
+    [Authorize(Roles = "WarehouseManager, GeneralUser")]
     public class BorrowRequestController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
