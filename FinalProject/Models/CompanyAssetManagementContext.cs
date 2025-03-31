@@ -23,7 +23,7 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
     public virtual DbSet<WarehouseAsset> WarehouseAssets { get; set; }
     public virtual DbSet<HandoverReturn> HandoverReturn { get; set; }
     public virtual DbSet<ManagerReturnRequest> ManagerReturnRequests { get; set; }
-
+    //public virtual DbSet<Notification> Notifications { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -40,14 +40,27 @@ public partial class CompanyAssetManagementContext : IdentityDbContext<AppUser, 
         modelBuilder.Entity<DisposalTicketAsset>().HasQueryFilter(dta => !dta.IsDeleted);
         modelBuilder.Entity<WarehouseAsset>().HasQueryFilter(wa => !wa.IsDeleted);
 
+        //modelBuilder.Entity<Notification>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id);
+
+        //    entity.HasOne(d => d.User)
+        //        .WithMany()
+        //        .HasForeignKey(d => d.UserId)
+        //        .OnDelete(DeleteBehavior.Cascade);
+
+        //    entity.Property(e => e.Type).HasMaxLength(50);
+        //    entity.Property(e => e.IsRead).HasDefaultValue(false);
+        //});
+
         modelBuilder.Entity<ManagerReturnRequest>(entity =>
         {
             entity.HasKey(e => e.Id);
 
             entity.HasOne(d => d.BorrowTicket)
-                .WithMany()
-                .HasForeignKey(d => d.BorrowTicketId)
-                .OnDelete(DeleteBehavior.NoAction);
+       .WithOne()
+       .HasForeignKey<ManagerReturnRequest>(d => d.BorrowTicketId)
+       .OnDelete(DeleteBehavior.NoAction);
 
             entity.HasOne(d => d.RequestedBy)
                 .WithMany()

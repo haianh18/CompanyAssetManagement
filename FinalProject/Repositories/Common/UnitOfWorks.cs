@@ -30,6 +30,7 @@ namespace FinalProject.Repositories.Common
         private IDisposalTicketAssetRepository _disposalTicketAssetRepository;
         private IUserRepository _userRepository;
         private IRoleRepository _roleRepository;
+        private INotificationRepository _notifications;
 
         // Dictionary to map Type to Repository
         private readonly Dictionary<Type, object> _repositories;
@@ -44,7 +45,7 @@ namespace FinalProject.Repositories.Common
             _roleManager = roleManager;
             _repositories = new Dictionary<Type, object>();
         }
-
+        //public INotificationRepository Notifications => _notifications ??= new NotificationRepository(_context);
         public IAssetRepository Assets => _assetRepository ??= new AssetRepository(_context);
         public IManagerReturnRequestRepository ManagerReturnRequests => _managerReturnRequestRepository ??= new ManagerReturnRequestRepository(_context);
 

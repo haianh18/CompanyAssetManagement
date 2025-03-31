@@ -549,6 +549,14 @@ namespace FinalProject.Controllers
                     return RedirectToAction(nameof(OverdueAssets));
                 }
 
+                // Check if there's already a pending manager return request for this borrow ticket
+                var pendingManagerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetManagerReturnRequestsByBorrowTicket(id);
+                if (pendingManagerReturnRequests != null)
+                {
+                    TempData["ErrorMessage"] = "Đã có yêu cầu trả sớm đang chờ duyệt cho phiếu mượn này.";
+                    return RedirectToAction(nameof(OverdueAssets));
+                }
+
                 var model = new ManagerReturnRequestViewModel
                 {
                     BorrowTicketId = borrowTicket.Id,
@@ -591,6 +599,14 @@ namespace FinalProject.Controllers
             if (pendingReturnTickets.Any(rt => rt.ApproveStatus == TicketStatus.Pending))
             {
                 TempData["ErrorMessage"] = "Đã có yêu cầu trả đang chờ duyệt cho phiếu mượn này. Không thể tạo yêu cầu trả sớm mới.";
+                return RedirectToAction(nameof(OverdueAssets));
+            }
+
+            // Check if there's already a pending manager return request for this borrow ticket
+            var pendingManagerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetManagerReturnRequestsByBorrowTicket(model.BorrowTicketId);
+            if (pendingManagerReturnRequests != null)
+            {
+                TempData["ErrorMessage"] = "Đã có yêu cầu trả sớm đang chờ duyệt cho phiếu mượn này.";
                 return RedirectToAction(nameof(OverdueAssets));
             }
 

@@ -9,6 +9,8 @@ namespace FinalProject.Repositories.Interfaces
         Task<IEnumerable<ManagerReturnRequest>> GetRequestsByManager(int managerId);
         Task<IEnumerable<ManagerReturnRequest>> GetAllActiveRequests();
         Task<ManagerReturnRequest> GetRequestWithDetails(int requestId);
+
+        Task<ManagerReturnRequest> GetManagerReturnRequestsByBorrowTicket(int borrowTicketId);
         Task MarkAsCompleted(int requestId, int returnTicketId);
     }
 }

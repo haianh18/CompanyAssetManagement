@@ -51,7 +51,7 @@ public class DataSeeder : IHostedService
                 await userManager.CreateAsync(generalUserSeed, "User@123");
                 await userManager.AddToRoleAsync(generalUserSeed, "GeneralUser");
 
-                for (int i = 1; i <= 3; i++)
+                for (int i = 1; i <= 10; i++)
                 {
                     var userSeed = new AppUser { UserName = $"user{i}", Email = $"user{i}@example.com", FullName = $"User {i}", RoleId = 3 };
                     await userManager.CreateAsync(userSeed, $"User{i}@123");
@@ -66,6 +66,13 @@ public class DataSeeder : IHostedService
             var user1 = await userManager.FindByNameAsync("user1");
             var user2 = await userManager.FindByNameAsync("user2");
             var user3 = await userManager.FindByNameAsync("user3");
+            var user4 = await userManager.FindByNameAsync("user4");
+            var user5 = await userManager.FindByNameAsync("user5");
+            var user6 = await userManager.FindByNameAsync("user6");
+            var user7 = await userManager.FindByNameAsync("user7");
+            var user8 = await userManager.FindByNameAsync("user8");
+            var user9 = await userManager.FindByNameAsync("user9");
+            var user10 = await userManager.FindByNameAsync("user10");
 
             if (adminUser == null || warehouseManagerUser == null || generalUser == null || user1 == null || user2 == null || user3 == null)
             {
@@ -79,6 +86,13 @@ public class DataSeeder : IHostedService
             var user1Id = user1.Id;
             var user2Id = user2.Id;
             var user3Id = user3.Id;
+            var user4Id = user4.Id;
+            var user5Id = user5.Id;
+            var user6Id = user6.Id;
+            var user7Id = user7.Id;
+            var user8Id = user8.Id;
+            var user9Id = user9.Id;
+            var user10Id = user10.Id;
 
             // Seed asset categories
             if (!await context.AssetCategories.AnyAsync(cancellationToken))
@@ -338,7 +352,7 @@ public class DataSeeder : IHostedService
                     new BorrowTicket
                     {
                         WarehouseAssetId = 5,
-                        BorrowById = adminUserId,
+                        BorrowById = user3Id,
                         OwnerId = warehouseManagerUserId,
                         Quantity = 10,
                         ReturnDate = DateTime.Now.AddDays(30),
@@ -380,9 +394,9 @@ public class DataSeeder : IHostedService
             if (!await context.DisposalTickets.AnyAsync(cancellationToken))
             {
                 context.DisposalTickets.AddRange(
-                    new DisposalTicket { DisposalById = adminUserId, OwnerId = adminUserId, Reason = "Broken" },
+                    new DisposalTicket { DisposalById = warehouseManagerUserId, OwnerId = user3Id, Reason = "Broken" },
                     new DisposalTicket { DisposalById = warehouseManagerUserId, OwnerId = warehouseManagerUserId, Reason = "Outdated" },
-                    new DisposalTicket { DisposalById = generalUserId, OwnerId = generalUserId, Reason = "Damaged" },
+                    new DisposalTicket { DisposalById = warehouseManagerUserId, OwnerId = generalUserId, Reason = "Damaged" },
                     new DisposalTicket { DisposalById = user1Id, OwnerId = user1Id, Reason = "Expired" },
                     new DisposalTicket { DisposalById = user2Id, OwnerId = user2Id, Reason = "Lost" }
                 );
@@ -393,11 +407,11 @@ public class DataSeeder : IHostedService
             if (!await context.HandoverTickets.AnyAsync(cancellationToken))
             {
                 context.HandoverTickets.AddRange(
-                    new HandoverTicket { WarehouseAssetId = 1, HandoverById = adminUserId, HandoverToId = warehouseManagerUserId, Quantity = 1 },
+                    new HandoverTicket { WarehouseAssetId = 1, HandoverById = warehouseManagerUserId, HandoverToId = user3Id, Quantity = 1 },
                     new HandoverTicket { WarehouseAssetId = 2, HandoverById = warehouseManagerUserId, HandoverToId = generalUserId, Quantity = 2 },
-                    new HandoverTicket { WarehouseAssetId = 3, HandoverById = generalUserId, HandoverToId = user1Id, Quantity = 3 },
-                    new HandoverTicket { WarehouseAssetId = 4, HandoverById = user1Id, HandoverToId = user2Id, Quantity = 4 },
-                    new HandoverTicket { WarehouseAssetId = 5, HandoverById = user2Id, HandoverToId = adminUserId, Quantity = 5 }
+                    new HandoverTicket { WarehouseAssetId = 3, HandoverById = warehouseManagerUserId, HandoverToId = user1Id, Quantity = 3 },
+                    new HandoverTicket { WarehouseAssetId = 4, HandoverById = warehouseManagerUserId, HandoverToId = user2Id, Quantity = 4 },
+                    new HandoverTicket { WarehouseAssetId = 5, HandoverById = warehouseManagerUserId, HandoverToId = user4Id, Quantity = 5 }
                 );
                 await context.SaveChangesAsync(cancellationToken);
             }
@@ -406,11 +420,11 @@ public class DataSeeder : IHostedService
             if (!await context.ReturnTickets.AnyAsync(cancellationToken))
             {
                 context.ReturnTickets.AddRange(
-                    new ReturnTicket { BorrowTicketId = borrowTicket1.Id, OwnerId = adminUserId, Quantity = 1 },
-                    new ReturnTicket { BorrowTicketId = borrowTicket2.Id, OwnerId = warehouseManagerUserId, Quantity = 2 },
-                    new ReturnTicket { BorrowTicketId = borrowTicket3.Id, OwnerId = generalUserId, Quantity = 3 },
-                    new ReturnTicket { BorrowTicketId = borrowTicket4.Id, OwnerId = user1Id, Quantity = 4 },
-                    new ReturnTicket { BorrowTicketId = borrowTicket5.Id, OwnerId = user2Id, Quantity = 5 }
+                    new ReturnTicket { BorrowTicketId = borrowTicket1.Id, OwnerId = generalUserId, Quantity = 1 },
+                    new ReturnTicket { BorrowTicketId = borrowTicket2.Id, OwnerId = user2Id, Quantity = 2 },
+                    new ReturnTicket { BorrowTicketId = borrowTicket3.Id, OwnerId = user1Id, Quantity = 3 },
+                    new ReturnTicket { BorrowTicketId = borrowTicket4.Id, OwnerId = generalUserId, Quantity = 4 },
+                    new ReturnTicket { BorrowTicketId = borrowTicket5.Id, OwnerId = user3Id, Quantity = 5 }
                 );
                 await context.SaveChangesAsync(cancellationToken);
             }

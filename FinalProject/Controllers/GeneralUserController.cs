@@ -56,7 +56,8 @@ namespace FinalProject.Controllers
 
             // Get manager-initiated return requests
             var managerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetPendingRequestsForUser(currentUser.Id);
-            var pendingManagerReturns = managerReturnRequests.Count();
+
+            var pendingManagerReturns = managerReturnRequests.Count(r => r.Status == TicketStatus.Pending);
 
             // Recent borrow requests
             var recentBorrows = borrowRequests
@@ -421,6 +422,7 @@ namespace FinalProject.Controllers
                 IsEarlyReturn = DateTime.Now < borrowTicket.ReturnDate
             };
 
+
             return View(model);
         }
 
@@ -531,9 +533,18 @@ namespace FinalProject.Controllers
                 IsEarlyReturn = DateTime.Now < borrowTicket.ReturnDate,
                 DateCreated = DateTime.Now
             };
-
             await _unitOfWork.ReturnTickets.AddAsync(returnTicket);
             await _unitOfWork.SaveChangesAsync();
+
+            var managerReturnRequest = await _unitOfWork.ManagerReturnRequests.GetManagerReturnRequestsByBorrowTicket(borrowTicketId);
+            if (managerReturnRequest != null)
+            {
+                managerReturnRequest.Status = TicketStatus.Approved;
+                managerReturnRequest.CompletionDate = DateTime.Now;
+                managerReturnRequest.RelatedReturnTicketId = returnTicket.Id;
+                _unitOfWork.ManagerReturnRequests.Update(managerReturnRequest);
+                await _unitOfWork.SaveChangesAsync();
+            }
             return returnTicket;
         }
 

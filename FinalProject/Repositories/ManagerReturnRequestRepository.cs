@@ -25,6 +25,18 @@ namespace FinalProject.Repositories
                 .ToListAsync();
         }
 
+        public async Task<ManagerReturnRequest> GetManagerReturnRequestsByBorrowTicket(int borrowTicketId)
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(r => r.BorrowTicket)
+                    .ThenInclude(b => b.BorrowBy)
+                .Include(r => r.BorrowTicket)
+                    .ThenInclude(b => b.WarehouseAsset)
+                        .ThenInclude(w => w.Asset)
+                .Include(r => r.RequestedBy)
+                .FirstOrDefaultAsync(r => r.BorrowTicketId == borrowTicketId);
+        }
+
         public override async Task<ManagerReturnRequest> GetByIdAsync(int id)
         {
             return await _dbSet.IgnoreQueryFilters()
