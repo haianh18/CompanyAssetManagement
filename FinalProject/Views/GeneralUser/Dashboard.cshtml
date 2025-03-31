@@ -47,6 +47,24 @@
                 </div>
             </div>
         </div>
+        <!-- Manager Return Request Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Yêu cầu trả từ quản lý
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.PendingManagerReturns</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-arrow-circle-left fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Assigned Assets Card -->
         <div class="col-xl-3 col-md-6 mb-4">
@@ -89,6 +107,7 @@
 
     <!-- Content Row -->
     <div class="row">
+
         <!-- Borrow Request Status Chart -->
         <div class="col-xl-6 col-lg-7">
             <div class="card shadow mb-4">
@@ -157,7 +176,7 @@
                 </div>
             </div>
         </div>
-    </div>
+ 
 
     <!-- Action Buttons Row -->
     <div class="row">
@@ -221,9 +240,30 @@
                 </div>
             </a>
         </div>
+        @if (ViewBag.PendingManagerReturns > 0)
+        {
+            <div class="row mt-4">
+                <div class="col-xl-12 col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-danger">Yêu cầu trả tài sản từ quản lý</h6>
+                            <a href="@Url.Action("ManagerReturnRequests", "GeneralUser")" class="btn btn-sm btn-danger">
+                                Xem tất cả
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Quản lý kho yêu cầu bạn trả lại tài sản đã mượn. Vui lòng xử lý các yêu cầu này càng sớm càng tốt.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
-</div>
 
+ </div>
+ </div>
 @functions {
     public string GetStatusClass(FinalProject.Enums.TicketStatus status, bool isReturned)
     {

@@ -25,6 +25,8 @@ namespace FinalProject.Controllers
         }
 
         // GET: GeneralUser/Dashboard
+        // Trong GeneralUserController.cs, thêm thông tin về phiếu trả do quản lý tạo vào phương thức Dashboard
+
         public async Task<IActionResult> Dashboard()
         {
             var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
@@ -52,6 +54,10 @@ namespace FinalProject.Controllers
             var handoverTickets = await _unitOfWork.HandoverTickets.GetHandoverTicketsByHandoverTo(currentUser.Id);
             var activeHandovers = handoverTickets.Count(h => h.IsActive);
 
+            // Get manager-initiated return requests
+            var managerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetPendingRequestsForUser(currentUser.Id);
+            var pendingManagerReturns = managerReturnRequests.Count();
+
             // Recent borrow requests
             var recentBorrows = borrowRequests
                 .OrderByDescending(b => b.DateCreated)
@@ -66,6 +72,7 @@ namespace FinalProject.Controllers
             ViewBag.OverdueRequests = overdueRequests;
             ViewBag.ActiveHandovers = activeHandovers;
             ViewBag.RecentBorrows = recentBorrows;
+            ViewBag.PendingManagerReturns = pendingManagerReturns;
 
             return View("~/Views/GeneralUser/Dashboard.cshtml");
         }
@@ -530,6 +537,82 @@ namespace FinalProject.Controllers
             return returnTicket;
         }
 
+        #region ManagerReturnRequest
+
+        // GET: GeneralUser/ManagerReturnRequests
+        public async Task<IActionResult> ManagerReturnRequests()
+        {
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Lấy danh sách yêu cầu trả từ quản lý
+            var managerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetPendingRequestsForUser(currentUser.Id);
+
+            return View(managerReturnRequests);
+        }
+
+        // GET: GeneralUser/ManagerReturnRequestDetails/5
+        public async Task<IActionResult> ManagerReturnRequestDetails(int id)
+        {
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var request = await _unitOfWork.ManagerReturnRequests.GetRequestWithDetails(id);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra nếu yêu cầu này thuộc về người dùng hiện tại
+            if (request.BorrowTicket.BorrowById != currentUser.Id)
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xem thông tin này.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            return View(request);
+        }
+
+        // GET: GeneralUser/ProcessManagerReturn/5
+        public async Task<IActionResult> ProcessManagerReturn(int id)
+        {
+            var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var request = await _unitOfWork.ManagerReturnRequests.GetRequestWithDetails(id);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra nếu yêu cầu này thuộc về người dùng hiện tại
+            if (request.BorrowTicket.BorrowById != currentUser.Id)
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xử lý yêu cầu này.";
+                return RedirectToAction(nameof(ManagerReturnRequests));
+            }
+
+            // Kiểm tra nếu phiếu mượn đã được trả
+            if (request.BorrowTicket.IsReturned)
+            {
+                TempData["ErrorMessage"] = "Phiếu mượn này đã được trả.";
+                return RedirectToAction(nameof(ManagerReturnRequests));
+            }
+
+            // Chuyển hướng đến trang trả tài sản với ID phiếu mượn
+            return RedirectToAction(nameof(ReturnAsset), new { id = request.BorrowTicketId });
+        }
+
+        #endregion
         // GET: GeneralUser/MyAssignedAssets
         public async Task<IActionResult> MyAssignedAssets()
         {

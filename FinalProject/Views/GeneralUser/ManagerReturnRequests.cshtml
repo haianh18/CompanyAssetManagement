@@ -1,0 +1,95 @@
+﻿@model IEnumerable<FinalProject.Models.ManagerReturnRequest>
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Yêu cầu trả tài sản từ quản lý";
+    Layout = "_GeneralUserLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-arrow-circle-left text-danger"></i> Yêu cầu trả tài sản từ quản lý</h2>
+            <p>Những yêu cầu trả tài sản này được tạo bởi quản lý kho. Vui lòng xử lý càng sớm càng tốt.</p>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <partial name="_NotificationPartial" />
+
+    @if (Model.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> <strong>Lưu ý:</strong> Quản lý kho yêu cầu bạn trả lại những tài sản dưới đây. Vui lòng trả lại tài sản đúng thời hạn để tránh ảnh hưởng đến quyền mượn tài sản của bạn trong tương lai.
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách yêu cầu trả tài sản</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tài sản</th>
+                                <th>Người yêu cầu</th>
+                                <th>Lý do</th>
+                                <th>Ngày yêu cầu</th>
+                                <th>Thời hạn trả</th>
+                                <th>Còn lại</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var daysLeft = (item.DueDate - DateTime.Now).Days;
+                                var isUrgent = daysLeft <= 3;
+
+                                <tr class="@(isUrgent ? "table-danger" : "")">
+                                    <td>@item.Id</td>
+                                    <td>@(item.BorrowTicket?.WarehouseAsset?.Asset?.Name ?? "N/A")</td>
+                                    <td>@(item.RequestedBy?.FullName ?? "N/A")</td>
+                                    <td>@item.Reason</td>
+                                    <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@item.DueDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @if (daysLeft < 0)
+                                        {
+                                            <span class="badge bg-danger">Quá hạn @Math.Abs(daysLeft) ngày</span>
+                                        }
+                                        else if (daysLeft == 0)
+                                        {
+                                            <span class="badge bg-danger">Hôm nay</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge @(isUrgent ? "bg-danger" : "bg-warning")">@daysLeft ngày</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="ManagerReturnRequestDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i> Chi tiết
+                                            </a>
+                                            <a asp-action="ProcessManagerReturn" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                                                <i class="fas fa-undo-alt"></i> Trả tài sản
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> Không có yêu cầu trả tài sản nào từ quản lý.
+        </div>
+    }
+</div>

@@ -34,6 +34,14 @@ namespace FinalProject.Controllers
             var totalGoodAssets = (await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity()).Sum(wa => wa.GoodQuantity);
             var totalAssets = totalFixingAssets + totalGoodAssets + totalBrokenAssets;
 
+            // Get pending borrow requests
+            var pendingBorrowRequests = (await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn())
+                .Count(b => b.ApproveStatus == TicketStatus.Pending);
+
+            // Get manager-initiated return requests count
+            var managerReturnRequests = await _unitOfWork.ManagerReturnRequests.GetAllActiveRequests();
+            var managerReturnCount = managerReturnRequests.Count();
+
             var viewModel = new WarehouseManagerDashboardViewModel
             {
                 TotalAssets = totalAssets.Value,
@@ -41,10 +49,11 @@ namespace FinalProject.Controllers
                 TotalDepartments = (await _unitOfWork.Departments.GetAllAsync()).Count(),
                 TotalWarehouses = (await _unitOfWork.Warehouses.GetAllAsync()).Count(),
                 TotalDisposedAssets = totalDisposedAssets.Value,
-                TotalPendingBorrowRequests = (await _unitOfWork.BorrowTickets.GetBorrowTicketsWithoutReturn()).Count(),
+                TotalPendingBorrowRequests = pendingBorrowRequests,
                 ActiveAssets = totalGoodAssets.Value,
                 BrokenAssets = totalBrokenAssets.Value,
-                FixingAssets = totalFixingAssets.Value
+                FixingAssets = totalFixingAssets.Value,
+                ManagerReturnRequestsCount = managerReturnCount
             };
 
             return View(viewModel);

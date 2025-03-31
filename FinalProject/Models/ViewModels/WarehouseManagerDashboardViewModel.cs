@@ -11,5 +11,6 @@
         public int ActiveAssets { get; set; }
         public int BrokenAssets { get; set; }
         public int FixingAssets { get; set; }
+        public int ManagerReturnRequestsCount { get; set; }
     }
 }
