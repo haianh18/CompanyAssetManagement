@@ -662,18 +662,6 @@ namespace FinalProject.Controllers
             ViewBag.AvailableWarehouses = new SelectList(availableWarehouses, "Id", "Name");
         }
 
-        // Helper method to check if asset can be deleted
-        private async Task<bool> CanDeleteAsset(int assetId)
-        {
-            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetWarehouseAssetsByAsset(assetId);
-
-            // Check if any asset is currently borrowed or handed over
-            var isBorrowed = warehouseAssets.Any(wa => (wa.BorrowedGoodQuantity ?? 0) > 0);
-            var isHandedOver = warehouseAssets.Any(wa => (wa.HandedOverGoodQuantity ?? 0) > 0);
-
-            return !isBorrowed && !isHandedOver;
-        }
-
         // Helper method to apply sorting
         private IQueryable<WarehouseAsset> ApplySorting(IQueryable<WarehouseAsset> query, string sortOrder)
         {
@@ -686,18 +674,6 @@ namespace FinalProject.Controllers
             };
         }
 
-        // Helper method to get status name for display
-        private string GetStatusName(AssetStatus status)
-        {
-            return status switch
-            {
-                AssetStatus.GOOD => "Tốt",
-                AssetStatus.BROKEN => "Hỏng",
-                AssetStatus.FIXING => "Đang sửa",
-                AssetStatus.DISPOSED => "Đã thanh lý",
-                _ => status.ToString()
-            };
-        }
 
         // Helper method to prepare asset categories for view
         private async Task PrepareAssetCategoriesForView()

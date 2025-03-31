@@ -17,6 +17,31 @@ namespace FinalProject.Repositories
         {
         }
 
+        public override async Task<IEnumerable<Department>> GetAllAsync()
+        {
+            return await _dbSet
+                .Where(d => !d.IsDeleted)
+                .ToListAsync();
+        }
+
+        public override async Task<Department> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
+        }
+
+        public async Task<Department> GetDepartmentByName(string name)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(d => d.Name == name && !d.IsDeleted);
+        }
+
+        public override async Task<IEnumerable<Department>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Department>> GetActiveDepartments()
         {
             return await GetAllAsync();

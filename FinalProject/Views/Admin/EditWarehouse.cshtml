@@ -1,0 +1,58 @@
+﻿@model FinalProject.Models.Warehouse
+@{
+    ViewData["Title"] = "Chỉnh sửa kho";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-edit"></i> Chỉnh sửa kho</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin kho: @Model.Name</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditWarehouse" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Tên kho</label>
+                            <input asp-for="Name" class="form-control" required readonly="@(Model.Name == "Unassigned Storage" || Model.Name == "Main Warehouse")" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            @if (Model.Name == "Unassigned Storage" || Model.Name == "Main Warehouse")
+                            {
+                                <small class="form-text text-muted">Đây là kho hệ thống, không thể thay đổi tên.</small>
+                            }
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label">Địa chỉ</label>
+                            <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mt-4 text-end">
+                            <a asp-action="Warehouses" class="btn btn-secondary me-2">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

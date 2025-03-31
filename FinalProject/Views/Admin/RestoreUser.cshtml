@@ -1,0 +1,78 @@
+﻿@model AppUser
+@{
+    ViewData["Title"] = "Khôi phục người dùng";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-user-check"></i> Khôi phục người dùng</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-undo"></i> Xác nhận khôi phục</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Bạn có chắc chắn muốn khôi phục người dùng này không?</p>
+                    <div class="alert alert-info">
+                        <p><strong>Lưu ý:</strong> Hành động này sẽ kích hoạt lại tài khoản người dùng. Người dùng sẽ có thể đăng nhập lại vào hệ thống sau khi được khôi phục.</p>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th style="width: 30%">Tên đăng nhập</th>
+                                        <td>@Model.UserName</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Họ tên</th>
+                                        <td>@Model.FullName</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email</th>
+                                        <td>@(Model.Email ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Vai trò</th>
+                                        <td>@(Model.Role?.Name ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Phòng ban</th>
+                                        <td>@(Model.Department?.Name ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày tạo</th>
+                                        <td>@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày vô hiệu hóa</th>
+                                        <td>@(Model.DeletedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <form asp-action="RestoreUser" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <a asp-action="Users" asp-route-showInactive="true" class="btn btn-secondary me-2">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-trash-restore"></i> Xác nhận khôi phục
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

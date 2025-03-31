@@ -1,6 +1,7 @@
 ﻿using FinalProject.Enums;
 using FinalProject.Models;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public partial class AppUser : IdentityUser<int>
 {
@@ -14,6 +15,7 @@ public partial class AppUser : IdentityUser<int>
     public DateTime? DateCreated { get; set; }
     public DateTime? DateModified { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedDate { get; set; }
     public virtual ICollection<BorrowTicket> BorrowTicketBorrowBies { get; set; } = new List<BorrowTicket>();
     public virtual ICollection<BorrowTicket> BorrowTicketOwners { get; set; } = new List<BorrowTicket>();
     public virtual Department? Department { get; set; }
@@ -24,5 +26,7 @@ public partial class AppUser : IdentityUser<int>
     public virtual ICollection<HandoverTicket> HandoverTicketOwners { get; set; } = new List<HandoverTicket>();
     public virtual ICollection<ReturnTicket> ReturnTicketOwners { get; set; } = new List<ReturnTicket>();
     public virtual ICollection<ReturnTicket> ReturnTicketReturnBies { get; set; } = new List<ReturnTicket>();
+
+    [ForeignKey("RoleId")]
     public virtual AppRole Role { get; set; } = null!;
 }

@@ -1,0 +1,70 @@
+﻿@model FinalProject.Models.Department
+@{
+    ViewData["Title"] = "Xác nhận xóa phòng ban";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-trash"></i> Xác nhận xóa phòng ban</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Cảnh báo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Bạn có chắc chắn muốn xóa phòng ban này không?</p>
+                    <div class="alert alert-warning">
+                        <p><strong>Lưu ý:</strong> Hành động này sẽ vô hiệu hóa phòng ban. Tất cả người dùng trong phòng ban này sẽ được chuyển đến phòng ban "Không xác định".</p>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th style="width: 30%">ID</th>
+                                        <td>@Model.Id</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tên phòng ban</th>
+                                        <td>@Model.Name</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email</th>
+                                        <td>@(Model.Email ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số điện thoại</th>
+                                        <td>@(Model.Phone ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày tạo</th>
+                                        <td>@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <form asp-action="DeleteDepartment" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <a asp-action="Departments" class="btn btn-secondary me-2">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

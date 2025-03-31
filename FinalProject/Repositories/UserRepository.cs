@@ -30,12 +30,29 @@ namespace FinalProject.Repositories
                 .ToListAsync();
         }
 
-        public async Task<AppUser> GetUserByIdAsync(int id)
+        public async Task<IEnumerable<AppUser>> GetAllIncludingDeleted()
         {
-            return await _userManager.Users
+            return await _userManager.Users.IgnoreQueryFilters()
                 .Include(u => u.Department)
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .ToListAsync();
+        }
+
+        public async Task<AppUser> GetUserByIdAsync(int id)
+        {
+            try
+            {
+                return await _userManager.Users.IgnoreQueryFilters()
+                    .Include(u => u.Department)
+                    .Include(u => u.Role)
+                    .FirstOrDefaultAsync(u => u.Id == id);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"Error retrieving user: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<AppUser> GetUserByUserNameAsync(string userName)
@@ -89,9 +106,34 @@ namespace FinalProject.Repositories
 
         public async Task<bool> UpdateUserAsync(AppUser user)
         {
-            user.DateModified = DateTime.Now;
-            var result = await _userManager.UpdateAsync(user);
-            return result.Succeeded;
+            try
+            {
+                // Đánh dấu entity này đã được sửa đổi
+                _context.Entry(user).State = EntityState.Modified;
+
+                // Cập nhật người dùng
+                var result = await _userManager.UpdateAsync(user);
+
+                // Lưu thay đổi trực tiếp nếu cần
+                if (result.Succeeded)
+                {
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                // Log lỗi nếu có
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"Error updating user: {error.Description}");
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in UpdateUserAsync: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword)

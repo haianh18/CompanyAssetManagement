@@ -1,6 +1,8 @@
 ﻿public interface IUserRepository
 {
     Task<IEnumerable<AppUser>> GetAllUsersAsync();
+
+    Task<IEnumerable<AppUser>> GetAllIncludingDeleted();
     Task<AppUser> GetUserByIdAsync(int id);
     Task<AppUser> GetUserByUserNameAsync(string userName);
     Task<AppUser> GetUserByEmailAsync(string email);

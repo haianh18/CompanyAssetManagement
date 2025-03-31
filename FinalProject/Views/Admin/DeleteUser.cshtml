@@ -1,0 +1,74 @@
+﻿@model AppUser
+@{
+    ViewData["Title"] = "Xác nhận xóa người dùng";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-user-times"></i> Xác nhận xóa người dùng</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Cảnh báo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Bạn có chắc chắn muốn xóa người dùng này không?</p>
+                    <div class="alert alert-warning">
+                        <p><strong>Lưu ý:</strong> Hành động này sẽ vô hiệu hóa tài khoản người dùng. Người dùng sẽ không thể đăng nhập sau khi bị xóa. Dữ liệu liên quan đến người dùng này vẫn được giữ lại trong hệ thống.</p>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th style="width: 30%">Tên đăng nhập</th>
+                                        <td>@Model.UserName</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Họ tên</th>
+                                        <td>@Model.FullName</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email</th>
+                                        <td>@(Model.Email ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Vai trò</th>
+                                        <td>@(Model.Role?.Name ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Phòng ban</th>
+                                        <td>@(Model.Department?.Name ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ngày tạo</th>
+                                        <td>@(Model.DateCreated?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <form asp-action="DeleteUser" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <a asp-action="Users" class="btn btn-secondary me-2">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

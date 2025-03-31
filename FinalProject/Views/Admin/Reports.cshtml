@@ -1,0 +1,328 @@
+﻿@model FinalProject.Models.ViewModels.AdminReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-line"></i> Báo cáo thống kê</h2>
+            <p class="text-muted">Tổng quan về dữ liệu hệ thống</p>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card info d-flex align-items-center">
+                <div class="card-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div>
+                    <div class="card-number">@Model.TotalAssets</div>
+                    <div class="card-title">Tổng tài sản</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card success d-flex align-items-center">
+                <div class="card-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div>
+                    <div class="card-number">@Model.TotalAssetsValue.ToString("N0") ₫</div>
+                    <div class="card-title">Tổng giá trị</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card primary d-flex align-items-center">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <div class="card-number">@Model.ActiveAssets</div>
+                    <div class="card-title">Tài sản đang dùng</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card warning d-flex align-items-center">
+                <div class="card-icon">
+                    <i class="fas fa-hand-holding"></i>
+                </div>
+                <div>
+                    <div class="card-number">@Model.BorrowedAssets</div>
+                    <div class="card-title">Tài sản đang mượn</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <!-- Assets by Category -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-th-list"></i> Tài sản theo danh mục
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="assetsByCategoryChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets by Warehouse -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-warehouse"></i> Tài sản theo kho
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="assetsByWarehouseChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Users by Role -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users-cog"></i> Người dùng theo vai trò
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="usersByRoleChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Borrow Tickets by Month -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list"></i> Phiếu mượn theo tháng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="borrowTicketsByMonthChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Stats -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-alt"></i> Chi tiết thống kê
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2 mb-3">Tài sản theo danh mục</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Danh mục</th>
+                                            <th class="text-end">Số lượng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.AssetsByCategory != null && Model.AssetsByCategory.Any())
+                                        {
+                                            foreach (var category in Model.AssetsByCategory)
+                                            {
+                                                <tr>
+                                                    <td>@category.Key</td>
+                                                    <td class="text-end">@category.Value</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center">Không có dữ liệu</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2 mb-3">Tài sản theo kho</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Kho</th>
+                                            <th class="text-end">Số lượng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.AssetsByWarehouse != null && Model.AssetsByWarehouse.Any())
+                                        {
+                                            foreach (var warehouse in Model.AssetsByWarehouse)
+                                            {
+                                                <tr>
+                                                    <td>@warehouse.Key</td>
+                                                    <td class="text-end">@warehouse.Value</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center">Không có dữ liệu</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Assets by Category Chart
+            const categoryCtx = document.getElementById('assetsByCategoryChart').getContext('2d');
+            const categoryData = @Html.Raw(Json.Serialize(Model.AssetsByCategory));
+
+            new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                            '#6f42c1', '#fd7e14', '#20c9a6', '#5a5c69', '#858796'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Assets by Warehouse Chart
+            const warehouseCtx = document.getElementById('assetsByWarehouseChart').getContext('2d');
+            const warehouseData = @Html.Raw(Json.Serialize(Model.AssetsByWarehouse));
+
+            new Chart(warehouseCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(warehouseData),
+                    datasets: [{
+                        label: 'Số lượng tài sản',
+                        data: Object.values(warehouseData),
+                        backgroundColor: '#36b9cc',
+                        borderColor: '#2c9faf',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Users by Role Chart
+            const roleCtx = document.getElementById('usersByRoleChart').getContext('2d');
+            const roleData = @Html.Raw(Json.Serialize(Model.UsersByRole));
+
+            new Chart(roleCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(roleData),
+                    datasets: [{
+                        data: Object.values(roleData),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#f6c23e', '#e74a3b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Borrow Tickets by Month Chart
+            const borrowCtx = document.getElementById('borrowTicketsByMonthChart').getContext('2d');
+            const borrowData = @Html.Raw(Json.Serialize(Model.BorrowTicketsByMonth));
+
+            new Chart(borrowCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(borrowData),
+                    datasets: [{
+                        label: 'Số phiếu mượn',
+                        data: Object.values(borrowData),
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        borderColor: '#4e73df',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4e73df',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

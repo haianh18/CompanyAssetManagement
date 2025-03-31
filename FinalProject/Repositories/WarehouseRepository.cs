@@ -19,6 +19,25 @@ namespace FinalProject.Repositories
             return await GetAllAsync();
         }
 
+        public override async Task<IEnumerable<Warehouse>> GetAllAsync()
+        {
+            return await _dbSet
+                .Where(w => !w.IsDeleted)
+                .ToListAsync();
+        }
+
+        public override async Task<Warehouse> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(w => w.Id == id && !w.IsDeleted);
+        }
+
+        public override async Task<IEnumerable<Warehouse>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .ToListAsync();
+        }
+
         public async Task<Warehouse> GetWarehouseWithAssets(int warehouseId)
         {
             return await _dbSet
