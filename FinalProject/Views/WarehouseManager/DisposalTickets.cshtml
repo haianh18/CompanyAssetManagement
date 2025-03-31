@@ -1,0 +1,178 @@
+﻿@model IEnumerable<FinalProject.Models.DisposalTicket>
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Quản lý thanh lý tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-trash-alt"></i> Quản lý thanh lý tài sản</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="CreateDisposalTicket" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Tạo phiếu thanh lý mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-primary">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-card-content">
+                    <h5 class="stat-card-title">@Model.Count()</h5>
+                    <p class="stat-card-text">Tổng số phiếu thanh lý</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-danger">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-card-content">
+                    <h5 class="stat-card-title">@Model.SelectMany(d => d.DisposalTicketAssets).Sum(a => a.Quantity ?? 0)</h5>
+                    <p class="stat-card-text">Tổng số tài sản đã thanh lý</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-success">
+                    <i class="fas fa-money-bill-alt"></i>
+                </div>
+                <div class="stat-card-content">
+                    <h5 class="stat-card-title">@Model.SelectMany(d => d.DisposalTicketAssets).Sum(a => a.DisposedPrice ?? 0).ToString("N0") VNĐ</h5>
+                    <p class="stat-card-text">Tổng giá trị thu hồi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-info">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-card-content">
+                    <h5 class="stat-card-title">@Model.Count(d => d.DateCreated?.Month == DateTime.Now.Month && d.DateCreated?.Year == DateTime.Now.Year)</h5>
+                    <p class="stat-card-text">Phiếu tạo trong tháng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Lọc dữ liệu</h5>
+        </div>
+        <div class="card-body">
+            <form id="filterForm" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="dateFrom" class="form-label">Từ ngày</label>
+                    <input type="date" id="dateFrom" name="dateFrom" class="form-control" value="@ViewBag.DateFrom">
+                </div>
+                <div class="col-md-3">
+                    <label for="dateTo" class="form-label">Đến ngày</label>
+                    <input type="date" id="dateTo" name="dateTo" class="form-control" value="@ViewBag.DateTo">
+                </div>
+                <div class="col-md-4">
+                    <label for="searchText" class="form-label">Tìm kiếm</label>
+                    <input type="text" id="searchText" name="searchText" class="form-control" placeholder="Lý do, ghi chú..." value="@ViewBag.SearchText">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Tìm
+                    </button>
+                    <button type="button" id="resetBtn" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Disposal Tickets Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách phiếu thanh lý</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người thanh lý</th>
+                            <th>Ngày tạo</th>
+                            <th>Lý do</th>
+                            <th>Số tài sản</th>
+                            <th>Giá trị thu hồi</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var assetCount = item.DisposalTicketAssets?.Count() ?? 0;
+                            var totalRecoveryValue = item.DisposalTicketAssets?.Sum(a => a.DisposedPrice ?? 0) ?? 0;
+
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@(item.DisposalBy?.FullName ?? "N/A")</td>
+                                <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="@item.Reason">
+                                        @item.Reason
+                                    </div>
+                                </td>
+                                <td>@assetCount</td>
+                                <td>@totalRecoveryValue.ToString("N0") VNĐ</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("DisposalTicketDetails", new { id = item.Id })" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        <a href="@Url.Action("EditDisposalTicket", new { id = item.Id })" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="fas fa-info-circle"></i> Không có phiếu thanh lý nào.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Reset filter form
+            $('#resetBtn').click(function() {
+                $('#dateFrom').val('');
+                $('#dateTo').val('');
+                $('#searchText').val('');
+                $('#filterForm').submit();
+            });
+        });
+    </script>
+}

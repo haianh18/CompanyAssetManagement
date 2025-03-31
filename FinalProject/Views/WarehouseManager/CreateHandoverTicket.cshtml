@@ -1,0 +1,200 @@
+﻿@model FinalProject.Models.HandoverTicket
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Tạo mới phiếu bàn giao";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-people-carry"></i> Tạo mới phiếu bàn giao</h2>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Phiếu bàn giao được sử dụng khi bàn giao tài sản cho nhân viên sử dụng lâu dài. Tài sản được bàn giao sẽ được đánh dấu là đã phân bổ trong kho.
+    </div>
+
+    <div class="form-container">
+        <form asp-action="CreateHandoverTicket" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin tài sản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="WarehouseAssetId" class="form-label">Tài sản</label>
+                                <select asp-for="WarehouseAssetId" class="form-select" id="assetSelect" required>
+                                    <option value="">-- Chọn tài sản --</option>
+                                    @if (ViewBag.WarehouseAssets != null)
+                                    {
+                                        foreach (var asset in ViewBag.WarehouseAssets)
+                                        {
+                                            <option value="@asset.Id"
+                                                    data-available="@asset.AvailableQuantity"
+                                                    data-asset-name="@asset.Asset.Name"
+                                                    data-warehouse="@asset.Warehouse.Name">
+                                                @asset.Asset.Name (@asset.Warehouse.Name) - Còn @asset.AvailableQuantity
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="WarehouseAssetId" class="text-danger"></span>
+                                <div class="form-text">Chọn tài sản cần bàn giao</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quantity" class="form-label">Số lượng</label>
+                                <input asp-for="Quantity" type="number" class="form-control" min="1" required />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                                <div class="form-text">Số lượng cần bàn giao</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin người nhận</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="HandoverToId" class="form-label">Người nhận</label>
+                                <select asp-for="HandoverToId" class="form-select" required>
+                                    <option value="">-- Chọn người nhận --</option>
+                                    @if (ViewBag.Users != null)
+                                    {
+                                        foreach (var user in ViewBag.Users)
+                                        {
+                                            <option value="@user.Id">@user.FullName (@user.Department?.Name)</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="HandoverToId" class="text-danger"></span>
+                                <div class="form-text">Chọn nhân viên nhận bàn giao tài sản</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DepartmentId" class="form-label">Phòng ban</label>
+                                <select asp-for="DepartmentId" class="form-select" required>
+                                    <option value="">-- Chọn phòng ban --</option>
+                                    @if (ViewBag.Departments != null)
+                                    {
+                                        foreach (var dept in ViewBag.Departments)
+                                        {
+                                            <option value="@dept.Id">@dept.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                                <div class="form-text">Phòng ban tiếp nhận tài sản</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin thời gian & ghi chú</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ExpectedEndDate" class="form-label">Ngày dự kiến kết thúc bàn giao</label>
+                                <input asp-for="ExpectedEndDate" type="date" class="form-control" />
+                                <span asp-validation-for="ExpectedEndDate" class="text-danger"></span>
+                                <div class="form-text">Để trống nếu không có thời hạn cụ thể</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="CurrentCondition" class="form-label">Tình trạng tài sản khi bàn giao</label>
+                                <select asp-for="CurrentCondition" class="form-select">
+                                    <option value="@AssetStatus.GOOD">Tốt</option>
+                                    <option value="@AssetStatus.FIXING">Đã sửa chữa</option>
+                                </select>
+                                <span asp-validation-for="CurrentCondition" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Note" class="form-label">Ghi chú</label>
+                        <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Note" class="text-danger"></span>
+                        <div class="form-text">Ghi chú về việc bàn giao, yêu cầu đặc biệt, hoặc thông tin khác</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="HandoverTickets" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Tạo phiếu bàn giao
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            // Handle user selection to auto-set department
+            $('#HandoverToId').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var departmentInfo = selectedOption.text().match(/\((.*?)\)/);
+
+                if (departmentInfo && departmentInfo[1]) {
+                    // Find and select matching department in department dropdown
+                    $('#DepartmentId option').each(function() {
+                        if ($(this).text() === departmentInfo[1]) {
+                            $('#DepartmentId').val($(this).val());
+                            return false;
+                        }
+                    });
+                }
+            });
+
+            // Handle asset selection to validate quantity
+            $('#assetSelect').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var availableQty = selectedOption.data('available');
+
+                if (availableQty) {
+                    $('#Quantity').attr('max', availableQty);
+                    $('#Quantity').val(1); // Default to 1
+                }
+            });
+
+            // Validate quantity against available
+            $('#Quantity').on('input', function () {
+                var selectedOption = $('#assetSelect').find('option:selected');
+                var availableQty = selectedOption.data('available');
+                var enteredQty = parseInt($(this).val());
+
+                if (availableQty && enteredQty > availableQty) {
+                    $(this).val(availableQty);
+                    alert('Số lượng không thể vượt quá ' + availableQty);
+                }
+            });
+        });
+    </script>
+}

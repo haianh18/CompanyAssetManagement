@@ -1,0 +1,162 @@
+﻿@model FinalProject.Models.DisposalTicketAsset
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Thêm tài sản vào phiếu thanh lý";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-plus-circle"></i> Thêm tài sản vào phiếu thanh lý</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="DisposalTicketDetails" asp-route-id="@ViewBag.DisposalTicketId" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại phiếu thanh lý
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Chọn tài sản và số lượng cần thanh lý. Bạn có thể lựa chọn các tài sản đang gặp vấn đề (hỏng, không thể sửa chữa) để tiến hành thanh lý.
+    </div>
+
+    <div class="form-container">
+        <form asp-action="AddAssetToDisposal" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="DisposalTicketId" value="@ViewBag.DisposalTicketId" />
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin tài sản thanh lý</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="WarehouseAssetId" class="form-label">Tài sản <span class="text-danger">*</span></label>
+                            <select asp-for="WarehouseAssetId" class="form-select" id="assetSelect" required>
+                                <option value="">-- Chọn tài sản --</option>
+                                @if (ViewBag.WarehouseAssets != null)
+                                {
+                                    foreach (var asset in ViewBag.WarehouseAssets)
+                                    {
+                                        <option value="@asset.Id" 
+                                                data-broken="@asset.BrokenQuantity"
+                                                data-fixing="@asset.FixingQuantity"
+                                                data-good="@asset.GoodQuantity"
+                                                data-price="@asset.Asset.Price">
+                                            @asset.Asset.Name (@asset.Warehouse.Name) - Hỏng: @asset.BrokenQuantity, Đang sửa: @asset.FixingQuantity, Tốt: @asset.GoodQuantity
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="WarehouseAssetId" class="text-danger"></span>
+                            <div id="assetInfo" class="form-text mt-2 d-none alert alert-info">
+                                Chọn tài sản từ danh sách trên
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+                            <input asp-for="Quantity" type="number" class="form-control" min="1" required />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                            <div class="form-text">Số lượng tài sản cần thanh lý</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DisposedPrice" class="form-label">Giá trị thanh lý (VNĐ)</label>
+                            <input asp-for="DisposedPrice" type="number" class="form-control" min="0" step="1000" />
+                            <span asp-validation-for="DisposedPrice" class="text-danger"></span>
+                            <div class="form-text">Giá trị thu hồi từ việc thanh lý tài sản (nếu có)</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="disposeFromBrokenFirst" checked>
+                                <label class="form-check-label" for="disposeFromBrokenFirst">Ưu tiên thanh lý tài sản hỏng trước</label>
+                            </div>
+                            <div class="form-text">Hệ thống sẽ tự động lấy từ tài sản hỏng, sau đó đến tài sản đang sửa, và cuối cùng là tài sản tốt (nếu cần)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="DisposalTicketDetails" asp-route-id="@ViewBag.DisposalTicketId" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Thêm tài sản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Handle asset selection
+            $('#assetSelect').change(function() {
+                var selectedOption = $(this).find('option:selected');
+                if (selectedOption.val() !== '') {
+                    var brokenQty = parseInt(selectedOption.data('broken')) || 0;
+                    var fixingQty = parseInt(selectedOption.data('fixing')) || 0;
+                    var goodQty = parseInt(selectedOption.data('good')) || 0;
+                    var price = parseFloat(selectedOption.data('price')) || 0;
+                    
+                    // Show asset info
+                    $('#assetInfo').removeClass('d-none').html(
+                        `<strong>Thông tin tài sản:</strong><br>
+                        Số lượng hỏng: ${brokenQty}<br>
+                        Số lượng đang sửa: ${fixingQty}<br>
+                        Số lượng tốt: ${goodQty}<br>
+                        Giá gốc: ${price.toLocaleString('vi-VN')} VNĐ`
+                    );
+
+                    // Set default quantity
+                    var totalAvailable = brokenQty + fixingQty + goodQty;
+                    $('#Quantity').attr('max', totalAvailable);
+                    
+                    // Default to broken quantity if available
+                    if (brokenQty > 0) {
+                        $('#Quantity').val(brokenQty);
+                    } else {
+                        $('#Quantity').val(1);
+                    }
+                    
+                    // Set default disposal price (10% of original price)
+                    if (price > 0) {
+                        $('#DisposedPrice').val(Math.floor(price * 0.1 / 1000) * 1000);
+                    }
+                } else {
+                    $('#assetInfo').addClass('d-none');
+                }
+            });
+            
+            // Validate quantity
+            $('#Quantity').on('input', function() {
+                var selectedOption = $('#assetSelect').find('option:selected');
+                if (selectedOption.val() !== '') {
+                    var brokenQty = parseInt(selectedOption.data('broken')) || 0;
+                    var fixingQty = parseInt(selectedOption.data('fixing')) || 0;
+                    var goodQty = parseInt(selectedOption.data('good')) || 0;
+                    var totalAvailable = brokenQty + fixingQty + goodQty;
+                    
+                    var enteredQty = parseInt($(this).val());
+                    if (enteredQty > totalAvailable) {
+                        $(this).val(totalAvailable);
+                        alert(`Số lượng không thể vượt quá ${totalAvailable}`);
+                    }
+                }
+            });
+        });
+    </script>
+}

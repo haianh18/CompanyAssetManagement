@@ -1,0 +1,101 @@
+﻿@model FinalProject.Models.DisposalTicket
+@using FinalProject.Enums
+@{
+    ViewData["Title"] = "Tạo phiếu thanh lý tài sản";
+    Layout = "_WarehouseManagerLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-trash-alt"></i> Tạo phiếu thanh lý tài sản</h2>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Tạo phiếu thanh lý để xác nhận việc loại bỏ tài sản khỏi hệ thống. Tài sản đã thanh lý sẽ được đánh dấu và không còn khả dụng.
+    </div>
+
+    <div class="form-container">
+        <form asp-action="CreateDisposalTicket" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin thanh lý</h5>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" asp-for="DisposalById" value="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" />
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="Reason" class="form-label">Lý do thanh lý <span class="text-danger">*</span></label>
+                            <textarea asp-for="Reason" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                            <div class="form-text">Nêu rõ lý do thanh lý tài sản (ví dụ: hỏng không sửa được, lỗi thời, không còn nhu cầu sử dụng...)</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="Note" class="form-label">Ghi chú bổ sung</label>
+                            <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Note" class="text-danger"></span>
+                            <div class="form-text">Thông tin thêm về việc thanh lý (nếu có)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Danh sách tài sản thanh lý</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Sau khi tạo phiếu thanh lý, bạn sẽ có thể thêm tài sản vào phiếu.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label">Chọn tài sản từ kho</label>
+                            <select id="warehouseAssetSelect" class="form-select">
+                                <option value="">-- Chọn tài sản --</option>
+                                @if (ViewBag.WarehouseAssets != null)
+                                {
+                                    foreach (var asset in ViewBag.WarehouseAssets)
+                                    {
+                                        <option value="@asset.Id"
+                                                data-name="@asset.Asset.Name"
+                                                data-warehouse="@asset.Warehouse.Name"
+                                                data-broken="@asset.BrokenQuantity"
+                                                data-fixing="@asset.FixingQuantity"
+                                                data-good="@asset.GoodQuantity">
+                                            @asset.Asset.Name (@asset.Warehouse.Name) - Hỏng: @asset.BrokenQuantity, Đang sửa: @asset.FixingQuantity, Tốt: @asset.GoodQuantity
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">Bạn sẽ thêm tài sản vào phiếu sau khi tạo phiếu thanh lý</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4 text-end">
+                <a asp-action="DisposalTickets" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Tạo phiếu thanh lý
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
