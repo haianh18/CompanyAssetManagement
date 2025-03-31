@@ -94,14 +94,14 @@
                     </a>
                 </li>
 
-                <!-- Báo cáo group -->
+                @* <!-- Báo cáo group -->
                 <li class="nav-item nav-header">BÁO CÁO</li>
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")"
                        asp-controller="WarehouseManager" asp-action="Reports">
                         <i class="fas fa-chart-bar"></i> Báo cáo thống kê
                     </a>
-                </li>
+                </li> *@
 
                 <!-- Tài khoản group -->
                 <li class="nav-item nav-header">TÀI KHOẢN</li>
@@ -126,10 +126,6 @@
             <!-- Navbar -->
             <nav class="main-header navbar navbar-expand bg-white navbar-light border-bottom">
                 <div class="container-fluid">
-                    <!-- Sidebar Toggle Button -->
-                    <button id="sidebarToggle" class="btn">
-                        <i class="fas fa-bars"></i>
-                    </button>
 
                     <!-- Page Title -->
                     <h4 class="dashboard-title d-none d-md-block">@ViewData["Title"]</h4>
@@ -179,30 +175,6 @@
 
     <script>
         $(document).ready(function() {
-            // Sidebar Toggle Functionality
-            $('#sidebarToggle').click(function() {
-                $('.wrapper').toggleClass('sidebar-collapsed');
-                $('.content-wrapper').toggleClass('expanded');
-            });
-
-            // Automatically collapse sidebar on small screens
-            function checkWindowSize() {
-                if ($(window).width() < 768) {
-                    $('.wrapper').addClass('sidebar-collapsed');
-                    $('.content-wrapper').addClass('expanded');
-                } else {
-                    $('.wrapper').removeClass('sidebar-collapsed');
-                    $('.content-wrapper').removeClass('expanded');
-                }
-            }
-
-            // Initial check
-            checkWindowSize();
-
-            // Check on window resize
-            $(window).resize(function() {
-                checkWindowSize();
-            });
 
             // Fetch overdue count for notification badge
             function fetchOverdueCount() {

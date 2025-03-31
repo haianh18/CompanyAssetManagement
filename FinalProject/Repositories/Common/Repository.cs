@@ -213,5 +213,19 @@ namespace FinalProject.Repositories.Common
                 _context.Entry(entity).State = EntityState.Modified;
             }
         }
+
+        public void HardDelete(T entity)
+        {
+            _context.Set<T>().Remove(entity);
+        }
+
+        public async Task HardDeleteAsync(int id)
+        {
+            T entity = await GetByIdAsync(id);
+            if (entity != null)
+            {
+                _context.Set<T>().Remove(entity);
+            }
+        }
     }
 }

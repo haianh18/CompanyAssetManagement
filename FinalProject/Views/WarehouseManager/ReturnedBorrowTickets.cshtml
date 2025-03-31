@@ -18,7 +18,8 @@
         <div class="col-md-8">
             <form method="get" action="@Url.Action("ReturnedBorrowTickets")" class="d-flex">
                 <div class="input-group">
-                    <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên người mượn hoặc tài sản..."
+                    <input type="text" name="searchString" class="form-control"
+                           placeholder="Tìm kiếm theo tên người mượn hoặc tài sản..."
                            value="@ViewBag.CurrentFilter">
                     <button type="submit" class="btn btn-outline-secondary">
                         <i class="fas fa-search"></i>

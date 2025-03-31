@@ -31,31 +31,36 @@ namespace FinalProject.Repositories
                 .OrderByDescending(hr => hr.ReturnDate)
                 .ToListAsync();
         }
-
-        public async Task<HandoverReturn> GetHandoverReturnWithDetails(int handoverReturnId)
+        public async Task<IEnumerable<HandoverReturn>> GetHandoverReturnsByTicketId(int handoverTicketId)
         {
-            return await _dbSet
-                .Where(hr => hr.Id == handoverReturnId)
+            return await _context.HandoverReturn
+                .Include(hr => hr.ReturnBy)
+                .Include(hr => hr.ReceivedBy)
+                .Where(hr => hr.HandoverTicketId == handoverTicketId)
+                .OrderByDescending(hr => hr.DateCreated)
+                .ToListAsync();
+        }
+
+        public async Task<HandoverReturn> GetHandoverReturnWithDetails(int id)
+        {
+            return await _context.HandoverReturn
                 .Include(hr => hr.HandoverTicket)
                     .ThenInclude(ht => ht.WarehouseAsset)
                         .ThenInclude(wa => wa.Asset)
-                            .ThenInclude(a => a.AssetCategory)
-                .Include(hr => hr.HandoverTicket)
-                    .ThenInclude(ht => ht.HandoverTo)
                 .Include(hr => hr.ReturnBy)
                 .Include(hr => hr.ReceivedBy)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(hr => hr.Id == id);
         }
+
 
         public async Task<IEnumerable<HandoverReturn>> GetPendingHandoverReturns()
         {
-            return await _dbSet
-                .Where(hr => hr.ReturnDate.HasValue && !hr.HandoverTicket.ActualEndDate.HasValue)
+            return await _context.HandoverReturn
                 .Include(hr => hr.HandoverTicket)
                     .ThenInclude(ht => ht.WarehouseAsset)
                         .ThenInclude(wa => wa.Asset)
                 .Include(hr => hr.ReturnBy)
-                .OrderByDescending(hr => hr.ReturnDate)
+                .Where(hr => !hr.DateModified.HasValue)
                 .ToListAsync();
         }
 

@@ -18,7 +18,7 @@
     </div>
 
     <div class="form-container">
-        <form asp-action="EditDisposalTicket" method="post">
+        <form asp-action="EditDisposalTicket" method="post" autocomplete="off">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="DisposalById" />
@@ -64,7 +64,6 @@
                                         <th>Kho</th>
                                         <th>Số lượng</th>
                                         <th>Giá trị thanh lý</th>
-                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -78,11 +77,6 @@
                                                 <td>@(item.WarehouseAsset?.Warehouse?.Name ?? "N/A")</td>
                                                 <td>@item.Quantity</td>
                                                 <td>@((item.DisposedPrice ?? 0).ToString("N0")) VNĐ</td>
-                                                <td>
-                                                    <a href="@Url.Action("EditDisposalAsset", new { id = item.Id })" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i> Sửa
-                                                    </a>
-                                                </td>
                                             </tr>
                                             index++;
                                         }

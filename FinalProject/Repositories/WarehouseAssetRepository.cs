@@ -156,7 +156,16 @@ namespace FinalProject.Repositories
 
             return true;
         }
-
+        public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithNonZeroQuantity()
+        {
+            return await _context.WarehouseAssets
+                .Include(wa => wa.Asset)
+                .Include(wa => wa.Warehouse)
+                .Where(wa =>
+                    (wa.GoodQuantity > 0 || wa.BrokenQuantity > 0 || wa.FixingQuantity > 0) &&
+                    !wa.IsDeleted)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<WarehouseAsset>> GetAssetsWithAvailableQuantity()
         {
             return await _dbSet

@@ -133,7 +133,7 @@
                             <th>Kho</th>
                             <th>Số lượng</th>
                             <th>Giá trị thanh lý</th>
-                            <th>Thao tác</th>
+                            <th>Ngày thêm</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -148,14 +148,7 @@
                                     <td>@(item.WarehouseAsset?.Warehouse?.Name ?? "N/A")</td>
                                     <td>@item.Quantity</td>
                                     <td>@((item.DisposedPrice ?? 0).ToString("N0")) VNĐ</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="@Url.Action("EditDisposalAsset", new { id = item.Id })" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </a>
-
-                                        </div>
-                                    </td>
+                                    <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 </tr>
                                 index++;
                             }
@@ -176,12 +169,3 @@
         </div>
     </div>
 </div>
-
-
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-        });
-    </script>
-}

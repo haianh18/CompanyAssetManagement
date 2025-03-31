@@ -10,4 +10,6 @@ public interface IDisposalTicketRepository : IRepository<DisposalTicket>
     Task<IEnumerable<DisposalTicket>> GetRecentDisposalTickets(int count);
     Task<Dictionary<string, int>> GetDisposalTicketStatisticsByMonth(int year);
     Task<double> GetTotalDisposalValue(int year);
+    Task<DisposalTicket> GetDisposalTicketWithDetails(int id);
+    Task<IEnumerable<DisposalTicket>> GetAllWithDetailsAsync();
 }

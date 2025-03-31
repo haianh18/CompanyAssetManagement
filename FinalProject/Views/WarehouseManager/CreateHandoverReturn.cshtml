@@ -38,7 +38,7 @@
     </div>
 
     <div class="form-container">
-        <form asp-action="CreateHandoverReturn" method="post">
+        <form asp-action="CreateHandoverReturn" method="post" autocomplete="off">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="HandoverTicketId" />
             <input type="hidden" asp-for="AssetName" />

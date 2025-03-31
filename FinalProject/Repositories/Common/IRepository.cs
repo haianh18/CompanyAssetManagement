@@ -58,5 +58,8 @@ namespace FinalProject.Repositories.Common
 
         Task<IEnumerable<T>> GetAllDeletedAsync();
         Task RestoreDeletedAsync(int id);
+
+        void HardDelete(T entity);
+        Task HardDeleteAsync(int id);
     }
 }

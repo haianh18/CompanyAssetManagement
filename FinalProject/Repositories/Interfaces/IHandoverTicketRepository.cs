@@ -14,7 +14,7 @@ public interface IHandoverTicketRepository : IRepository<HandoverTicket>
     Task<IEnumerable<HandoverTicket>> GetActiveHandoversByEmployee(int employeeId);
     Task<HandoverTicket> GetHandoverTicketWithAssetDetails(int handoverTicketId);
     Task<IEnumerable<HandoverTicket>> GetHandoversByDepartmentEmployee(int departmentId, int employeeId);
-
+    Task<HandoverTicket> GetHandoverTicketWithDetailsAsync(int id);
     Task UpdateHandoverTicketStatus(int handoverTicketId, bool isActive, DateTime? actualEndDate);
     Task<bool> ValidateHandoverOperationAsync(int warehouseAssetId, int quantity, bool isReturn);
     Task ProcessHandoverEventAsync(HandoverTicket handoverTicket, string eventType, string note);

@@ -8,5 +8,6 @@ namespace FinalProject.Repositories.Interfaces
         Task<IEnumerable<HandoverReturn>> GetHandoverReturnsByEmployee(int employeeId);
         Task<HandoverReturn> GetHandoverReturnWithDetails(int handoverReturnId);
         Task<IEnumerable<HandoverReturn>> GetPendingHandoverReturns();
+        Task<IEnumerable<HandoverReturn>> GetHandoverReturnsByTicketId(int handoverTicketId);
     }
 }

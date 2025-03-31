@@ -11,7 +11,7 @@
             <h2><i class="fas fa-exchange-alt"></i> Quản lý phiếu bàn giao</h2>
         </div>
         <div class="col-md-6 text-end">
-            <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("CreateHandoverTicket", "HandoverTicket")'">
+            <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("CreateHandoverTicket", "WarehouseManager")'">
                 <i class="fas fa-plus-circle"></i> Tạo phiếu bàn giao mới
             </button>
         </div>
@@ -61,6 +61,7 @@
                             <th>Số lượng</th>
                             <th>Phòng ban</th>
                             <th>Ngày bàn giao</th>
+                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -69,6 +70,9 @@
                         {
                             @foreach (var item in ViewBag.ActiveHandovers)
                             {
+                                bool hasPendingReturn = ViewBag.HandoverTicketsWithPendingReturns != null &&
+                                ViewBag.HandoverTicketsWithPendingReturns.Contains(item.Id);
+
                                 <tr>
                                     <td>@item.Id</td>
                                     <td>@(item.HandoverBy?.FullName ?? "N/A")</td>
@@ -78,20 +82,33 @@
                                     <td>@(item.Department?.Name ?? "N/A")</td>
                                     <td>@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                     <td>
+                                        @if (hasPendingReturn)
+                                        {
+                                            <span class="badge bg-warning">Đang chờ trả</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Đang hoạt động</span>
+                                        }
+                                    </td>
+                                    <td>
                                         <div class="action-buttons">
-                                            <a asp-action="CreateHandoverReturn" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-undo-alt"></i> Thu hồi
-                                            </a>
-                                            <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#handoverDetailModal"
-                                               data-id="@item.Id" data-handover-by="@(item.HandoverBy?.FullName ?? "N/A")"
-                                               data-handover-to="@(item.HandoverTo?.FullName ?? "N/A")"
-                                               data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")"
-                                               data-quantity="@item.Quantity"
-                                               data-department="@(item.Department?.Name ?? "N/A")"
-                                               data-date="@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")"
-                                               data-note="@item.Note">
+                                            <a asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                                 <i class="fas fa-info-circle"></i> Chi tiết
                                             </a>
+
+                                            @if (!hasPendingReturn)
+                                            {
+                                                <a asp-action="CreateHandoverReturn" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-undo-alt"></i> Thu hồi
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="btn btn-sm btn-secondary disabled">
+                                                    <i class="fas fa-clock"></i> Đang chờ trả
+                                                </span>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -142,15 +159,7 @@
                                     <td>@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#handoverDetailModal"
-                                               data-id="@item.Id" data-handover-by="@(item.HandoverBy?.FullName ?? "N/A")"
-                                               data-handover-to="@(item.HandoverTo?.FullName ?? "N/A")"
-                                               data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")"
-                                               data-quantity="@item.Quantity"
-                                               data-department="@(item.Department?.Name ?? "N/A")"
-                                               data-date="@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")"
-                                               data-end-date="@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")"
-                                               data-note="@item.Note">
+                                            <a asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                                 <i class="fas fa-info-circle"></i> Chi tiết
                                             </a>
                                         </div>
@@ -204,6 +213,12 @@
                                             <a asp-action="ProcessHandoverReturn" asp-route-id="@item.Id" class="btn btn-sm btn-success">
                                                 <i class="fas fa-check"></i> Xác nhận trả
                                             </a>
+                                            <a asp-action="CancelHandoverReturn" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i> Hủy yêu cầu
+                                            </a>
+                                            <a asp-action="HandoverTicketDetails" asp-route-id="@item.HandoverTicketId" class="btn btn-sm btn-info">
+                                                <i class="fas fa-info-circle"></i> Chi tiết
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -241,6 +256,9 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
+                            bool hasPendingReturn = ViewBag.HandoverTicketsWithPendingReturns != null &&
+                            ((IEnumerable<int>)ViewBag.HandoverTicketsWithPendingReturns).Contains(item.Id);
+
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@(item.HandoverBy?.FullName ?? "N/A")</td>
@@ -252,7 +270,14 @@
                                 <td>
                                     @if (item.IsActive)
                                     {
-                                        <span class="badge bg-success">Đang hoạt động</span>
+                                        if (hasPendingReturn)
+                                        {
+                                            <span class="badge bg-warning">Đang chờ trả</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Đang hoạt động</span>
+                                        }
                                     }
                                     else
                                     {
@@ -261,24 +286,16 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        @if (item.IsActive)
+                                        <a asp-action="HandoverTicketDetails" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+
+                                        @if (item.IsActive && !hasPendingReturn)
                                         {
                                             <a asp-action="CreateHandoverReturn" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
                                                 <i class="fas fa-undo-alt"></i> Thu hồi
                                             </a>
                                         }
-                                        <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#handoverDetailModal"
-                                           data-id="@item.Id" data-handover-by="@(item.HandoverBy?.FullName ?? "N/A")"
-                                           data-handover-to="@(item.HandoverTo?.FullName ?? "N/A")"
-                                           data-asset="@(item.WarehouseAsset?.Asset?.Name ?? "N/A")"
-                                           data-quantity="@item.Quantity"
-                                           data-department="@(item.Department?.Name ?? "N/A")"
-                                           data-date="@(item.DateCreated?.ToString("dd/MM/yyyy") ?? "N/A")"
-                                           data-end-date="@(item.ActualEndDate?.ToString("dd/MM/yyyy") ?? "N/A")"
-                                           data-note="@item.Note"
-                                           data-status="@(item.IsActive ? "Đang hoạt động" : "Đã kết thúc")">
-                                            <i class="fas fa-info-circle"></i> Chi tiết
-                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -297,150 +314,20 @@
     </div>
 </div>
 
-<!-- Handover Detail Modal -->
-<div class="modal fade" id="handoverDetailModal" tabindex="-1" aria-labelledby="handoverDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="handoverDetailModalLabel">Chi tiết phiếu bàn giao</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6>Thông tin cơ bản</h6>
-                        <table class="table table-sm">
-                            <tr>
-                                <th>ID phiếu:</th>
-                                <td id="modalId"></td>
-                            </tr>
-                            <tr>
-                                <th>Người bàn giao:</th>
-                                <td id="modalHandoverBy"></td>
-                            </tr>
-                            <tr>
-                                <th>Người nhận:</th>
-                                <td id="modalHandoverTo"></td>
-                            </tr>
-                            <tr>
-                                <th>Phòng ban:</th>
-                                <td id="modalDepartment"></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Thông tin tài sản</h6>
-                        <table class="table table-sm">
-                            <tr>
-                                <th>Tài sản:</th>
-                                <td id="modalAsset"></td>
-                            </tr>
-                            <tr>
-                                <th>Số lượng:</th>
-                                <td id="modalQuantity"></td>
-                            </tr>
-                            <tr>
-                                <th>Ngày bàn giao:</th>
-                                <td id="modalDate"></td>
-                            </tr>
-                            <tr id="modalEndDateRow">
-                                <th>Ngày kết thúc:</th>
-                                <td id="modalEndDate"></td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <h6>Trạng thái phiếu</h6>
-                        <p id="modalStatus"></p>
-                        <h6>Ghi chú</h6>
-                        <p id="modalNote" class="note-pre"></p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <a href="#" id="modalDetailLink" class="btn btn-primary">Xem chi tiết</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .note-pre {
-        white-space: pre-wrap;
-        background-color: #f8f9fa;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-</style>
-
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Handle modal data
-            $('#handoverDetailModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var id = button.data('id');
-                var handoverBy = button.data('handover-by');
-                var handoverTo = button.data('handover-to');
-                var asset = button.data('asset');
-                var quantity = button.data('quantity');
-                var department = button.data('department');
-                var date = button.data('date');
-                var endDate = button.data('end-date');
-                var note = button.data('note');
-                var status = button.data('status');
-
-                var modal = $(this);
-                modal.find('#modalId').text(id);
-                modal.find('#modalHandoverBy').text(handoverBy);
-                modal.find('#modalHandoverTo').text(handoverTo);
-                modal.find('#modalAsset').text(asset);
-                modal.find('#modalQuantity').text(quantity);
-                modal.find('#modalDepartment').text(department);
-                modal.find('#modalDate').text(date);
-
-                // Handle end date
-                if (endDate) {
-                    modal.find('#modalEndDateRow').show();
-                    modal.find('#modalEndDate').text(endDate);
-                } else {
-                    modal.find('#modalEndDateRow').hide();
-                }
-
-                // Handle status
-                if (status) {
-                    modal.find('#modalStatus').html('<span class="badge ' + (status === 'Đang hoạt động' ? 'bg-success' : 'bg-secondary') + '">' + status + '</span>');
-                } else {
-                    modal.find('#modalStatus').html('<span class="badge bg-success">Đang hoạt động</span>');
-                }
-
-                // Handle note
-                if (note) {
-                    modal.find('#modalNote').text(note);
-                } else {
-                    modal.find('#modalNote').text('Không có ghi chú');
-                }
-
-                // Update detail link
-                modal.find('#modalDetailLink').attr('href', '@Url.Action("HandoverTicketDetails", "WarehouseManager")/' + id);
-            });
-
-            // Save active tab
-            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                localStorage.setItem('handoverActiveTab', $(e.target).attr('id'));
-            });
-
-            // Restore active tab
-            var activeTab = localStorage.getItem('handoverActiveTab');
+            // Xử lý sự kiện tab khi trang được tải
+            var activeTab = localStorage.getItem('activeHandoverTab');
             if (activeTab) {
-                $('#' + activeTab).tab('show');
+                $('#handoverTabs button[data-bs-target="' + activeTab + '"]').tab('show');
             }
+
+            // Lưu tab đang active khi chuyển tab
+            $('#handoverTabs button').on('shown.bs.tab', function (e) {
+                var targetTab = $(e.target).data('bs-target');
+                localStorage.setItem('activeHandoverTab', targetTab);
+            });
         });
     </script>
 }

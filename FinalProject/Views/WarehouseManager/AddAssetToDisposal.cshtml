@@ -40,7 +40,7 @@
                                 {
                                     foreach (var asset in ViewBag.WarehouseAssets)
                                     {
-                                        <option value="@asset.Id" 
+                                        <option value="@asset.Id"
                                                 data-broken="@asset.BrokenQuantity"
                                                 data-fixing="@asset.FixingQuantity"
                                                 data-good="@asset.GoodQuantity"
@@ -111,7 +111,7 @@
                     var fixingQty = parseInt(selectedOption.data('fixing')) || 0;
                     var goodQty = parseInt(selectedOption.data('good')) || 0;
                     var price = parseFloat(selectedOption.data('price')) || 0;
-                    
+
                     // Show asset info
                     $('#assetInfo').removeClass('d-none').html(
                         `<strong>Thông tin tài sản:</strong><br>
@@ -124,14 +124,14 @@
                     // Set default quantity
                     var totalAvailable = brokenQty + fixingQty + goodQty;
                     $('#Quantity').attr('max', totalAvailable);
-                    
+
                     // Default to broken quantity if available
                     if (brokenQty > 0) {
                         $('#Quantity').val(brokenQty);
                     } else {
                         $('#Quantity').val(1);
                     }
-                    
+
                     // Set default disposal price (10% of original price)
                     if (price > 0) {
                         $('#DisposedPrice').val(Math.floor(price * 0.1 / 1000) * 1000);
@@ -140,7 +140,7 @@
                     $('#assetInfo').addClass('d-none');
                 }
             });
-            
+
             // Validate quantity
             $('#Quantity').on('input', function() {
                 var selectedOption = $('#assetSelect').find('option:selected');
@@ -149,7 +149,7 @@
                     var fixingQty = parseInt(selectedOption.data('fixing')) || 0;
                     var goodQty = parseInt(selectedOption.data('good')) || 0;
                     var totalAvailable = brokenQty + fixingQty + goodQty;
-                    
+
                     var enteredQty = parseInt($(this).val());
                     if (enteredQty > totalAvailable) {
                         $(this).val(totalAvailable);

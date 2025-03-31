@@ -168,5 +168,30 @@ namespace FinalProject.Repositories
 
             return totalValue;
         }
+        public async Task<DisposalTicket> GetDisposalTicketWithDetails(int id)
+        {
+            return await _context.DisposalTickets
+                .Include(d => d.DisposalBy)
+                .Include(d => d.Owner)
+                .Include(d => d.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .Include(d => d.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Warehouse)
+                .FirstOrDefaultAsync(d => d.Id == id);
+        }
+
+        public async Task<IEnumerable<DisposalTicket>> GetAllWithDetailsAsync()
+        {
+            return await _context.DisposalTickets
+                .Include(d => d.DisposalBy)
+                .Include(d => d.Owner)
+                .Include(d => d.DisposalTicketAssets)
+                    .ThenInclude(dta => dta.WarehouseAsset)
+                        .ThenInclude(wa => wa.Asset)
+                .OrderByDescending(d => d.DateCreated)
+                .ToListAsync();
+        }
     }
 }

@@ -5,6 +5,22 @@
     Layout = "_WarehouseManagerLayout";
 }
 
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .asset-info {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
@@ -49,34 +65,69 @@
 
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Danh sách tài sản thanh lý</h5>
+                    <h5 class="mb-0">Tài sản thanh lý</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Sau khi tạo phiếu thanh lý, bạn sẽ có thể thêm tài sản vào phiếu.
-                    </div>
-
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col-md-12">
-                            <label class="form-label">Chọn tài sản từ kho</label>
-                            <select id="warehouseAssetSelect" class="form-select">
-                                <option value="">-- Chọn tài sản --</option>
+                            <label for="selectedAssetId" class="form-label">Chọn tài sản thanh lý <span class="text-danger">*</span></label>
+                            <select id="selectedAssetId" name="selectedAssetId" class="form-select asset-select" required>
+                                <option value="">-- Tìm và chọn tài sản --</option>
                                 @if (ViewBag.WarehouseAssets != null)
                                 {
                                     foreach (var asset in ViewBag.WarehouseAssets)
                                     {
                                         <option value="@asset.Id"
-                                                data-name="@asset.Asset.Name"
-                                                data-warehouse="@asset.Warehouse.Name"
                                                 data-broken="@asset.BrokenQuantity"
                                                 data-fixing="@asset.FixingQuantity"
-                                                data-good="@asset.GoodQuantity">
-                                            @asset.Asset.Name (@asset.Warehouse.Name) - Hỏng: @asset.BrokenQuantity, Đang sửa: @asset.FixingQuantity, Tốt: @asset.GoodQuantity
+                                                data-good="@asset.GoodQuantity"
+                                                data-price="@asset.Asset.Price"
+                                                data-totalquantity="@(asset.BrokenQuantity + asset.FixingQuantity + asset.GoodQuantity)">
+                                            @asset.Asset.Name (@asset.Warehouse.Name) - Tổng: @(asset.BrokenQuantity + asset.FixingQuantity + asset.GoodQuantity)
                                         </option>
                                     }
                                 }
                             </select>
-                            <div class="form-text">Bạn sẽ thêm tài sản vào phiếu sau khi tạo phiếu thanh lý</div>
+                            <div class="form-text">Tìm kiếm và chọn tài sản cần thanh lý</div>
+                        </div>
+                    </div>
+
+                    <div id="assetInfo" class="asset-info d-none">
+                        <h6>Thông tin tài sản</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p>Tài sản: <span id="assetName"></span></p>
+                                <p>Kho: <span id="warehouseName"></span></p>
+                                <p>Giá gốc: <span id="assetPrice"></span> VNĐ</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>Tình trạng tốt: <span id="goodQuantity"></span></p>
+                                <p>Tình trạng hỏng: <span id="brokenQuantity"></span></p>
+                                <p>Đang sửa chữa: <span id="fixingQuantity"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="assetQuantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" id="assetQuantity" name="assetQuantity" class="form-control" min="1" required />
+                            <div class="form-text">Số lượng tài sản cần thanh lý</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="disposedPrice" class="form-label">Giá trị thu hồi (VNĐ)</label>
+                            <input type="number" id="disposedPrice" name="disposedPrice" class="form-control" min="0" step="1000" />
+                            <div class="form-text">Giá trị thu hồi từ việc thanh lý (nếu có)</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="disposeFromBrokenFirst" checked>
+                                <label class="form-check-label" for="disposeFromBrokenFirst">Ưu tiên thanh lý tài sản hỏng trước</label>
+                            </div>
+                            <div class="form-text">Hệ thống sẽ tự động lấy từ tài sản hỏng, sau đó đến tài sản đang sửa, và cuối cùng là tài sản tốt (nếu cần)</div>
                         </div>
                     </div>
                 </div>
@@ -98,4 +149,84 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for searchable dropdown
+            $('.asset-select').select2({
+                placeholder: "Tìm kiếm và chọn tài sản...",
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Không tìm thấy tài sản";
+                    },
+                    searching: function() {
+                        return "Đang tìm kiếm...";
+                    }
+                }
+            });
+
+            // Display asset information when selected
+            $('#selectedAssetId').on('change', function() {
+                var selectedOption = $(this).find('option:selected');
+                if (selectedOption.val() === '') {
+                    $('#assetInfo').addClass('d-none');
+                    $('#assetQuantity').val('');
+                    $('#disposedPrice').val('');
+                    return;
+                }
+
+                var assetName = selectedOption.text().split('(')[0].trim();
+                var warehouseName = selectedOption.text().match(/\(([^)]+)\)/)[1];
+                var brokenQty = parseInt(selectedOption.data('broken')) || 0;
+                var fixingQty = parseInt(selectedOption.data('fixing')) || 0;
+                var goodQty = parseInt(selectedOption.data('good')) || 0;
+                var price = parseFloat(selectedOption.data('price')) || 0;
+                var totalQty = parseInt(selectedOption.data('totalquantity')) || 0;
+
+                // Update asset info display
+                $('#assetName').text(assetName);
+                $('#warehouseName').text(warehouseName);
+                $('#brokenQuantity').text(brokenQty);
+                $('#fixingQuantity').text(fixingQty);
+                $('#goodQuantity').text(goodQty);
+                $('#assetPrice').text(price.toLocaleString('vi-VN'));
+
+                // Show asset info panel
+                $('#assetInfo').removeClass('d-none');
+
+                // Set default quantity (prefer broken first if available)
+                if (brokenQty > 0) {
+                    $('#assetQuantity').val(brokenQty);
+                } else if (fixingQty > 0) {
+                    $('#assetQuantity').val(fixingQty);
+                } else {
+                    $('#assetQuantity').val(1);
+                }
+
+                // Set max quantity
+                $('#assetQuantity').attr('max', totalQty);
+
+                // Set default disposal price (10% of original price)
+                if (price > 0) {
+                    $('#disposedPrice').val(Math.floor(price * 0.1 / 1000) * 1000);
+                }
+            });
+
+            // Validate quantity against available
+            $('#assetQuantity').on('input', function() {
+                var selectedOption = $('#selectedAssetId').find('option:selected');
+                if (selectedOption.val() === '') return;
+
+                var totalQty = parseInt(selectedOption.data('totalquantity')) || 0;
+                var enteredQty = parseInt($(this).val());
+
+                if (enteredQty > totalQty) {
+                    $(this).val(totalQty);
+                    alert(`Số lượng không thể vượt quá ${totalQty}`);
+                }
+            });
+        });
+    </script>
 }

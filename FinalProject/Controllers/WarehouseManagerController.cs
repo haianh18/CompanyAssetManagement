@@ -193,7 +193,7 @@ namespace FinalProject.Controllers
         }
 
         // GET: WarehouseManager/ReturnedBorrowTickets
-        public async Task<IActionResult> ReturnedBorrowTickets()
+        public async Task<IActionResult> ReturnedBorrowTickets(string searchString)
         {
             // Get all borrow tickets that have been returned
             var returnedTickets = await _unitOfWork.BorrowTickets.GetAllAsync();
@@ -201,6 +201,21 @@ namespace FinalProject.Controllers
                 .Where(b => b.IsReturned)
                 .OrderByDescending(b => b.DateModified)
                 .ToList();
+
+            // Apply search filter if provided
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                returnedTickets = returnedTickets
+                    .Where(b =>
+                        (b.BorrowBy?.FullName?.ToLower().Contains(searchString) == true) ||
+                        (b.WarehouseAsset?.Asset?.Name?.ToLower().Contains(searchString) == true) ||
+                        (b.Note?.ToLower().Contains(searchString) == true))
+                    .ToList();
+            }
+
+            // Pass the current filter to maintain it when paging
+            ViewBag.CurrentFilter = searchString;
 
             return View(returnedTickets);
         }
@@ -973,6 +988,7 @@ namespace FinalProject.Controllers
         #endregion
 
         #region Handover Management
+
         public async Task<IActionResult> HandoverTickets()
         {
             var tickets = await _unitOfWork.HandoverTickets.GetAllAsync();
@@ -985,7 +1001,170 @@ namespace FinalProject.Controllers
             var pendingReturns = await _unitOfWork.HandoverReturns.GetPendingHandoverReturns();
             ViewBag.PendingReturns = pendingReturns;
 
+            // Get list of handover ticket IDs that have pending returns
+            var handoverTicketsWithPendingReturns = pendingReturns.Select(pr => pr.HandoverTicketId).ToList();
+            ViewBag.HandoverTicketsWithPendingReturns = handoverTicketsWithPendingReturns;
+
             return View(tickets);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> HandoverTicketDetails(int id)
+        {
+            var handoverTicket = await _unitOfWork.HandoverTickets.GetHandoverTicketWithDetailsAsync(id);
+            if (handoverTicket == null)
+            {
+                return NotFound();
+            }
+
+            // Get any return requests for this handover ticket
+            var handoverReturns = await _unitOfWork.HandoverReturns.GetHandoverReturnsByTicketId(id);
+            ViewBag.HandoverReturns = handoverReturns;
+
+            // Check if there's any pending return request
+            var pendingReturn = handoverReturns.FirstOrDefault(hr => !hr.DateModified.HasValue);
+            ViewBag.HasPendingReturnRequest = pendingReturn != null;
+            if (pendingReturn != null)
+            {
+                ViewBag.PendingReturnId = pendingReturn.Id;
+            }
+
+            return View(handoverTicket);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CancelHandoverReturn(int id)
+        {
+            try
+            {
+                var handoverReturn = await _unitOfWork.HandoverReturns.GetByIdAsync(id);
+                if (handoverReturn == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if the return request has already been processed
+                if (handoverReturn.DateModified.HasValue)
+                {
+                    TempData["ErrorMessage"] = "Không thể hủy yêu cầu trả đã được xử lý.";
+                    return RedirectToAction(nameof(HandoverTicketDetails), new { id = handoverReturn.HandoverTicketId });
+                }
+
+                // Store the handover ticket ID before deleting the entity
+                int handoverTicketId = handoverReturn.HandoverTicketId;
+
+                // Hard delete the handover return request
+                _unitOfWork.HandoverReturns.HardDelete(handoverReturn);
+                await _unitOfWork.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Đã hủy yêu cầu trả tài sản.";
+                return RedirectToAction(nameof(HandoverTicketDetails), new { id = handoverTicketId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi hủy yêu cầu trả: {ex.Message}";
+                return RedirectToAction(nameof(HandoverTickets));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateHandoverTicket()
+        {
+            // Get available warehouse assets (with good quantity > 0)
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity();
+            ViewBag.WarehouseAssets = warehouseAssets;
+
+            // Get users for dropdown
+            var users = await _unitOfWork.Users.GetAllUsersAsync();
+            ViewBag.Users = users;
+
+            // Get departments for dropdown
+            var departments = await _unitOfWork.Departments.GetAllAsync();
+            ViewBag.Departments = departments;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateHandoverTicket(HandoverTicket handoverTicket)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Get current user to set as handover initiator
+                    var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                    if (currentUser == null)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
+                    // Set handover by and created date
+                    handoverTicket.HandoverById = currentUser.Id;
+                    handoverTicket.DateCreated = DateTime.Now;
+                    handoverTicket.IsActive = true;
+
+                    // Get the warehouse asset to validate quantity
+                    var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(handoverTicket.WarehouseAssetId ?? 0);
+                    if (warehouseAsset == null)
+                    {
+                        ModelState.AddModelError("WarehouseAssetId", "Tài sản không tồn tại");
+                        await PrepareViewBagForCreateHandoverTicket();
+                        return View(handoverTicket);
+                    }
+
+                    // Check if there's enough available quantity
+                    int availableQuantity = (warehouseAsset.GoodQuantity ?? 0) - (warehouseAsset.BorrowedGoodQuantity ?? 0) - (warehouseAsset.HandedOverGoodQuantity ?? 0);
+                    if ((handoverTicket.Quantity ?? 0) > availableQuantity)
+                    {
+                        ModelState.AddModelError("Quantity", $"Số lượng bàn giao vượt quá số lượng khả dụng ({availableQuantity})");
+                        await PrepareViewBagForCreateHandoverTicket();
+                        return View(handoverTicket);
+                    }
+
+                    // Add the handover ticket
+                    await _unitOfWork.HandoverTickets.AddAsync(handoverTicket);
+
+                    // Update the warehouse asset quantities
+                    warehouseAsset.HandedOverGoodQuantity = (warehouseAsset.HandedOverGoodQuantity ?? 0) + (handoverTicket.Quantity ?? 0);
+                    _unitOfWork.WarehouseAssets.Update(warehouseAsset);
+
+                    // Save changes
+                    await _unitOfWork.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Phiếu bàn giao đã được tạo thành công.";
+                    return RedirectToAction(nameof(HandoverTickets));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Lỗi khi tạo phiếu bàn giao: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        ModelState.AddModelError("", $"Chi tiết: {ex.InnerException.Message}");
+                    }
+                }
+            }
+
+            // If we got this far, something failed, redisplay form
+            await PrepareViewBagForCreateHandoverTicket();
+            return View(handoverTicket);
+        }
+
+        // Helper method to prepare ViewBag data for the Create view
+        private async Task PrepareViewBagForCreateHandoverTicket()
+        {
+            // Get available warehouse assets (with good quantity > 0)
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithGoodQuantity();
+            ViewBag.WarehouseAssets = warehouseAssets;
+
+            // Get users for dropdown
+            var users = await _unitOfWork.Users.GetAllUsersAsync();
+            ViewBag.Users = users;
+
+            // Get departments for dropdown
+            var departments = await _unitOfWork.Departments.GetAllAsync();
+            ViewBag.Departments = departments;
         }
 
         public async Task<IActionResult> ProcessHandoverReturn(int id)
@@ -1037,6 +1216,7 @@ namespace FinalProject.Controllers
             return View(model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> CreateHandoverReturn(int id)
         {
             var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(id);
@@ -1050,6 +1230,16 @@ namespace FinalProject.Controllers
             {
                 TempData["ErrorMessage"] = "Phiếu bàn giao này đã không còn hoạt động.";
                 return RedirectToAction(nameof(HandoverTickets));
+            }
+
+            // Check if there's already a pending return request for this handover ticket
+            var pendingReturns = await _unitOfWork.HandoverReturns.GetHandoverReturnsByTicketId(id);
+            var hasPendingReturn = pendingReturns.Any(r => !r.DateModified.HasValue);
+
+            if (hasPendingReturn)
+            {
+                TempData["ErrorMessage"] = "Đã có yêu cầu trả tài sản đang chờ xử lý cho phiếu bàn giao này.";
+                return RedirectToAction(nameof(HandoverTicketDetails), new { id = id });
             }
 
             var model = new CreateHandoverReturnViewModel
@@ -1078,6 +1268,16 @@ namespace FinalProject.Controllers
             {
                 try
                 {
+                    // Check if there's already a pending return request for this handover ticket
+                    var pendingReturns = await _unitOfWork.HandoverReturns.GetHandoverReturnsByTicketId(model.HandoverTicketId);
+                    var hasPendingReturn = pendingReturns.Any(r => !r.DateModified.HasValue);
+
+                    if (hasPendingReturn)
+                    {
+                        TempData["ErrorMessage"] = "Đã có yêu cầu trả tài sản đang chờ xử lý cho phiếu bàn giao này.";
+                        return RedirectToAction(nameof(HandoverTicketDetails), new { id = model.HandoverTicketId });
+                    }
+
                     await CreateHandoverReturnAsync(
                         model.HandoverTicketId,
                         model.ReturnById ?? currentUser.Id,
@@ -1085,7 +1285,7 @@ namespace FinalProject.Controllers
                     );
 
                     TempData["SuccessMessage"] = "Yêu cầu trả lại tài sản bàn giao đã được tạo.";
-                    return RedirectToAction(nameof(HandoverTickets));
+                    return RedirectToAction(nameof(HandoverTicketDetails), new { id = model.HandoverTicketId });
                 }
                 catch (Exception ex)
                 {
@@ -1106,7 +1306,7 @@ namespace FinalProject.Controllers
             return View(model);
         }
 
-        public async Task<HandoverReturn> CreateHandoverReturnAsync(int handoverTicketId, int returnById, string notes)
+        private async Task<HandoverReturn> CreateHandoverReturnAsync(int handoverTicketId, int returnById, string notes)
         {
             // Get the handover ticket
             var handoverTicket = await _unitOfWork.HandoverTickets.GetByIdAsync(handoverTicketId);
@@ -1185,30 +1385,311 @@ namespace FinalProject.Controllers
 
         public async Task<IActionResult> CreateDisposalTicket()
         {
+            // Populate warehouse assets for dropdown
             ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateDisposalTicket(DisposalTicket ticket)
+        public async Task<IActionResult> CreateDisposalTicket(DisposalTicket ticket, int? selectedAssetId, int? assetQuantity, double? disposedPrice)
         {
             if (ModelState.IsValid)
             {
+                // Get current user to set as disposal initiator
+                var currentUser = await _unitOfWork.Users.GetUserByUserNameAsync(User.Identity.Name);
+                if (currentUser == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Set disposal by and created date
+                ticket.DisposalById = currentUser.Id;
                 ticket.DateCreated = DateTime.Now;
+
+                // First create the disposal ticket
                 await _unitOfWork.DisposalTickets.AddAsync(ticket);
                 await _unitOfWork.SaveChangesAsync();
-                return RedirectToAction(nameof(DisposalTickets));
+
+                // If an asset was selected, add it to the disposal ticket
+                if (selectedAssetId.HasValue && assetQuantity.HasValue && assetQuantity.Value > 0)
+                {
+                    var disposalTicketAsset = new DisposalTicketAsset
+                    {
+                        DisposalTicketId = ticket.Id,
+                        WarehouseAssetId = selectedAssetId.Value,
+                        Quantity = assetQuantity.Value,
+                        DisposedPrice = disposedPrice,
+                        DateCreated = DateTime.Now
+                    };
+
+                    await _unitOfWork.DisposalTicketAssets.AddAsync(disposalTicketAsset);
+
+                    // Update warehouse asset quantities
+                    var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(selectedAssetId.Value);
+                    if (warehouseAsset != null)
+                    {
+                        // Apply quantity reduction logic (prioritize broken first, then fixing, then good)
+                        await UpdateWarehouseAssetQuantities(warehouseAsset, assetQuantity.Value);
+
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                }
+
+                TempData["SuccessMessage"] = "Phiếu thanh lý đã được tạo thành công.";
+                return RedirectToAction(nameof(DisposalTicketDetails), new { id = ticket.Id });
             }
-            ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
+
+            ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAssetsWithNonZeroQuantity();
             return View(ticket);
+        }
+
+        // Helper method to update warehouse asset quantities
+        private async Task UpdateWarehouseAssetQuantities(WarehouseAsset warehouseAsset, int disposalQuantity)
+        {
+            int remainingQuantity = disposalQuantity;
+
+            // Reduce broken quantity first
+            int brokenQuantity = warehouseAsset.BrokenQuantity ?? 0;
+            if (brokenQuantity > 0)
+            {
+                int quantityToReduce = Math.Min(brokenQuantity, remainingQuantity);
+                warehouseAsset.BrokenQuantity -= quantityToReduce;
+                remainingQuantity -= quantityToReduce;
+            }
+
+            // Then reduce fixing quantity if needed
+            if (remainingQuantity > 0)
+            {
+                int fixingQuantity = warehouseAsset.FixingQuantity ?? 0;
+                if (fixingQuantity > 0)
+                {
+                    int quantityToReduce = Math.Min(fixingQuantity, remainingQuantity);
+                    warehouseAsset.FixingQuantity -= quantityToReduce;
+                    remainingQuantity -= quantityToReduce;
+                }
+            }
+
+            // Finally reduce good quantity if still needed
+            if (remainingQuantity > 0)
+            {
+                warehouseAsset.GoodQuantity -= remainingQuantity;
+            }
+
+            // Increase disposed quantity
+            warehouseAsset.DisposedQuantity = (warehouseAsset.DisposedQuantity ?? 0) + disposalQuantity;
+
+            // Update warehouse asset
+            _unitOfWork.WarehouseAssets.Update(warehouseAsset);
         }
 
         public async Task<IActionResult> DisposalTickets()
         {
-            var tickets = await _unitOfWork.DisposalTickets.GetAllAsync();
+            // Get all disposal tickets with filtering options if needed
+            var tickets = await _unitOfWork.DisposalTickets.GetAllWithDetailsAsync();
+
+            // Filter by date range if provided in ViewBag/TempData
+            if (Request.Query.ContainsKey("dateFrom") && DateTime.TryParse(Request.Query["dateFrom"], out DateTime dateFrom))
+            {
+                ViewBag.DateFrom = dateFrom.ToString("yyyy-MM-dd");
+                tickets = tickets.Where(t => t.DateCreated >= dateFrom).ToList();
+            }
+
+            if (Request.Query.ContainsKey("dateTo") && DateTime.TryParse(Request.Query["dateTo"], out DateTime dateTo))
+            {
+                ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
+                tickets = tickets.Where(t => t.DateCreated <= dateTo).ToList();
+            }
+
+            // Filter by search text if provided
+            if (Request.Query.ContainsKey("searchText"))
+            {
+                string searchText = Request.Query["searchText"];
+                ViewBag.SearchText = searchText;
+                tickets = tickets.Where(t =>
+                    (t.Reason != null && t.Reason.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                    (t.Note != null && t.Note.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
             return View(tickets);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> DisposalTicketDetails(int id)
+        {
+            var disposalTicket = await _unitOfWork.DisposalTickets.GetDisposalTicketWithDetails(id);
+            if (disposalTicket == null)
+            {
+                return NotFound();
+            }
+
+            return View(disposalTicket);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditDisposalTicket(int id)
+        {
+            var disposalTicket = await _unitOfWork.DisposalTickets.GetDisposalTicketWithDetails(id);
+            if (disposalTicket == null)
+            {
+                return NotFound();
+            }
+
+            return View(disposalTicket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDisposalTicket(DisposalTicket ticket)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Get existing ticket to update only specific fields
+                    var existingTicket = await _unitOfWork.DisposalTickets.GetByIdAsync(ticket.Id);
+                    if (existingTicket == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update only the editable fields
+                    existingTicket.Reason = ticket.Reason;
+                    existingTicket.Note = ticket.Note;
+                    existingTicket.DateModified = DateTime.Now;
+
+                    _unitOfWork.DisposalTickets.Update(existingTicket);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Phiếu thanh lý đã được cập nhật thành công.";
+                    return RedirectToAction(nameof(DisposalTicketDetails), new { id = existingTicket.Id });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Lỗi khi cập nhật phiếu thanh lý: " + ex.Message);
+                }
+            }
+
+            // Reload the disposal ticket with details if validation fails
+            var disposalTicket = await _unitOfWork.DisposalTickets.GetDisposalTicketWithDetails(ticket.Id);
+            return View(disposalTicket);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddAssetToDisposal(int id)
+        {
+            // Set the disposal ticket ID for the form
+            ViewBag.DisposalTicketId = id;
+
+            // Get warehouse assets with available quantity for selection
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
+            ViewBag.WarehouseAssets = warehouseAssets;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAssetToDisposal(DisposalTicketAsset disposalTicketAsset)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // IMPORTANT: Make sure the ID is not set
+                    disposalTicketAsset.Id = 0; // This will force EF to treat it as a new entity
+
+                    // Set creation date
+                    disposalTicketAsset.DateCreated = DateTime.Now;
+
+                    // Check if the warehouse asset exists
+                    var warehouseAsset = await _unitOfWork.WarehouseAssets.GetByIdAsync(disposalTicketAsset.WarehouseAssetId ?? 0);
+                    if (warehouseAsset == null)
+                    {
+                        ModelState.AddModelError("", "Tài sản không tồn tại");
+                        ViewBag.DisposalTicketId = disposalTicketAsset.DisposalTicketId;
+                        ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
+                        return View(disposalTicketAsset);
+                    }
+
+                    // Validate quantity
+                    int totalAvailable = (warehouseAsset.BrokenQuantity ?? 0) +
+                                         (warehouseAsset.FixingQuantity ?? 0) +
+                                         (warehouseAsset.GoodQuantity ?? 0);
+
+                    if ((disposalTicketAsset.Quantity ?? 0) > totalAvailable)
+                    {
+                        ModelState.AddModelError("Quantity", $"Số lượng thanh lý không thể lớn hơn tổng số lượng hiện có ({totalAvailable})");
+                        ViewBag.DisposalTicketId = disposalTicketAsset.DisposalTicketId;
+                        ViewBag.WarehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
+                        return View(disposalTicketAsset);
+                    }
+
+                    // Add the asset to the disposal ticket
+                    await _unitOfWork.DisposalTicketAssets.AddAsync(disposalTicketAsset);
+
+                    // Determine which status to reduce based on preferred order
+                    int disposalQuantity = disposalTicketAsset.Quantity ?? 0;
+                    int brokenQuantity = warehouseAsset.BrokenQuantity ?? 0;
+                    int fixingQuantity = warehouseAsset.FixingQuantity ?? 0;
+                    int goodQuantity = warehouseAsset.GoodQuantity ?? 0;
+
+                    // Reduce broken quantity first
+                    if (brokenQuantity > 0)
+                    {
+                        int quantityToReduce = Math.Min(brokenQuantity, disposalQuantity);
+                        warehouseAsset.BrokenQuantity -= quantityToReduce;
+                        disposalQuantity -= quantityToReduce;
+                    }
+
+                    // Then reduce fixing quantity if needed
+                    if (disposalQuantity > 0 && fixingQuantity > 0)
+                    {
+                        int quantityToReduce = Math.Min(fixingQuantity, disposalQuantity);
+                        warehouseAsset.FixingQuantity -= quantityToReduce;
+                        disposalQuantity -= quantityToReduce;
+                    }
+
+                    // Finally reduce good quantity if still needed
+                    if (disposalQuantity > 0 && goodQuantity > 0)
+                    {
+                        int quantityToReduce = Math.Min(goodQuantity, disposalQuantity);
+                        warehouseAsset.GoodQuantity -= quantityToReduce;
+                    }
+
+                    // Increase disposed quantity
+                    warehouseAsset.DisposedQuantity = (warehouseAsset.DisposedQuantity ?? 0) + (disposalTicketAsset.Quantity ?? 0);
+
+                    // Update the warehouse asset
+                    _unitOfWork.WarehouseAssets.Update(warehouseAsset);
+
+                    // Save all changes at once
+                    await _unitOfWork.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Tài sản đã được thêm vào phiếu thanh lý thành công.";
+                    return RedirectToAction(nameof(DisposalTicketDetails), new { id = disposalTicketAsset.DisposalTicketId });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Lỗi khi thêm tài sản: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        ModelState.AddModelError("", $"Chi tiết: {ex.InnerException.Message}");
+                    }
+                }
+            }
+
+            // Set the disposal ticket ID for the form
+            ViewBag.DisposalTicketId = disposalTicketAsset.DisposalTicketId;
+
+            // Get warehouse assets with available quantity for selection
+            var warehouseAssets = await _unitOfWork.WarehouseAssets.GetAllAsync();
+            ViewBag.WarehouseAssets = warehouseAssets;
+
+            return View(disposalTicketAsset);
+        }
+
 
         #endregion
 

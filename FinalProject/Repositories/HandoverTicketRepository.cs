@@ -31,6 +31,38 @@ namespace FinalProject.Repositories
                 .FirstOrDefaultAsync(ht => ht.Id == id);
         }
 
+        public override async Task<IEnumerable<HandoverTicket>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.Owner)
+                .Include(ht => ht.Department)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .OrderByDescending(ht => ht.DateCreated)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<HandoverTicket>> GetAllIncludingDeletedAsync()
+        {
+            return await _dbSet.IgnoreQueryFilters()
+                .Include(ht => ht.HandoverBy)
+                .Include(ht => ht.HandoverTo)
+                .Include(ht => ht.Owner)
+                .Include(ht => ht.Department)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                        .ThenInclude(a => a.AssetCategory)
+                .Include(ht => ht.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .OrderByDescending(ht => ht.DateCreated)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByAssetIdAsync(int assetId)
         {
             return await _dbSet
@@ -64,6 +96,18 @@ namespace FinalProject.Repositories
                     .ThenInclude(wa => wa.Warehouse)
                 .OrderByDescending(ht => ht.DateCreated)
                 .ToListAsync();
+        }
+        public async Task<HandoverTicket> GetHandoverTicketWithDetailsAsync(int id)
+        {
+            return await _context.HandoverTickets
+                .Include(h => h.HandoverBy)
+                .Include(h => h.HandoverTo)
+                .Include(h => h.Department)
+                .Include(h => h.WarehouseAsset)
+                    .ThenInclude(wa => wa.Asset)
+                .Include(h => h.WarehouseAsset)
+                    .ThenInclude(wa => wa.Warehouse)
+                .FirstOrDefaultAsync(h => h.Id == id);
         }
 
         public async Task<IEnumerable<HandoverTicket>> GetHandoverTicketsByHandoverTo(int handoverToId)

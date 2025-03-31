@@ -18,4 +18,6 @@ public interface IWarehouseAssetRepository : IRepository<WarehouseAsset>
     Task<IEnumerable<WarehouseAsset>> GetAssetsWithDisposedQuantity();
     Task UpdateWarehouseAssetQuantitiesForHandover(int warehouseAssetId, int quantityChange, bool isReturn, AssetStatus status);
     Task<IEnumerable<WarehouseAsset>> GetWarehouseAssetsByAssetIncludingDeleted(int assetId);
+    Task<IEnumerable<WarehouseAsset>> GetAssetsWithNonZeroQuantity();
+
 }
